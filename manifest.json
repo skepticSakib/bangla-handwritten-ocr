@@ -2,7 +2,7 @@
   "name": "Bangla Handwritten OCR Studio",
   "short_name": "Bangla OCR",
   "description": "Offline Bangla Handwritten Character Recognition (84 Classes CNN)",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -13,7 +13,7 @@
       "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

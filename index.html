@@ -2184,7 +2184,7 @@ function getBanglaLabel(raw) {
 <style>
   #shaheedMinarContainer {
     position: fixed !important;
-    bottom: 6px !important;
+    bottom: 8px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: min(380px, 82vw) !important;
@@ -2192,7 +2192,13 @@ function getBanglaLabel(raw) {
     pointer-events: none !important;
     display: flex !important;
     justify-content: center !important;
-    opacity: 0.42 !important;
+    background: transparent !important;
+    opacity: 0.22 !important;
+  }
+  #shaheedMinarContainer svg,
+  #shaheedMinarContainer svg * {
+    background: transparent !important;
+    fill: none !important;
   }
   #shaheedMinarContainer svg {
     width: 100% !important;
@@ -2201,7 +2207,7 @@ function getBanglaLabel(raw) {
   }
   body.light-mode #shaheedMinarContainer,
   body.white-mode #shaheedMinarContainer {
-    opacity: 0.28 !important;
+    opacity: 0.16 !important;
   }
 
   /* Keep main cards stacked above the Shaheed Minar watermark */
@@ -2264,7 +2270,7 @@ function getBanglaLabel(raw) {
   }
 </style>
 <div id="shaheedMinarContainer" aria-hidden="true"><svg id="origShaheedMinar" viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="210" cy="118" r="66" fill="#991b1b" fill-opacity="0.28"/>
+  <circle cx="210" cy="118" r="66" fill="none" fill-opacity="0" stroke="#b91c1c" stroke-width="2.5" stroke-opacity="0.55"/>
   <rect x="64" y="224" width="292" height="10" stroke="#334155" stroke-width="3" fill="none"/>
   <rect x="44" y="234" width="332" height="12" stroke="#334155" stroke-width="3" fill="none"/>
   <rect x="86" y="132" width="32" height="92" stroke="#334155" stroke-width="3"/>

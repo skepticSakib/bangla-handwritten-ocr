@@ -1642,5 +1642,310 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_HERO_PREDICTION_END -->
+<!-- BANGLA_TRAIN_MODAL_START -->
+<style>
+  /* Trigger button in the top header / action bar */
+  .open-train-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid rgba(185, 28, 28, 0.38);
+    background: rgba(185, 28, 28, 0.09);
+    color: #991b1b;
+    transition: transform 0.16s ease, background 0.18s ease, box-shadow 0.18s ease;
+  }
+  .open-train-modal-btn:hover {
+    background: rgba(185, 28, 28, 0.16);
+    transform: translateY(-1px);
+  }
+  body:not(.light-mode):not(.white-mode) .open-train-modal-btn {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.14);
+    color: #fbbf24;
+  }
+
+  /* Modal Backdrop */
+  .train-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(15, 23, 42, 0.62);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: modalFadeIn 0.22s ease-out;
+  }
+  .train-modal-backdrop.active {
+    display: flex;
+  }
+
+  @keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes modalPopUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Modal Dialog Card matching Calligraphy Cream & Dark Slate themes */
+  .train-modal-dialog {
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 18px;
+    padding: 20px 22px;
+    background: #131c2e;
+    color: #f1f5f9;
+    border: 1.5px solid rgba(245, 158, 11, 0.35);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
+    animation: modalPopUp 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  body.light-mode .train-modal-dialog,
+  body.white-mode .train-modal-dialog {
+    background: #faf7f0;
+    color: #1e293b;
+    border: 1.5px solid rgba(185, 28, 28, 0.32);
+    box-shadow: 0 22px 48px rgba(15, 23, 42, 0.22);
+  }
+
+  .train-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  }
+  .train-modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .train-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: transparent;
+    color: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .train-modal-close:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  /* User Model Persistence Status Strip inside the modal */
+  .user-model-persistence-bar {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(148, 163, 184, 0.28);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.82rem;
+  }
+  .user-model-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    font-weight: 600;
+  }
+  .user-model-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .user-model-mini-btn {
+    padding: 5px 11px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.12);
+    color: inherit;
+  }
+  .user-model-mini-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.16);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #ef4444;
+  }
+</style>
+
+<script>
+(function () {
+  window.addEventListener("DOMContentLoaded", () => {
+    // 1. Locate the existing Top-5 Suggestions & Training container on the home page
+    const allBlocks = Array.from(document.querySelectorAll("div, section, fieldset"));
+    const trainSection = allBlocks.find(el => {
+      const txt = el.textContent || "";
+      return txt.includes("TOP-5 SUGGESTIONS") && txt.includes("Train Selected") && el.children.length >= 2 && el.offsetHeight < 520;
+    });
+
+    if (!trainSection) return;
+
+    // 2. Create the Pop-Up Modal Shell & move the training section out of the home screen into it
+    const backdrop = document.createElement("div");
+    backdrop.id = "trainStudioModal";
+    backdrop.className = "train-modal-backdrop";
+    backdrop.innerHTML = `
+      <div class="train-modal-dialog" role="dialog" aria-modal="true" aria-label="Train & Update Model">
+        <div class="train-modal-header">
+          <div class="train-modal-title">🧠 Teach & Update Model (User Fine-Tuning)</div>
+          <button type="button" id="closeTrainModalBtn" class="train-modal-close" title="Close">✕</button>
+        </div>
+        <div id="trainModalBody"></div>
+        <div class="user-model-persistence-bar">
+          <span id="userModelSavedBadge" class="user-model-status-pill">● Auto-Saved on Device</span>
+          <div class="user-model-actions">
+            <button type="button" id="saveUserModelNowBtn" class="user-model-mini-btn">💾 Save Model</button>
+            <button type="button" id="resetUserModelBtn" class="user-model-mini-btn danger">↺ Reset Custom</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    // Move existing training UI cleanly inside the modal (preserving all IDs & event listeners)
+    const modalBody = document.getElementById("trainModalBody");
+    trainSection.style.margin = "0";
+    trainSection.style.border = "none";
+    trainSection.style.padding = "0";
+    trainSection.style.background = "transparent";
+    modalBody.appendChild(trainSection);
+
+    // 3. Add "🧠 Train Model" trigger button into the top header (or prediction header)
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.id = "openTrainModalBtn";
+    openBtn.className = "open-train-modal-btn";
+    openBtn.innerHTML = `🧠 <span>Train Model</span>`;
+
+    const headerTarget =
+      document.querySelector("header .header-actions, header .controls, header") ||
+      document.querySelector(".pred-box, .result-box")?.parentElement;
+
+    if (headerTarget) {
+      headerTarget.appendChild(openBtn);
+    }
+
+    // Open / Close Handlers
+    const openModal = () => backdrop.classList.add("active");
+    const closeModal = () => backdrop.classList.remove("active");
+
+    openBtn.addEventListener("click", openModal);
+    document.getElementById("closeTrainModalBtn").addEventListener("click", closeModal);
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && backdrop.classList.contains("active")) closeModal();
+    });
+
+    // 4. Persist user-trained TensorFlow.js weights in IndexedDB automatically
+    const USER_MODEL_KEY = "indexeddb://bangla-bhcr-user-updated-model";
+    const statusBadge = document.getElementById("userModelSavedBadge");
+
+    function findTfModel() {
+      for (const k of Object.keys(window)) {
+        try {
+          const val = window[k];
+          if (val && typeof val.predict === "function" && typeof val.save === "function") {
+            return val;
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
+    async function saveUserTrainedWeights() {
+      const m = findTfModel();
+      if (!m) return;
+      try {
+        await m.save(USER_MODEL_KEY);
+        localStorage.setItem("bhcr_user_model_updated_at", new Date().toLocaleTimeString());
+        if (statusBadge) {
+          statusBadge.textContent = "✓ Saved to Device (" + localStorage.getItem("bhcr_user_model_updated_at") + ")";
+        }
+      } catch (err) {
+        console.warn("Model save skipped:", err);
+      }
+    }
+
+    // Auto-save whenever user clicks "Teach" or "Train Selected" inside the modal
+    modalBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const label = (btn.textContent || "").toLowerCase();
+      if (label.includes("teach") || label.includes("train")) {
+        if (statusBadge) statusBadge.textContent = "⏳ Updating & saving weights...";
+        setTimeout(saveUserTrainedWeights, 900);
+      }
+    });
+
+    // Manual Save & Reset buttons inside the modal
+    const saveNowBtn = document.getElementById("saveUserModelNowBtn");
+    if (saveNowBtn) {
+      saveNowBtn.addEventListener("click", saveUserTrainedWeights);
+    }
+
+    const resetBtn = document.getElementById("resetUserModelBtn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", async () => {
+        if (!confirm("Reset your custom trained corrections and restore the original base model?")) return;
+        try {
+          if (window.tf && tf.io && tf.io.removeModel) {
+            await tf.io.removeModel(USER_MODEL_KEY);
+          }
+          localStorage.removeItem("bhcr_user_model_updated_at");
+          location.reload();
+        } catch (_) {
+          location.reload();
+        }
+      });
+    }
+
+    // Auto-restore user-updated weights on startup once base model finishes loading
+    setTimeout(async () => {
+      if (!window.tf || !tf.loadLayersModel) return;
+      if (!localStorage.getItem("bhcr_user_model_updated_at")) return;
+      try {
+        const savedModel = await tf.loadLayersModel(USER_MODEL_KEY);
+        const baseModel = findTfModel();
+        if (savedModel && baseModel && typeof baseModel.setWeights === "function") {
+          baseModel.setWeights(savedModel.getWeights());
+          if (statusBadge) {
+            statusBadge.textContent = "✓ Custom Model Active (" + localStorage.getItem("bhcr_user_model_updated_at") + ")";
+          }
+        }
+      } catch (_) {}
+    }, 1800);
+  });
+})();
+</script>
+<!-- BANGLA_TRAIN_MODAL_END -->
 </body>
 </html>

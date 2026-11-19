@@ -2182,24 +2182,29 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_FIRST_LOAD_MOTION_END -->
 <!-- BANGLA_SHAHEED_AND_LOWCONF_START -->
 <style>
-  /* Ensure original Shaheed Minar sits visibly behind cards on both Dark & Cream themes */
-  body > svg,
-  .watermark,
-  .bg-watermark,
-  [class*="minar"],
-  [id*="minar"] {
+  #shaheedMinarContainer {
     position: fixed !important;
-    bottom: 8px !important;
+    bottom: 6px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
+    width: min(380px, 82vw) !important;
     z-index: 0 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 0.34 !important;
     pointer-events: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    opacity: 0.42 !important;
+  }
+  #shaheedMinarContainer svg {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+  body.light-mode #shaheedMinarContainer,
+  body.white-mode #shaheedMinarContainer {
+    opacity: 0.28 !important;
   }
 
-  /* Keep UI cards above the watermark without covering the background */
+  /* Keep main cards stacked above the Shaheed Minar watermark */
   header, main, .container, .app-wrapper {
     position: relative;
     z-index: 2;
@@ -2258,134 +2263,156 @@ function getBanglaLabel(raw) {
     background: #b91c1c;
   }
 </style>
-
+<div id="shaheedMinarContainer" aria-hidden="true"><svg id="origShaheedMinar" viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="210" cy="118" r="66" fill="#991b1b" fill-opacity="0.28"/>
+  <rect x="64" y="224" width="292" height="10" stroke="#334155" stroke-width="3" fill="none"/>
+  <rect x="44" y="234" width="332" height="12" stroke="#334155" stroke-width="3" fill="none"/>
+  <rect x="86" y="132" width="32" height="92" stroke="#334155" stroke-width="3"/>
+  <line x1="97" y1="132" x2="97" y2="224" stroke="#334155" stroke-width="2"/>
+  <line x1="107" y1="132" x2="107" y2="224" stroke="#334155" stroke-width="2"/>
+  <rect x="128" y="102" width="34" height="122" stroke="#334155" stroke-width="3"/>
+  <line x1="139" y1="102" x2="139" y2="224" stroke="#334155" stroke-width="2"/>
+  <line x1="151" y1="102" x2="151" y2="224" stroke="#334155" stroke-width="2"/>
+  <path d="M174 224 L174 68 L160 36 L260 36 L246 68 L246 224" stroke="#334155" stroke-width="3.5"/>
+  <line x1="192" y1="36" x2="192" y2="224" stroke="#334155" stroke-width="2.2"/>
+  <line x1="210" y1="36" x2="210" y2="224" stroke="#334155" stroke-width="2.2"/>
+  <line x1="228" y1="36" x2="228" y2="224" stroke="#334155" stroke-width="2.2"/>
+  <rect x="258" y="102" width="34" height="122" stroke="#334155" stroke-width="3"/>
+  <line x1="269" y1="102" x2="269" y2="224" stroke="#334155" stroke-width="2"/>
+  <line x1="281" y1="102" x2="281" y2="224" stroke="#334155" stroke-width="2"/>
+  <rect x="302" y="132" width="32" height="92" stroke="#334155" stroke-width="3"/>
+  <line x1="313" y1="132" x2="313" y2="224" stroke="#334155" stroke-width="2"/>
+  <line x1="323" y1="132" x2="323" y2="224" stroke="#334155" stroke-width="2"/>
+</svg></div>
 <script>
 (function () {
-  window.addEventListener("DOMContentLoaded", () => {
-    // 1. Build Low-Confidence (< 50%) Pop-Up Modal
-    const popupBackdrop = document.createElement("div");
+  window.addEventListener("DOMContentLoaded", function () {
+    // 1. Build Low-Confidence (< 50%) Pop-Up Modal using clean DOM APIs
+    var popupBackdrop = document.createElement("div");
     popupBackdrop.id = "lowConfPopup";
     popupBackdrop.className = "low-conf-popup-backdrop";
-    popupBackdrop.innerHTML = `
-      <div class="low-conf-popup-card" role="alertdialog" aria-modal="true">
-        <div style="font-size:2rem;margin-bottom:6px;">⚠️</div>
-        <div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Unclear Character (<span id="lowConfValText">&lt; 50%</span>)</div>
-        <div style="font-size:0.88rem;opacity:0.86;line-height:1.45;">
-          Prediction confidence is below <b>50%</b>, so the result was hidden. Please clear the pad and write or upload a clearer character.
-        </div>
-        <button type="button" id="closeLowConfPopupBtn" class="low-conf-ok-btn">OK, Try Again</button>
-      </div>
-    `;
+    popupBackdrop.innerHTML =
+      '<div class="low-conf-popup-card" role="alertdialog" aria-modal="true">' +
+        '<div style="font-size:2rem;margin-bottom:6px;">⚠️</div>' +
+        '<div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Unclear Character (<span id="lowConfValText">&lt; 50%</span>)</div>' +
+        '<div style="font-size:0.88rem;opacity:0.86;line-height:1.45;">' +
+          'Prediction confidence is below <b>50%</b>, so the result was hidden. Please clear the pad and write or upload a clearer character.' +
+        '</div>' +
+        '<button type="button" id="closeLowConfPopupBtn" class="low-conf-ok-btn">OK, Try Again</button>' +
+      '</div>';
     document.body.appendChild(popupBackdrop);
 
-    const closePopup = () => popupBackdrop.classList.remove("active");
+    function closePopup() {
+      popupBackdrop.classList.remove("active");
+    }
     document.getElementById("closeLowConfPopupBtn").addEventListener("click", closePopup);
-    popupBackdrop.addEventListener("click", (e) => { if (e.target === popupBackdrop) closePopup(); });
+    popupBackdrop.addEventListener("click", function (e) {
+      if (e.target === popupBackdrop) closePopup();
+    });
 
     // 2. Debounced < 50% Gate: waits 1.5s after user finishes writing or uploading
-    const predBox = document.querySelector(".pred-box, .result-box") || document.body;
-    const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-    let isDrawing = false;
-    let popupDelayTimer = null;
-    let lastAlertedSig = "";
-
-    // Pause popup timer while user is actively drawing multi-stroke characters
-    document.querySelectorAll("canvas").forEach(cv => {
-      cv.addEventListener("pointerdown", () => {
-        isDrawing = true;
-        clearTimeout(popupDelayTimer);
-      });
-      cv.addEventListener("pointerup", () => {
-        isDrawing = false;
-        scheduleDelayedCheck(1500);
-      });
-      cv.addEventListener("touchstart", () => {
-        isDrawing = true;
-        clearTimeout(popupDelayTimer);
-      }, { passive: true });
-      cv.addEventListener("touchend", () => {
-        isDrawing = false;
-        scheduleDelayedCheck(1500);
-      }, { passive: true });
-    });
-
-    // Also wait 1.5s after Photo/Camera file upload or manual Predict click
-    document.querySelectorAll("input[type='file']").forEach(inp => {
-      inp.addEventListener("change", () => {
-        lastAlertedSig = "";
-        scheduleDelayedCheck(1600);
-      });
-    });
-
-    document.querySelectorAll("button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const label = (btn.textContent || "").toLowerCase();
-        if (label.includes("clear") || label.includes("undo")) {
-          clearTimeout(popupDelayTimer);
-          lastAlertedSig = "";
-        } else if (label.includes("predict") || label.includes("photo") || label.includes("camera")) {
-          lastAlertedSig = "";
-          scheduleDelayedCheck(1500);
-        }
-      });
-    });
+    var predBox = document.querySelector(".pred-box, .result-box") || document.body;
+    var charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+    var isDrawing = false;
+    var popupDelayTimer = null;
+    var lastAlertedSig = "";
 
     function readCurrentPrediction() {
-      const text = predBox.innerText || predBox.textContent || "";
-      const match = text.match(/Confidence\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
-      const conf = match ? parseFloat(match[1]) : 0;
-      const ch = charEl ? (charEl.textContent || "").trim() : "";
-      return { conf, ch };
+      var text = predBox.innerText || predBox.textContent || "";
+      var match = text.match(/Confidence\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
+      var conf = match ? parseFloat(match[1]) : 0;
+      var ch = charEl ? (charEl.textContent || "").trim() : "";
+      return { conf: conf, ch: ch };
     }
 
     function suppressUncertainResult() {
       if (!charEl) return;
-      charEl.textContent = "?";
-      const badge = document.querySelector(".bangla-type-badge");
-      const voiceBtn = document.querySelector(".bangla-voice-btn");
+      if (charEl.textContent.trim() !== "?") {
+        charEl.textContent = "?";
+      }
+      var badge = document.querySelector(".bangla-type-badge");
+      var voiceBtn = document.querySelector(".bangla-voice-btn");
       if (badge) badge.style.visibility = "hidden";
       if (voiceBtn) voiceBtn.style.visibility = "hidden";
     }
 
     function restoreCertainResult() {
-      const badge = document.querySelector(".bangla-type-badge");
-      const voiceBtn = document.querySelector(".bangla-voice-btn");
+      var badge = document.querySelector(".bangla-type-badge");
+      var voiceBtn = document.querySelector(".bangla-voice-btn");
       if (badge) badge.style.visibility = "visible";
       if (voiceBtn) voiceBtn.style.visibility = "visible";
     }
 
     function scheduleDelayedCheck(delayMs) {
       clearTimeout(popupDelayTimer);
-      popupDelayTimer = setTimeout(() => {
+      popupDelayTimer = setTimeout(function () {
         if (isDrawing) return;
-        const { conf, ch } = readCurrentPrediction();
-        if (conf > 0 && conf < 50) {
+        var res = readCurrentPrediction();
+        if (res.conf > 0 && res.conf < 50) {
           suppressUncertainResult();
-          const sig = ${conf.toFixed(1)};
+          var sig = res.conf.toFixed(1);
           if (sig !== lastAlertedSig) {
             lastAlertedSig = sig;
-            const valSpan = document.getElementById("lowConfValText");
-            if (valSpan) valSpan.textContent = ${conf.toFixed(1)}%;
+            var valSpan = document.getElementById("lowConfValText");
+            if (valSpan) valSpan.textContent = sig + "%";
             popupBackdrop.classList.add("active");
           }
-        } else if (conf >= 50) {
+        } else if (res.conf >= 50) {
           lastAlertedSig = "";
           restoreCertainResult();
         }
       }, delayMs);
     }
 
-    // Immediately hide uncertain (<50%) character during live auto-predict, but wait 1.5s before showing popup
-    new MutationObserver(() => {
-      const { conf, ch } = readCurrentPrediction();
-      if (conf > 0 && conf < 50) {
-        if (ch && ch !== "?" && ch !== "—") {
+    document.querySelectorAll("canvas").forEach(function (cv) {
+      cv.addEventListener("pointerdown", function () {
+        isDrawing = true;
+        clearTimeout(popupDelayTimer);
+      });
+      cv.addEventListener("pointerup", function () {
+        isDrawing = false;
+        scheduleDelayedCheck(1500);
+      });
+      cv.addEventListener("touchstart", function () {
+        isDrawing = true;
+        clearTimeout(popupDelayTimer);
+      }, { passive: true });
+      cv.addEventListener("touchend", function () {
+        isDrawing = false;
+        scheduleDelayedCheck(1500);
+      }, { passive: true });
+    });
+
+    document.querySelectorAll("input[type='file']").forEach(function (inp) {
+      inp.addEventListener("change", function () {
+        lastAlertedSig = "";
+        scheduleDelayedCheck(1600);
+      });
+    });
+
+    document.querySelectorAll("button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var label = (btn.textContent || "").toLowerCase();
+        if (label.indexOf("clear") !== -1 || label.indexOf("undo") !== -1) {
+          clearTimeout(popupDelayTimer);
+          lastAlertedSig = "";
+        } else if (label.indexOf("predict") !== -1 || label.indexOf("photo") !== -1 || label.indexOf("camera") !== -1) {
+          lastAlertedSig = "";
+          scheduleDelayedCheck(1500);
+        }
+      });
+    });
+
+    new MutationObserver(function () {
+      var res = readCurrentPrediction();
+      if (res.conf > 0 && res.conf < 50) {
+        if (res.ch && res.ch !== "?" && res.ch !== "—") {
           suppressUncertainResult();
         }
         if (!isDrawing) {
           scheduleDelayedCheck(1500);
         }
-      } else if (conf >= 50) {
+      } else if (res.conf >= 50) {
         clearTimeout(popupDelayTimer);
         lastAlertedSig = "";
         restoreCertainResult();

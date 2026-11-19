@@ -1139,55 +1139,71 @@ function getBanglaLabel(raw) {
     return { label: "বাংলা বর্ণ", cls: "consonant" };
   }
 
-  let currentSpokenAudio = null;
+  let activeAudio = null;
 
-  function playAudioUrl(url) {
+  function playStreamAudio(url) {
     return new Promise((resolve, reject) => {
       try {
-        if (currentSpokenAudio) {
-          currentSpokenAudio.pause();
-          currentSpokenAudio = null;
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio.src = "";
+          activeAudio = null;
         }
+        // IMPORTANT: Do NOT set crossOrigin="anonymous" on Google TTS URLs (they do not return CORS headers)
         const audio = new Audio();
-        audio.crossOrigin = "anonymous";
         audio.referrerPolicy = "no-referrer";
-        audio.preload = "auto";
+        audio.volume = 1.0;
+        activeAudio = audio;
+
+        let finished = false;
+        const done = (ok) => {
+          if (finished) return;
+          finished = true;
+          ok ? resolve(true) : reject(new Error("Audio failed"));
+        };
+
+        audio.onended = () => done(true);
+        audio.onerror = () => done(false);
+
         audio.src = url;
-        currentSpokenAudio = audio;
-        audio.onended = () => resolve(true);
-        audio.onerror = () => reject(new Error("Audio load error"));
-        const playPromise = audio.play();
-        if (playPromise && typeof playPromise.then === "function") {
-          playPromise.catch(reject);
+        const p = audio.play();
+        if (p && typeof p.then === "function") {
+          p.catch(() => done(false));
         }
-      } catch (e) {
-        reject(e);
+
+        // Safety timeout in case stream stalls
+        setTimeout(() => {
+          if (!finished && audio.paused) done(false);
+        }, 4000);
+      } catch (err) {
+        reject(err);
       }
     });
   }
 
-  function speakWithSystemBanglaVoice(text) {
+  function speakNativeBangla(text) {
     return new Promise((resolve, reject) => {
       if (!("speechSynthesis" in window)) return reject(new Error("No speechSynthesis"));
       const voices = window.speechSynthesis.getVoices();
-      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("bn"));
-      if (!bnVoice) return reject(new Error("No bn voice installed"));
+      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("bn"));
+      if (!bnVoice) return reject(new Error("No bn voice"));
 
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.voice = bnVoice;
-      utter.lang = bnVoice.lang || "bn-BD";
+      utter.lang = bnVoice.lang;
       utter.volume = 1.0;
       utter.rate = 0.9;
+
       let started = false;
       utter.onstart = () => { started = true; };
       utter.onend = () => resolve(true);
-      utter.onerror = () => reject(new Error("Utterance failed"));
-      window.speechSynthesis.speak(utter);
+      utter.onerror = () => reject(new Error("Native speech error"));
 
+      window.speechSynthesis.speak(utter);
       setTimeout(() => {
-        if (!started) reject(new Error("Speech timeout"));
-      }, 900);
+        if (!started) reject(new Error("Native speech timeout"));
+      }, 1000);
     });
   }
 
@@ -1195,30 +1211,45 @@ function getBanglaLabel(raw) {
     if (!ch || ch === "?" || ch === "—" || ch === "-") return;
     const textToSpeak = SPOKEN_NAMES[ch] || ch;
     const btn = document.getElementById("banglaSpeakBtn");
-    if (btn) btn.classList.add("speaking");
+    const labelSpan = btn ? btn.querySelector("span") : null;
 
-    const encoded = encodeURIComponent(textToSpeak);
-    const ttsUrls = [
-      `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=bn&q=${encoded}`,
-      `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${encoded}`
+    if (btn) btn.classList.add("speaking");
+    if (labelSpan) labelSpan.textContent = `বাজছে (${ch})...`;
+
+    const q = encodeURIComponent(textToSpeak);
+    const urls = [
+      `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${q}`,
+      `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=bn&q=${q}`
     ];
 
+    let played = false;
     try {
-      // 1. Try native Bangla voice if installed on OS/Android
+      // 1. Try native Bangla voice if installed on device
       try {
-        await speakWithSystemBanglaVoice(textToSpeak);
-        return;
+        await speakNativeBangla(textToSpeak);
+        played = true;
       } catch (_) {}
 
-      // 2. Fallback to Bangla TTS MP3 stream (works on Windows/Chrome/Android even without local bn voice pack)
-      for (const url of ttsUrls) {
-        try {
-          await playAudioUrl(url);
-          return;
-        } catch (_) {}
+      // 2. Stream Bangla pronunciation MP3 (works on Chrome, Edge, and Android APK without local bn TTS pack)
+      if (!played) {
+        for (const url of urls) {
+          try {
+            await playStreamAudio(url);
+            played = true;
+            break;
+          } catch (_) {}
+        }
       }
     } finally {
       if (btn) btn.classList.remove("speaking");
+      if (labelSpan) {
+        labelSpan.textContent = played ? `উচ্চারণ (${ch})` : `নেটওয়ার্ক নেই (${ch})`;
+        if (!played) {
+          setTimeout(() => {
+            if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})`;
+          }, 2000);
+        }
+      }
     }
   }
 

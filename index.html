@@ -1644,14 +1644,30 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_HERO_PREDICTION_END -->
 <!-- BANGLA_TRAIN_MODAL_START -->
 <style>
-  /* Right-aligned header control group: [🧠 Train Model] [Theme Button] */
+  /* Ensure header & action row stretch full width so buttons align flush-right */
+  header {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .header-full-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
   .header-right-controls {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-left: auto;
-    flex-shrink: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
   }
 
   /* Trigger button placed directly before the Theme button on the right */
@@ -1876,6 +1892,7 @@ function getBanglaLabel(raw) {
       const parent = themeBtn.parentElement;
       const rightGroup = document.createElement("div");
       rightGroup.className = "header-right-controls";
+      parent.classList.add("header-full-row");
       parent.insertBefore(rightGroup, themeBtn);
       rightGroup.appendChild(openBtn);
       rightGroup.appendChild(themeBtn);

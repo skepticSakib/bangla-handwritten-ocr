@@ -284,82 +284,46 @@ body > * {
   z-index: 1;
 }
 
-/* Rich Linguistic Metadata & Informative Guide Styles */
-.meta-badges {
+
+/* Live Inline Character Metadata Beside Predicted Letter */
+.live-char-meta {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 10px;
+}
+.meta-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 5px;
 }
-.meta-badge {
-  font-size: 0.76rem;
+.meta-pill {
+  font-size: 0.74rem;
   font-weight: 600;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
   background: rgba(56, 189, 248, 0.14);
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.35);
+  white-space: nowrap;
 }
-.meta-badge.vowel { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
-.meta-badge.consonant { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); }
-.meta-badge.digit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
-.meta-badge.compound { background: rgba(168, 85, 247, 0.16); color: #c084fc; border-color: rgba(168, 85, 247, 0.38); }
-body.light-mode .meta-badge, body.white-mode .meta-badge { background: rgba(2, 132, 199, 0.1); color: #0369a1; border-color: rgba(2, 132, 199, 0.3); }
-body.light-mode .meta-badge.vowel, body.white-mode .meta-badge.vowel { background: rgba(5, 150, 105, 0.1); color: #047857; }
-body.light-mode .meta-badge.digit, body.white-mode .meta-badge.digit { background: rgba(217, 119, 6, 0.1); color: #b45309; }
-body.light-mode .meta-badge.compound, body.white-mode .meta-badge.compound { background: rgba(126, 34, 206, 0.1); color: #7e22ce; }
+.meta-pill.vowel { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+.meta-pill.consonant { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); }
+.meta-pill.digit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
+.meta-pill.compound { background: rgba(168, 85, 247, 0.16); color: #c084fc; border-color: rgba(168, 85, 247, 0.38); }
+body.light-mode .meta-pill, body.white-mode .meta-pill { background: rgba(2, 132, 199, 0.1); color: #0369a1; border-color: rgba(2, 132, 199, 0.3); }
+body.light-mode .meta-pill.vowel, body.white-mode .meta-pill.vowel { background: rgba(5, 150, 105, 0.1); color: #047857; }
+body.light-mode .meta-pill.digit, body.white-mode .meta-pill.digit { background: rgba(217, 119, 6, 0.1); color: #b45309; }
+body.light-mode .meta-pill.compound, body.white-mode .meta-pill.compound { background: rgba(126, 34, 206, 0.1); color: #7e22ce; }
 
-.char-breakdown {
-  margin-top: 6px;
-  font-size: 0.82rem;
+.meta-detail-line {
+  font-size: 0.78rem;
+  line-height: 1.35;
   opacity: 0.9;
 }
-.matra-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}
-.matra-btn {
-  padding: 4px 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 7px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(148, 163, 184, 0.12);
-  color: inherit;
-  cursor: pointer;
-}
-.matra-btn:hover { background: rgba(56, 189, 248, 0.22); border-color: #38bdf8; }
-
-.info-guide-card {
-  max-width: 1120px;
-  margin: 16px auto 24px auto;
-  padding: 16px 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px);
-}
-body.light-mode .info-guide-card, body.white-mode .info-guide-card {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(15, 23, 42, 0.14);
-}
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
-}
-.info-box {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(148, 163, 184, 0.06);
-  font-size: 0.83rem;
-  line-height: 1.45;
-}
-.info-box strong { display: block; margin-bottom: 3px; font-size: 0.88rem; }
 </style>
 </head>
 <body>
@@ -446,7 +410,6 @@ body.light-mode .info-guide-card, body.white-mode .info-guide-card {
             <button class="btn-slate" onclick="copyWord()">Copy</button>
             <button class="btn-red" onclick="clearWord()">Reset</button>
           </div>
-<div class="matra-bar"><button type="button" class="matra-btn" onclick="appendQuickChar('া')">া</button><button type="button" class="matra-btn" onclick="appendQuickChar('ি')">ি</button><button type="button" class="matra-btn" onclick="appendQuickChar('ী')">ী</button><button type="button" class="matra-btn" onclick="appendQuickChar('ু')">ু</button><button type="button" class="matra-btn" onclick="appendQuickChar('ূ')">ূ</button><button type="button" class="matra-btn" onclick="appendQuickChar('ে')">ে</button><button type="button" class="matra-btn" onclick="appendQuickChar('ো')">ো</button><button type="button" class="matra-btn" onclick="appendQuickChar('্')">্ (হসন্ত)</button><button type="button" class="matra-btn" onclick="appendQuickChar('।' )">। (দাঁড়ি)</button></div>
         </div>
       </div>
     </div>
@@ -467,100 +430,145 @@ body.light-mode .info-guide-card, body.white-mode .info-guide-card {
   <script>
     let model = null;
     let classNames = [];
-const BANGLA_CHAR_DETAILS = {
-  "অ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O / A", parts: "মূল স্বরবর্ণ • ১ম বর্ণ" },
-  "আ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Aa", parts: "কার-চিহ্ন: া (আ-কার)" },
-  "ই": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "I", parts: "কার-চিহ্ন: ি (হ্রস্ব ই-কার)" },
-  "ঈ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ee", parts: "কার-চিহ্ন: ী (দীর্ঘ ঈ-কার)" },
-  "উ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "U", parts: "কার-চিহ্ন: ু (হ্রস্ব উ-কার)" },
-  "ঊ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oo", parts: "কার-চিহ্ন: ূ (দীর্ঘ ঊ-কার)" },
-  "ঋ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ri", parts: "কার-চিহ্ন: ৃ (ঋ-কার)" },
-  "এ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "E", parts: "কার-চিহ্ন: ে (এ-কার)" },
-  "ঐ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oi", parts: "কার-চিহ্ন: ৈ (ঐ-কার)" },
-  "ও": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O", parts: "কার-চিহ্ন: ো (ও-কার)" },
-  "ঔ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ou", parts: "কার-চিহ্ন: ৌ (ঔ-কার)" },
-  "ক্ষ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksha", parts: "বিশ্লেষণ: ক + ষ্ + ষ" },
-  "জ্ঞ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gya / Jna", parts: "বিশ্লেষণ: জ + ্ + ঞ" },
-  "ঞ্চ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ncha", parts: "বিশ্লেষণ: ঞ + ্ + চ" },
-  "ঞ্ছ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nchha", parts: "বিশ্লেষণ: ঞ + ্ + ছ" },
-  "ঞ্জ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nja", parts: "বিশ্লেষণ: ঞ + ্ + জ" },
-  "ত্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tta", parts: "বিশ্লেষণ: ত + ্ + ত" },
-  "ত্র": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tra", parts: "বিশ্লেষণ: ত + ্ + র (র-ফলা)" },
-  "ক্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kta", parts: "বিশ্লেষণ: ক + ্ + ত" },
-  "ক্ল": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kla", parts: "বিশ্লেষণ: ক + ্ + ল" },
-  "ক্স": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksa", parts: "বিশ্লেষণ: ক + ্ + স" },
-  "গু": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gu", parts: "বিশ্লেষণ: গ + উ-কার (ু)" },
-  "ঙ্গ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nga", parts: "বিশ্লেষণ: ঙ + ্ + গ" },
-  "ঙ্ক": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nka", parts: "বিশ্লেষণ: ঙ + ্ + ক" },
-  "চ্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Chwa", parts: "বিশ্লেষণ: চ + ্ + ব (ব-ফলা)" },
-  "জ্জ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Jja", parts: "বিশ্লেষণ: জ + ্ + জ" },
-  "ত্থ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ttha", parts: "বিশ্লেষণ: ত + ্ + থ" },
-  "ত্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Twa", parts: "বিশ্লেষণ: ত + ্ + ব (ব-ফলা)" },
-  "দ্দ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dda", parts: "বিশ্লেষণ: দ + ্ + দ" },
-  "দ্ধ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ddha", parts: "বিশ্লেষণ: দ + ্ + ধ" },
-  "দ্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dwa", parts: "বিশ্লেষণ: দ + ্ + ব (ব-ফলা)" },
-  "ন্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nta", parts: "বিশ্লেষণ: ন + ্ + ত" },
-  "ন্দ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nda", parts: "বিশ্লেষণ: ন + ্ + দ" },
-  "ন্ধ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ndha", parts: "বিশ্লেষণ: ন + ্ + ধ" },
-  "ম্প": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Mpa", parts: "বিশ্লেষণ: ম + ্ + প" }
+const BANGLA_META_MAP = {
+  "অ": { idx: 0, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O / A", desc: "মূল স্বরবর্ণ • মাত্রাহীন" },
+  "আ": { idx: 1, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Aa", desc: "কার-চিহ্ন: া • পূর্ণমাত্রা" },
+  "ই": { idx: 2, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "I", desc: "কার-চিহ্ন: ি • পূর্ণমাত্রা" },
+  "ঈ": { idx: 3, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ee", desc: "কার-চিহ্ন: ী • পূর্ণমাত্রা" },
+  "উ": { idx: 4, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "U", desc: "কার-চিহ্ন: ু • পূর্ণমাত্রা" },
+  "ঊ": { idx: 5, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oo", desc: "কার-চিহ্ন: ূ • পূর্ণমাত্রা" },
+  "ঋ": { idx: 6, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ri", desc: "কার-চিহ্ন: ৃ • অর্ধমাত্রা" },
+  "এ": { idx: 7, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "E", desc: "কার-চিহ্ন: ে • মাত্রাহীন" },
+  "ঐ": { idx: 8, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oi", desc: "কার-চিহ্ন: ৈ • মাত্রাহীন" },
+  "ও": { idx: 9, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O", desc: "কার-চিহ্ন: ো • মাত্রাহীন" },
+  "ঔ": { idx: 10, type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ou", desc: "কার-চিহ্ন: ৌ • মাত্রাহীন" },
+  "ক": { idx: 11, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ka", desc: "ক-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "খ": { idx: 12, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Kha", desc: "ক-বর্গীয় ধ্বনি • অর্ধমাত্রা" },
+  "গ": { idx: 13, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ga", desc: "ক-বর্গীয় ধ্বনি • অর্ধমাত্রা" },
+  "ঘ": { idx: 14, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Gha", desc: "ক-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ঙ": { idx: 15, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Umo", desc: "ক-বর্গীয় নাসিক্য • মাত্রাহীন" },
+  "চ": { idx: 16, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Cha", desc: "চ-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ছ": { idx: 17, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Chha", desc: "চ-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "জ": { idx: 18, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ja", desc: "চ-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ঝ": { idx: 19, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Jha", desc: "চ-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ঞ": { idx: 20, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Nio", desc: "চ-বর্গীয় নাসিক্য • মাত্রাহীন" },
+  "ট": { idx: 21, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ta", desc: "ট-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ঠ": { idx: 22, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Tha", desc: "ট-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ড": { idx: 23, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Da", desc: "ট-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ঢ": { idx: 24, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Dha", desc: "ট-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ণ": { idx: 25, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Na (Murdhonno)", desc: "ট-বর্গীয় নাসিক্য • অর্ধমাত্রা" },
+  "ত": { idx: 26, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ta", desc: "ত-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "থ": { idx: 27, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Tha", desc: "ত-বর্গীয় ধ্বনি • অর্ধমাত্রা" },
+  "দ": { idx: 28, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Da", desc: "ত-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ধ": { idx: 29, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Dha", desc: "ত-বর্গীয় ধ্বনি • অর্ধমাত্রা" },
+  "ন": { idx: 30, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Na (Donto)", desc: "ত-বর্গীয় নাসিক্য • পূর্ণমাত্রা" },
+  "প": { idx: 31, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Pa", desc: "প-বর্গীয় ধ্বনি • অর্ধমাত্রা" },
+  "ফ": { idx: 32, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Pha", desc: "প-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ব": { idx: 33, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ba", desc: "প-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ভ": { idx: 34, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Bha", desc: "প-বর্গীয় ধ্বনি • পূর্ণমাত্রা" },
+  "ম": { idx: 35, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ma", desc: "প-বর্গীয় নাসিক্য • পূর্ণমাত্রা" },
+  "য": { idx: 36, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ja (Antastha)", desc: "অন্তঃস্থ বর্ণ • পূর্ণমাত্রা" },
+  "র": { idx: 37, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ra", desc: "অন্তঃস্থ বর্ণ • পূর্ণমাত্রা" },
+  "ল": { idx: 38, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "La", desc: "অন্তঃস্থ বর্ণ • পূর্ণমাত্রা" },
+  "শ": { idx: 39, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Sha (Talobbo)", desc: "উষ্ম বর্ণ • অর্ধমাত্রা" },
+  "ষ": { idx: 40, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Sha (Murdhonno)", desc: "উষ্ম বর্ণ • পূর্ণমাত্রা" },
+  "স": { idx: 41, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Sa (Donto)", desc: "উষ্ম বর্ণ • পূর্ণমাত্রা" },
+  "হ": { idx: 42, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ha", desc: "উষ্ম বর্ণ • পূর্ণমাত্রা" },
+  "ড়": { idx: 43, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ra (Bindu)", desc: "তাড়নজাত ধ্বনি • পূর্ণমাত্রা" },
+  "ঢ়": { idx: 44, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Rha (Bindu)", desc: "তাড়নজাত ধ্বনি • পূর্ণমাত্রা" },
+  "য়": { idx: 45, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Ya (Antastha)", desc: "অন্তঃস্থ বর্ণ • পূর্ণমাত্রা" },
+  "ৎ": { idx: 46, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Khanda Ta", desc: "খণ্ড-ত • মাত্রাহীন" },
+  "ং": { idx: 47, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Anusvara", desc: "অনুস্বার • মাত্রাহীন" },
+  "ঃ": { idx: 48, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Visarga", desc: "বিসর্গ • মাত্রাহীন" },
+  "ঁ": { idx: 49, type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: "Chandrabindu", desc: "চন্দ্রবিন্দু • মাত্রাহীন" },
+  "০": { idx: 50, type: "সংখ্যা (Digit)", cls: "digit", rom: "0 • শূন্য", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "১": { idx: 51, type: "সংখ্যা (Digit)", cls: "digit", rom: "1 • এক", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "২": { idx: 52, type: "সংখ্যা (Digit)", cls: "digit", rom: "2 • দুই", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৩": { idx: 53, type: "সংখ্যা (Digit)", cls: "digit", rom: "3 • তিন", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৪": { idx: 54, type: "সংখ্যা (Digit)", cls: "digit", rom: "4 • চার", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৫": { idx: 55, type: "সংখ্যা (Digit)", cls: "digit", rom: "5 • পাঁচ", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৬": { idx: 56, type: "সংখ্যা (Digit)", cls: "digit", rom: "6 • ছয়", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৭": { idx: 57, type: "সংখ্যা (Digit)", cls: "digit", rom: "7 • সাত", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৮": { idx: 58, type: "সংখ্যা (Digit)", cls: "digit", rom: "8 • আট", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "৯": { idx: 59, type: "সংখ্যা (Digit)", cls: "digit", rom: "9 • নয়", desc: "বাংলা সংখ্যা পদ্ধতি" },
+  "ক্ষ": { idx: 60, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksha", desc: "বিশ্লেষণ: ক + ্ + ষ" },
+  "জ্ঞ": { idx: 61, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gya", desc: "বিশ্লেষণ: জ + ্ + ঞ" },
+  "ঞ্চ": { idx: 62, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ncha", desc: "বিশ্লেষণ: ঞ + ্ + চ" },
+  "ঞ্ছ": { idx: 63, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nchha", desc: "বিশ্লেষণ: ঞ + ্ + ছ" },
+  "ঞ্জ": { idx: 64, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nja", desc: "বিশ্লেষণ: ঞ + ্ + জ" },
+  "ত্ত": { idx: 65, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tta", desc: "বিশ্লেষণ: ত + ্ + ত" },
+  "ত্র": { idx: 66, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tra", desc: "বিশ্লেষণ: ত + ্ + র (র-ফলা)" },
+  "ক্ত": { idx: 67, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kta", desc: "বিশ্লেষণ: ক + ্ + ত" },
+  "ক্ল": { idx: 68, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kla", desc: "বিশ্লেষণ: ক + ্ + ল" },
+  "ক্স": { idx: 69, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksa", desc: "বিশ্লেষণ: ক + ্ + স" },
+  "গু": { idx: 70, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gu", desc: "বিশ্লেষণ: গ + ু (উ-কার)" },
+  "ঙ্গ": { idx: 71, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nga", desc: "বিশ্লেষণ: ঙ + ্ + গ" },
+  "ঙ্ক": { idx: 72, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nka", desc: "বিশ্লেষণ: ঙ + ্ + ক" },
+  "চ্ব": { idx: 73, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Chwa", desc: "বিশ্লেষণ: চ + ্ + ব (ব-ফলা)" },
+  "জ্জ": { idx: 74, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Jja", desc: "বিশ্লেষণ: জ + ্ + জ" },
+  "ত্থ": { idx: 75, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ttha", desc: "বিশ্লেষণ: ত + ্ + থ" },
+  "ত্ব": { idx: 76, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Twa", desc: "বিশ্লেষণ: ত + ্ + ব (ব-ফলা)" },
+  "দ্দ": { idx: 77, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dda", desc: "বিশ্লেষণ: দ + ্ + দ" },
+  "দ্ধ": { idx: 78, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ddha", desc: "বিশ্লেষণ: দ + ্ + ধ" },
+  "দ্ব": { idx: 79, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dwa", desc: "বিশ্লেষণ: দ + ্ + ব (ব-ফলা)" },
+  "ন্ত": { idx: 80, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nta", desc: "বিশ্লেষণ: ন + ্ + ত" },
+  "ন্দ": { idx: 81, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nda", desc: "বিশ্লেষণ: ন + ্ + দ" },
+  "ন্ধ": { idx: 82, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ndha", desc: "বিশ্লেষণ: ন + ্ + ধ" },
+  "ম্প": { idx: 83, type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Mpa", desc: "বিশ্লেষণ: ম + ্ + প" }
 };
 
-const CONSONANT_ROM = {
-  "ক":"Ka","খ":"Kha","গ":"Ga","ঘ":"Gha","ঙ":"Umo","চ":"Cha","ছ":"Chha","জ":"Ja","ঝ":"Jha","ঞ":"Nio",
-  "ট":"Ta","ঠ":"Tha","ড":"Da","ঢ":"Dha","ণ":"Murdhonno Na","ত":"Ta","থ":"Tha","দ":"Da","ধ":"Dha","ন":"Donto Na",
-  "প":"Pa","ফ":"Pha","ব":"Ba","ভ":"Bha","ম":"Ma","য":"Antastha Ja","র":"Ra","ল":"La","শ":"Talobbo Sha","ষ":"Murdhonno Sha",
-  "স":"Donto Sa","হ":"Ha","ড়":"Ra (Bindu)","ঢ়":"Rha (Bindu)","য়":"Antastha Ya","ৎ":"Khanda Ta","ং":"Anusvara","ঃ":"Visarga","ঁ":"Chandrabindu"
-};
+function renderLiveSideInfo() {
+  const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+  if (!charEl) return;
+  const ch = (charEl.textContent || "").trim();
 
-const DIGIT_NAMES = {
-  "০":"শূন্য (Zero)","১":"এক (One)","২":"দুই (Two)","৩":"তিন (Three)","৪":"চার (Four)",
-  "৫":"পাঁচ (Five)","৬":"ছয় (Six)","৭":"সাত (Seven)","৮":"আট (Eight)","৯":"নয় (Nine)"
-};
+  // Locate the row container holding the big predicted letter on the left and CNN Input (64x64) on the right
+  let leftCol = charEl.parentElement;
+  let rowBox = leftCol ? leftCol.parentElement : null;
+  if (!rowBox) return;
 
-function updateCharacterInfoPanel(ch, rawClassId, confidencePct) {
-  let box = document.getElementById("charLinguisticInfo");
-  if (!box) {
-    const confEl = document.getElementById("predConf") || Array.from(document.querySelectorAll("*")).find(el => el.children.length === 0 && el.textContent.includes("Confidence:"));
-    if (!confEl) return;
-    box = document.createElement("div");
-    box.id = "charLinguisticInfo";
-    confEl.insertAdjacentElement("afterend", box);
+  let sideBox = document.getElementById("liveCharMetaSide");
+  if (!sideBox) {
+    sideBox = document.createElement("div");
+    sideBox.id = "liveCharMetaSide";
+    sideBox.className = "live-char-meta";
+    leftCol.insertAdjacentElement("afterend", sideBox);
   }
-  if (!ch || ch === "?" || ch === "—") {
-    box.innerHTML = "";
+
+  if (!ch || ch === "?" || ch === "—" || ch === "-") {
+    sideBox.innerHTML = `<div class="meta-detail-line" style="opacity:0.65;">বামপাশের ক্যানভাসে যেকোনো বাংলা বর্ণ, সংখ্যা বা যুক্তবর্ণ লিখুন</div>`;
     return;
   }
 
-  const codePoints = Array.from(ch).map(c => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(" ");
-  let info = BANGLA_CHAR_DETAILS[ch];
-  if (!info) {
-    if (DIGIT_NAMES[ch]) {
-      info = { type: "সংখ্যা (Digit)", cls: "digit", rom: DIGIT_NAMES[ch], parts: "বাংলা সংখ্যা পদ্ধতি (০–৯)" };
-    } else if (CONSONANT_ROM[ch]) {
-      info = { type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: CONSONANT_ROM[ch], parts: "স্পর্শ / উষ্ম / অন্তঃস্থ ব্যঞ্জনবর্ণ" };
-    } else if (ch.includes("্") || Array.from(ch).length > 1) {
-      info = { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Juktoborno", parts: "বিশ্লেষণ: " + Array.from(ch).join(" + ") };
-    } else {
-      info = { type: "বাংলা বর্ণ (Character)", cls: "consonant", rom: ch, parts: "৮৪-শ্রেণির বাংলা হস্তাক্ষর ডেটাসেট" };
-    }
-  }
+  const unicode = Array.from(ch).map(c => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(" ");
+  const info = BANGLA_META_MAP[ch] || {
+    idx: "—",
+    type: ch.includes("্") ? "যুক্তবর্ণ (Compound)" : "বাংলা বর্ণ",
+    cls: ch.includes("্") ? "compound" : "consonant",
+    rom: ch,
+    desc: ch.includes("্") ? ("বিশ্লেষণ: " + Array.from(ch).join(" + ")) : "৮৪-শ্রেণির বাংলা হস্তাক্ষর মডেল"
+  };
 
-  const level = confidencePct >= 85 ? "উচ্চ নিশ্চয়তা (High)" : (confidencePct >= 55 ? "মধ্যম নিশ্চয়তা (Moderate)" : "কম নিশ্চয়তা — স্পষ্ট করে লিখুন");
-  box.innerHTML = `
-    <div class="meta-badges">
-      <span class="meta-badge ${info.cls}">${info.type}</span>
-      <span class="meta-badge">Class #${rawClassId}</span>
-      <span class="meta-badge">${codePoints}</span>
-      <span class="meta-badge">${info.rom}</span>
+  sideBox.innerHTML = `
+    <div class="meta-pills">
+      <span class="meta-pill ${info.cls}">${info.type}</span>
+      <span class="meta-pill">Class #${info.idx}</span>
     </div>
-    <div class="char-breakdown">${info.parts} • <strong>${level}</strong></div>
+    <div class="meta-pills">
+      <span class="meta-pill">${unicode}</span>
+      <span class="meta-pill">${info.rom}</span>
+    </div>
+    <div class="meta-detail-line">${info.desc}</div>
   `;
 }
 
-function appendQuickChar(str) {
-  const wordBox = document.getElementById("wordOutput") || document.querySelector("#wordComposer, [id*='word']");
-  if (!wordBox) return;
-  if ("value" in wordBox) { wordBox.value += str; }
+window.addEventListener("DOMContentLoaded", () => {
+  renderLiveSideInfo();
+  const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+  if (charEl) {
+    new MutationObserver(renderLiveSideInfo).observe(charEl, { childList: true, characterData: true, subtree: true });
+  }
+});
   else { wordBox.textContent += str; }
 }
 const BANGLALEKHA_MAP = {
@@ -1187,29 +1195,5 @@ function getBanglaLabel(raw) {
     initApp();
   </script>
 
-<section class="info-guide-card" aria-label="Bangla OCR System Information">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-    <strong style="font-size:0.95rem;letter-spacing:0.3px;">📊 মডেল ও বর্ণমালা পরিচিতি • 84-Class Bangla BHCR System</strong>
-    <span style="font-size:0.78rem;opacity:0.8;">Architecture: Custom CNN • 5-View TTA • 64×64 Grayscale Tensor</span>
-  </div>
-  <div class="info-grid">
-    <div class="info-box">
-      <strong>🔤 ১১টি স্বরবর্ণ (Vowels • Class 0–10)</strong>
-      অ, আ, ই, ঈ, উ, ঊ, ঋ, এ, ঐ, ও, ঔ — পূর্ণমাত্রা, অর্ধমাত্রা ও মাত্রাহীন স্বরবর্ণ শনাক্তকরণ।
-    </div>
-    <div class="info-box">
-      <strong>🔠 ৩৯টি ব্যঞ্জনবর্ণ (Consonants • Class 11–49)</strong>
-      ক থেকে ঁ পর্যন্ত সকল বর্গীয় ও অবর্গীয় ব্যঞ্জনবর্ণ এবং অনুস্বার, বিসর্গ ও চন্দ্রবিন্দু।
-    </div>
-    <div class="info-box">
-      <strong>🔢 ১০টি সংখ্যা (Digits • Class 50–59)</strong>
-      ০, ১, ২, ৩, ৪, ৫, ৬, ৭, ৮, ৯ — হাতে লেখা বাংলা সংখ্যার নির্ভুল শ্রেণিবিন্যাস।
-    </div>
-    <div class="info-box">
-      <strong>🧩 ২৪টি যুক্তবর্ণ (Compounds • Class 60–83)</strong>
-      ক্ষ, জ্ঞ, ঞ্চ, ঞ্জ, ত্ত, ত্র, ক্ত, ঙ্গ, ন্ত, ন্দ, ন্ধ, ম্প সহ বহুল ব্যবহৃত বাংলা যুক্তাক্ষর।
-    </div>
-  </div>
-</section>
 </body>
 </html>

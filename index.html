@@ -567,61 +567,6 @@ window.addEventListener("DOMContentLoaded", () => {
     new MutationObserver(renderLiveSideInfo).observe(charEl, { childList: true, characterData: true, subtree: true });
   }
 });
-
-
-function renderLiveSideInfo() {
-  const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-  if (!charEl) return;
-  const ch = (charEl.textContent || "").trim();
-
-  // Locate the row container holding the big predicted letter on the left and CNN Input (64x64) on the right
-  let leftCol = charEl.parentElement;
-  let rowBox = leftCol ? leftCol.parentElement : null;
-  if (!rowBox) return;
-
-  let sideBox = document.getElementById("liveCharMetaSide");
-  if (!sideBox) {
-    sideBox = document.createElement("div");
-    sideBox.id = "liveCharMetaSide";
-    sideBox.className = "live-char-meta";
-    leftCol.insertAdjacentElement("afterend", sideBox);
-  }
-
-  if (!ch || ch === "?" || ch === "—" || ch === "-") {
-    sideBox.innerHTML = `<div class="meta-detail-line" style="opacity:0.65;">বামপাশের ক্যানভাসে যেকোনো বাংলা বর্ণ, সংখ্যা বা যুক্তবর্ণ লিখুন</div>`;
-    return;
-  }
-
-  const unicode = Array.from(ch).map(c => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(" ");
-  const info = BANGLA_META_MAP[ch] || {
-    idx: "—",
-    type: ch.includes("্") ? "যুক্তবর্ণ (Compound)" : "বাংলা বর্ণ",
-    cls: ch.includes("্") ? "compound" : "consonant",
-    rom: ch,
-    desc: ch.includes("্") ? ("বিশ্লেষণ: " + Array.from(ch).join(" + ")) : "৮৪-শ্রেণির বাংলা হস্তাক্ষর মডেল"
-  };
-
-  sideBox.innerHTML = `
-    <div class="meta-pills">
-      <span class="meta-pill ${info.cls}">${info.type}</span>
-      <span class="meta-pill">Class #${info.idx}</span>
-    </div>
-    <div class="meta-pills">
-      <span class="meta-pill">${unicode}</span>
-      <span class="meta-pill">${info.rom}</span>
-    </div>
-    <div class="meta-detail-line">${info.desc}</div>
-  `;
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  renderLiveSideInfo();
-  const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-  if (charEl) {
-    new MutationObserver(renderLiveSideInfo).observe(charEl, { childList: true, characterData: true, subtree: true });
-});
-  else { wordBox.textContent += str; }
-}
 const BANGLALEKHA_MAP = {
   "1": "অ", "2": "আ", "3": "ই", "4": "ঈ", "5": "উ", "6": "ঊ", "7": "ঋ", "8": "এ", "9": "ঐ", "10": "ও", "11": "ঔ",
   "12": "ক", "13": "খ", "14": "গ", "15": "ঘ", "16": "ঙ", "17": "চ", "18": "ছ", "19": "জ", "20": "ঝ", "21": "ঞ",
@@ -1240,6 +1185,7 @@ function getBanglaLabel(raw) {
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
     initApp();
   </script>
 

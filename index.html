@@ -1,25 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>বাংলা হস্তাক্ষর শনাক্তকরণ • Bangla Handwritten OCR</title>
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#0f172a" id="themeColorMeta" />
   <link rel="apple-touch-icon" href="./icon-512.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
       --card: #1e293b;
+      --subcard: #020617;
       --border: #334155;
       --accent: #38bdf8;
-      --green: #22c55e;
+      --green: #16a34a;
       --yellow: #facc15;
       --red: #ef4444;
       --text: #f8fafc;
       --muted: #94a3b8;
+      --canvas-bg: #020617;
+      --canvas-ink: #ffffff;
+      --guide-color: rgba(148, 163, 184, 0.25);
+      --matra-color: rgba(56, 189, 248, 0.45);
     }
+
+    body.light-mode {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --subcard: #f8fafc;
+      --border: #cbd5e1;
+      --accent: #0284c7;
+      --green: #15803d;
+      --yellow: #d97706;
+      --red: #dc2626;
+      --text: #0f172a;
+      --muted: #475569;
+      --canvas-bg: #ffffff;
+      --canvas-ink: #0f172a;
+      --guide-color: rgba(100, 116, 139, 0.25);
+      --matra-color: rgba(2, 132, 199, 0.45);
+    }
+
     * { box-sizing: border-box; font-family: 'Segoe UI', 'Nirmala UI', system-ui, sans-serif; }
     body {
       margin: 0;
@@ -29,29 +52,44 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: background 0.2s ease, color 0.2s ease;
     }
     .container { width: 100%; max-width: 960px; }
+
     header {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px 18px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
     }
-    header h1 { margin: 0; font-size: 18px; }
-    #modelStatus { font-size: 13px; font-weight: 600; color: var(--yellow); }
+    .title-group h1 { margin: 0; font-size: 18px; color: var(--accent); }
+    .title-group p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    #modelStatus { font-size: 12px; font-weight: 600; color: var(--yellow); }
+
+    .theme-btn {
+      background: var(--subcard);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
-    @media (max-width: 780px) {
+    @media (max-width: 760px) {
       .grid { grid-template-columns: 1fr; }
     }
 
@@ -59,148 +97,185 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 16px;
+      padding: 14px;
     }
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      font-size: 12px;
       font-weight: 700;
-      font-size: 14px;
-      color: #e2e8f0;
+      letter-spacing: 0.4px;
+      color: var(--muted);
     }
+
     .canvas-wrap {
+      position: relative;
       display: flex;
       justify-content: center;
-      position: relative;
+      align-items: center;
     }
     #drawCanvas {
       width: 100%;
       max-width: 360px;
       aspect-ratio: 1 / 1;
-      background: #020617;
       border: 2px solid var(--accent);
       border-radius: 12px;
+      background: var(--canvas-bg);
       touch-action: none;
       cursor: crosshair;
-      transition: border-color 0.15s;
+      display: block;
     }
-    .controls {
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+
+    /* Inline Crop Bar inside Draw Pad Card */
+    #inlineCropBar {
+      display: none;
+      margin-top: 10px;
+      padding: 9px 10px;
+      background: var(--subcard);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    .slider-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cbd5e1; }
-    .btn-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+    #inlineCropBar span { font-size: 12px; font-weight: 600; color: var(--accent); }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .controls-bar input[type="range"] { width: 95px; accent-color: var(--accent); }
+
+    .btn-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
     button {
       border: none;
       border-radius: 9px;
-      padding: 10px 8px;
-      font-size: 13px;
+      padding: 10px 6px;
+      font-size: 12px;
       font-weight: 700;
+      color: #ffffff;
       cursor: pointer;
-      color: white;
       transition: opacity 0.15s;
     }
     button:active { opacity: 0.8; }
     .btn-green { background: #16a34a; }
-    .btn-slate { background: #334155; }
+    .btn-slate { background: #475569; }
     .btn-red { background: #dc2626; }
-    .btn-blue { background: #2563eb; }
+    .btn-blue { background: #0284c7; }
     .btn-amber { background: #d97706; }
-
-    /* Cropper Modal */
-    #cropBoxWrap {
-      display: none;
-      margin-top: 12px;
-      background: #0f172a;
-      border: 1px solid var(--accent);
-      border-radius: 12px;
-      padding: 12px;
-      text-align: center;
-    }
-    #cropCanvas {
-      width: 100%;
-      max-width: 320px;
-      border-radius: 8px;
-      touch-action: none;
-      border: 1px solid #475569;
-    }
 
     /* Prediction Hero */
     .hero {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0f172a;
+      background: var(--subcard);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
     }
-    #heroChar { font-size: 64px; font-weight: 800; line-height: 1.1; color: var(--accent); }
-    #heroMeta { font-size: 13px; color: #cbd5e1; margin-top: 4px; }
+    .hero-char { font-size: 56px; font-weight: 700; line-height: 1.1; color: var(--accent); }
+    .hero-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
     .preview-box { text-align: center; }
     .preview-box span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
     #previewCanvas {
-      width: 88px;
-      height: 88px;
-      background: black;
-      border: 1px solid #475569;
+      width: 84px;
+      height: 84px;
+      border: 1px solid var(--border);
       border-radius: 8px;
+      background: #000000;
       image-rendering: pixelated;
     }
 
-    /* Top 5 Bars */
-    .top5-title { font-size: 12px; font-weight: 700; color: var(--yellow); margin: 14px 0 8px; }
-    .bar-row {
-      display: grid;
-      grid-template-columns: 42px 1fr 52px;
+    .top5-title { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .top5-row {
+      display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 7px;
+      margin-bottom: 6px;
+      font-size: 13px;
     }
-    .bar-char { font-size: 18px; font-weight: 700; }
-    .bar-track { height: 12px; background: #0f172a; border-radius: 6px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s; }
-    .bar-pct { font-size: 12px; font-weight: 700; text-align: right; color: #cbd5e1; }
+    .top5-label { width: 34px; font-weight: 700; text-align: center; font-size: 16px; }
+    .top5-bar-bg { flex: 1; height: 10px; background: var(--subcard); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
+    .top5-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
+    .top5-pct { width: 48px; text-align: right; font-size: 12px; color: var(--muted); }
 
-    /* Word Composer */
     .word-box {
       margin-top: 14px;
-      background: #0f172a;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
     }
-    #wordDisplay {
-      min-height: 36px;
+    .word-display {
+      min-height: 44px;
+      background: var(--subcard);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
       font-size: 24px;
-      font-weight: 700;
-      color: var(--yellow);
-      word-break: break-all;
+      letter-spacing: 1px;
       margin-bottom: 8px;
+      word-break: break-all;
     }
     .word-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .word-actions button { flex: 1; padding: 8px; font-size: 12px; }
+
+    /* Web Camera Modal */
+    #webCamModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .webcam-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    #webCamVideo {
+      width: 100%;
+      border-radius: 10px;
+      background: #000;
+      max-height: 340px;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>বাংলা হস্তাক্ষর শনাক্তকরণ • Bangla Handwritten OCR</h1>
-      <div id="modelStatus">Loading CNN Model...</div>
+      <div class="title-group">
+        <h1>বাংলা হস্তাক্ষর শনাক্তকরণ • Bangla Handwritten OCR</h1>
+        <p>84 Classes (স্বরবর্ণ, ব্যঞ্জনবর্ণ, সংখ্যা ও যুক্তবর্ণ) • 95.11% CNN</p>
+      </div>
+      <div class="header-actions">
+        <span id="modelStatus">⏳ Loading AI Model...</span>
+        <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">☀️ White Mode</button>
+      </div>
     </header>
 
     <div class="grid">
-      <!-- LEFT: DRAWING PAD & PHOTO UPLOAD -->
+      <!-- LEFT: DRAW PAD + INLINE CROPPER -->
       <div class="card">
         <div class="card-header">
-          <span>Drawing Pad / Drop / Paste Photo</span>
-          <label style="font-size:12px; font-weight:500; cursor:pointer;">
+          <span id="padModeLabel">DRAWING PAD (WRITE ONE CHARACTER)</span>
+          <label style="font-size:12px; font-weight:500; cursor:pointer; color:var(--text);">
             <input type="checkbox" id="guideCheck" checked onchange="redrawCanvas()" /> Guide Lines
           </label>
         </div>
@@ -209,12 +284,18 @@
           <canvas id="drawCanvas" width="360" height="360"></canvas>
         </div>
 
-        <div class="controls">
-          <div class="slider-group">
-            <span>Pen:</span>
-            <input type="range" id="penSize" min="1" max="12" value="2" />
+        <!-- Inline Crop Controls (appears inside Draw Pad when photo is loaded) -->
+        <div id="inlineCropBar">
+          <span>✂️ Drag/resize box around 1 letter:</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-amber" style="padding:7px 12px;" onclick="applyInlineCropAndPredict()">✂️ Crop & Predict</button>
+            <button class="btn-slate" style="padding:7px 10px;" onclick="cancelInlineCrop()">✖ Cancel</button>
           </div>
-          <label style="font-size:12px; font-weight:600; color:#4ade80; cursor:pointer;">
+        </div>
+
+        <div class="controls-bar">
+          <label style="color:var(--text);">Pen: <input type="range" id="penSize" min="8" max="28" value="16" /></label>
+          <label style="font-size:12px; font-weight:600; color:#22c55e; cursor:pointer;">
             <input type="checkbox" id="autoPredict" checked /> Auto-Predict
           </label>
         </div>
@@ -223,33 +304,23 @@
           <button class="btn-green" onclick="runPrediction()">Predict</button>
           <button class="btn-slate" onclick="undoStroke()">Undo</button>
           <button class="btn-red" onclick="clearPad()">Clear</button>
-          <button class="btn-blue" onclick="document.getElementById('fileInput').click()">📷 Photo</button>
+          <button class="btn-blue" onclick="openUniversalCamera()">📸 Camera</button>
+          <button class="btn-slate" onclick="document.getElementById('fileInput').click()">🖼️ Photo</button>
         </div>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadPhotoForCrop(this.files[0])" />
-
-        <!-- Interactive Photo Cropper -->
-        <div id="cropBoxWrap">
-          <div style="font-size:12px; color:#94a3b8; margin-bottom:6px;">
-            Drag blue box over 1 character • Drag yellow corner to resize
-          </div>
-          <canvas id="cropCanvas"></canvas>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="btn-amber" style="flex:2;" onclick="applyCropAndPredict()">✂️ Crop & Predict</button>
-            <button class="btn-slate" style="flex:1;" onclick="document.getElementById('cropBoxWrap').style.display='none'">Cancel</button>
-          </div>
-        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadPhotoFileForInlineCrop(this.files[0]); this.value='';" />
       </div>
 
       <!-- RIGHT: PREDICTION & WORD COMPOSER -->
       <div class="card">
         <div class="card-header">
           <span>PREDICTED CHARACTER (5-VIEW TTA)</span>
+          <span id="sourceBadge" style="color:var(--accent);">Drawing Pad</span>
         </div>
 
         <div class="hero">
           <div>
-            <div id="heroChar">—</div>
-            <div id="heroMeta">Draw, drag-drop, or Ctrl+V a Bangla character...</div>
+            <div class="hero-char" id="predChar">—</div>
+            <div class="hero-meta" id="predConf">Draw or capture a character</div>
           </div>
           <div class="preview-box">
             <span>CNN Input (64×64)</span>
@@ -261,8 +332,8 @@
         <div id="top5Container"></div>
 
         <div class="word-box">
-          <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:4px;">LIVE WORD COMPOSER</div>
-          <div id="wordDisplay"></div>
+          <div class="top5-title">WORD COMPOSER</div>
+          <div class="word-display" id="wordDisplay"></div>
           <div class="word-actions">
             <button class="btn-blue" onclick="addCharToWord()">+ Add Letter</button>
             <button class="btn-slate" onclick="appendWord(' ')">Space</button>
@@ -275,7 +346,21 @@
     </div>
   </div>
 
-<script>
+  <!-- Web Camera Modal (for Website / Desktop / Mobile Browser) -->
+  <div id="webCamModal">
+    <div class="webcam-card">
+      <div style="font-weight:700; margin-bottom:8px; color:var(--accent);">📸 Capture Handwritten Character</div>
+      <video id="webCamVideo" autoplay playsinline></video>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn-green" style="flex:2;" onclick="snapWebCamPhoto()">📸 Snap Photo</button>
+        <button class="btn-slate" style="flex:1;" onclick="closeWebCam()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let model = null;
+    let classNames = [];
 const BANGLALEKHA_MAP = {
   "1": "অ", "2": "আ", "3": "ই", "4": "ঈ", "5": "উ", "6": "ঊ", "7": "ঋ", "8": "এ", "9": "ঐ", "10": "ও", "11": "ঔ",
   "12": "ক", "13": "খ", "14": "গ", "15": "ঘ", "16": "ঙ", "17": "চ", "18": "ছ", "19": "জ", "20": "ঝ", "21": "ঞ",
@@ -287,562 +372,617 @@ const BANGLALEKHA_MAP = {
   "71": "ম্প", "72": "ক্ষ্ম", "73": "প্ত", "74": "ম্ব", "75": "ন্ড", "76": "দ্ভ", "77": "ত্থ", "78": "ষ্ঠ", "79": "ল্প", "80": "ষ্প",
   "81": "ন্দ", "82": "ন্ধ", "83": "ম্ম", "84": "ণ্ঠ"
 };
-
-function getCategory(idStr) {
-  const id = parseInt(idStr, 10);
-  if (id >= 1 && id <= 11) return "Vowel (স্বরবর্ণ)";
-  if (id >= 12 && id <= 50) return "Consonant (ব্যঞ্জনবর্ণ)";
-  if (id >= 51 && id <= 60) return "Digit (সংখ্যা)";
-  if (id >= 61 && id <= 84) return "Compound (যুক্তবর্ণ)";
-  return "Character";
-}
-
-let model = null;
-let classNames = [];
-let strokes = [];
-let currentStroke = [];
-let isDrawing = false;
-let currentPredChar = "";
-let wordBuffer = "";
-let uploadedCanvasImage = null;
-
-const drawCanvas = document.getElementById("drawCanvas");
-const dCtx = drawCanvas.getContext("2d", { willReadFrequently: true });
-const previewCanvas = document.getElementById("previewCanvas");
-const pCtx = previewCanvas.getContext("2d");
-
-// Build Top-5 UI rows
-const top5Container = document.getElementById("top5Container");
-const top5Rows = [];
-for (let i = 0; i < 5; i++) {
-  const row = document.createElement("div");
-  row.className = "bar-row";
-  row.innerHTML = `
-    <div class="bar-char">-</div>
-    <div class="bar-track"><div class="bar-fill"></div></div>
-    <div class="bar-pct">0.0%</div>
-  `;
-  top5Container.appendChild(row);
-  top5Rows.push({
-    char: row.querySelector(".bar-char"),
-    fill: row.querySelector(".bar-fill"),
-    pct: row.querySelector(".bar-pct")
-  });
-}
-
-async function initApp() {
-  const statusEl = document.getElementById("modelStatus");
-  try {
-    const clsResp = await fetch("./class_names.json");
-    classNames = await clsResp.json();
-    model = await tf.loadLayersModel("./tfjs_model/model.json?v=3");
-    tf.tidy(() => model.predict(tf.zeros([1, 64, 64, 1])));
-    statusEl.textContent = "✓ Model Ready (84 Classes • Offline Capable)";
-    statusEl.style.color = "#4ade80";
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = "✗ Model Load Error: " + err.message;
-    statusEl.style.color = "#f87171";
+function getBanglaLabel(raw) {
+  if (raw === undefined || raw === null) return "?";
+  const key = String(raw).trim();
+  if (Array.isArray(BANGLALEKHA_MAP)) {
+    const idx = parseInt(key, 10);
+    return (!isNaN(idx) && BANGLALEKHA_MAP[idx]) ? BANGLALEKHA_MAP[idx] : key;
   }
-  redrawCanvas();
+  return (BANGLALEKHA_MAP && BANGLALEKHA_MAP[key]) ? BANGLALEKHA_MAP[key] : key;
 }
+    let strokes = [];
+    let currentStroke = null;
+    let isDrawing = false;
+    let lastTopChar = "";
+    let wordBuffer = "";
+    let uploadedBinaryImage = null;
 
-function redrawCanvas() {
-  const w = drawCanvas.width;
-  const h = drawCanvas.height;
-  dCtx.fillStyle = "#020617";
-  dCtx.fillRect(0, 0, w, h);
+    // Inline Crop State inside #drawCanvas
+    let cropMode = false;
+    let cropImg = null;
+    let cropDrawRect = { x: 0, y: 0, w: 360, h: 360 };
+    let cropBox = { x: 70, y: 70, size: 220 };
+    let cropDragMode = null;
+    let cropLastPt = { x: 0, y: 0 };
+    let webCamStream = null;
 
-  if (uploadedCanvasImage) {
-    dCtx.drawImage(uploadedCanvasImage, 0, 0, w, h);
-    return;
-  }
+    const drawCanvas = document.getElementById("drawCanvas");
+    const dCtx = drawCanvas.getContext("2d", { willReadFrequently: true });
+    const previewCanvas = document.getElementById("previewCanvas");
+    const pCtx = previewCanvas.getContext("2d");
 
-  if (document.getElementById("guideCheck").checked) {
-    dCtx.save();
-    dCtx.strokeStyle = "#1e293b";
-    dCtx.setLineDash([5, 5]);
-    dCtx.lineWidth = 1.5;
-    dCtx.beginPath();
-    dCtx.moveTo(w / 2, 12); dCtx.lineTo(w / 2, h - 12);
-    dCtx.moveTo(12, h / 2); dCtx.lineTo(w - 12, h / 2);
-    dCtx.stroke();
-
-    const matraY = Math.round(h * 0.26);
-    dCtx.strokeStyle = "#1e3a8a";
-    dCtx.beginPath();
-    dCtx.moveTo(28, matraY); dCtx.lineTo(w - 28, matraY);
-    dCtx.stroke();
-    dCtx.fillStyle = "#3b82f6";
-    dCtx.font = "11px sans-serif";
-    dCtx.fillText("মাত্রা (Matra guide)", 34, matraY - 6);
-    dCtx.restore();
-  }
-
-  dCtx.strokeStyle = "#ffffff";
-  dCtx.fillStyle = "#ffffff";
-  dCtx.lineCap = "round";
-  dCtx.lineJoin = "round";
-
-  for (const stroke of strokes) {
-    if (stroke.pts.length === 0) continue;
-    dCtx.lineWidth = stroke.size * 2;
-    if (stroke.pts.length === 1) {
-      dCtx.beginPath();
-      dCtx.arc(stroke.pts[0].x, stroke.pts[0].y, stroke.size, 0, Math.PI * 2);
-      dCtx.fill();
-    } else {
-      dCtx.beginPath();
-      dCtx.moveTo(stroke.pts[0].x, stroke.pts[0].y);
-      for (let i = 1; i < stroke.pts.length; i++) {
-        dCtx.lineTo(stroke.pts[i].x, stroke.pts[i].y);
-      }
-      dCtx.stroke();
+    // --- THEME (DARK / WHITE MODE) ---
+    function applyTheme(mode) {
+      const isLight = mode === "light";
+      document.body.classList.toggle("light-mode", isLight);
+      document.getElementById("themeToggleBtn").textContent = isLight ? "🌙 Dark Mode" : "☀️ White Mode";
+      document.getElementById("themeColorMeta").setAttribute("content", isLight ? "#f1f5f9" : "#0f172a");
+      localStorage.setItem("bhcr_theme", mode);
+      redrawCanvas();
     }
-  }
-}
 
-function getCanvasPt(e) {
-  const rect = drawCanvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: (clientX - rect.left) * (drawCanvas.width / rect.width),
-    y: (clientY - rect.top) * (drawCanvas.height / rect.height)
-  };
-}
+    function toggleTheme() {
+      const next = document.body.classList.contains("light-mode") ? "dark" : "light";
+      applyTheme(next);
+    }
 
-drawCanvas.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  if (uploadedCanvasImage) {
-    uploadedCanvasImage = null;
-    strokes = [];
-  }
-  isDrawing = true;
-  const pt = getCanvasPt(e);
-  const size = parseInt(document.getElementById("penSize").value, 10);
-  currentStroke = { size, pts: [pt] };
-  strokes.push(currentStroke);
-  redrawCanvas();
-});
+    // Build Top-5 UI rows
+    const top5Container = document.getElementById("top5Container");
+    for (let i = 0; i < 5; i++) {
+      top5Container.innerHTML += `
+        <div class="top5-row">
+          <div class="top5-label" id="t5char${i}">—</div>
+          <div class="top5-bar-bg"><div class="top5-bar-fill" id="t5bar${i}"></div></div>
+          <div class="top5-pct" id="t5pct${i}">0.0%</div>
+        </div>`;
+    }
 
-drawCanvas.addEventListener("pointermove", e => {
-  if (!isDrawing) return;
-  e.preventDefault();
-  currentStroke.pts.push(getCanvasPt(e));
-  redrawCanvas();
-});
+    async function initApp() {
+      applyTheme(localStorage.getItem("bhcr_theme") || "dark");
+      const statusEl = document.getElementById("modelStatus");
+      try {
+        const res = await fetch("./class_names.json");
+        classNames = await res.json();
+        model = await tf.loadLayersModel("./tfjs_model/model.json?v=4");
+        tf.tidy(() => model.predict(tf.zeros([1, 64, 64, 1])));
+        statusEl.textContent = "✓ Model Ready (84 Classes • 95.11% CNN)";
+        statusEl.style.color = "#22c55e";
+      } catch (err) {
+        statusEl.textContent = "✖ Model Load Failed";
+        statusEl.style.color = "#ef4444";
+        console.error(err);
+      }
+      redrawCanvas();
+    }
 
-window.addEventListener("pointerup", () => {
-  if (!isDrawing) return;
-  isDrawing = false;
-  if (document.getElementById("autoPredict").checked) {
-    runPrediction();
-  }
-});
+    function getThemeColors() {
+      const isLight = document.body.classList.contains("light-mode");
+      return {
+        bg: isLight ? "#ffffff" : "#020617",
+        ink: isLight ? "#0f172a" : "#ffffff",
+        guide: isLight ? "rgba(100, 116, 139, 0.25)" : "rgba(148, 163, 184, 0.25)",
+        matra: isLight ? "rgba(2, 132, 199, 0.45)" : "rgba(56, 189, 248, 0.45)"
+      };
+    }
 
-function undoStroke() {
-  if (strokes.length > 0) {
-    strokes.pop();
-    redrawCanvas();
-    if (strokes.length > 0 && document.getElementById("autoPredict").checked) {
-      runPrediction();
-    } else if (strokes.length === 0) {
+    function redrawCanvas() {
+      const w = drawCanvas.width;
+      const h = drawCanvas.height;
+      const colors = getThemeColors();
+
+      // 1. If in Inline Crop Mode, render the photo + interactive crop box right inside drawCanvas
+      if (cropMode && cropImg) {
+        dCtx.fillStyle = "#020617";
+        dCtx.fillRect(0, 0, w, h);
+        dCtx.drawImage(cropImg, cropDrawRect.x, cropDrawRect.y, cropDrawRect.w, cropDrawRect.h);
+
+        // Dim outside cropBox
+        dCtx.fillStyle = "rgba(2, 6, 23, 0.62)";
+        dCtx.fillRect(0, 0, w, cropBox.y);
+        dCtx.fillRect(0, cropBox.y + cropBox.size, w, h - (cropBox.y + cropBox.size));
+        dCtx.fillRect(0, cropBox.y, cropBox.x, cropBox.size);
+        dCtx.fillRect(cropBox.x + cropBox.size, cropBox.y, w - (cropBox.x + cropBox.size), cropBox.size);
+
+        // Crop box border + rule-of-thirds + corner resize handle
+        dCtx.strokeStyle = "#38bdf8";
+        dCtx.lineWidth = 2.5;
+        dCtx.strokeRect(cropBox.x, cropBox.y, cropBox.size, cropBox.size);
+
+        dCtx.fillStyle = "#facc15";
+        dCtx.fillRect(cropBox.x + cropBox.size - 18, cropBox.y + cropBox.size - 18, 18, 18);
+        return;
+      }
+
+      // 2. Normal Drawing Pad Mode
+      dCtx.fillStyle = colors.bg;
+      dCtx.fillRect(0, 0, w, h);
+
+      if (uploadedBinaryImage) {
+        // Show processed photo adapted to current theme
+        const temp = document.createElement("canvas");
+        temp.width = w;
+        temp.height = h;
+        const tCtx = temp.getContext("2d");
+        tCtx.drawImage(uploadedBinaryImage, 0, 0, w, h);
+        if (document.body.classList.contains("light-mode")) {
+          const id = tCtx.getImageData(0, 0, w, h);
+          const p = id.data;
+          for (let i = 0; i < p.length; i += 4) {
+            const v = 255 - p[i];
+            p[i] = v; p[i + 1] = v; p[i + 2] = v;
+          }
+          tCtx.putImageData(id, 0, 0);
+        }
+        dCtx.drawImage(temp, 0, 0);
+        return;
+      }
+
+      // Guide lines
+      if (document.getElementById("guideCheck").checked) {
+        dCtx.save();
+        dCtx.strokeStyle = colors.guide;
+        dCtx.setLineDash([5, 5]);
+        dCtx.lineWidth = 1;
+        dCtx.beginPath();
+        dCtx.moveTo(w / 2, 0); dCtx.lineTo(w / 2, h);
+        dCtx.moveTo(0, h / 2); dCtx.lineTo(w, h / 2);
+        dCtx.stroke();
+
+        // Bangla Matra guide line
+        dCtx.strokeStyle = colors.matra;
+        dCtx.beginPath();
+        dCtx.moveTo(24, 92); dCtx.lineTo(w - 24, 92);
+        dCtx.stroke();
+        dCtx.restore();
+      }
+
+      // Render strokes
+      dCtx.lineCap = "round";
+      dCtx.lineJoin = "round";
+      dCtx.strokeStyle = colors.ink;
+      for (const s of strokes) {
+        if (s.pts.length === 0) continue;
+        dCtx.lineWidth = s.size;
+        dCtx.beginPath();
+        dCtx.moveTo(s.pts[0].x, s.pts[0].y);
+        for (let i = 1; i < s.pts.length; i++) {
+          dCtx.lineTo(s.pts[i].x, s.pts[i].y);
+        }
+        if (s.pts.length === 1) dCtx.lineTo(s.pts[0].x + 0.1, s.pts[0].y);
+        dCtx.stroke();
+      }
+    }
+
+    function getCanvasPt(e) {
+      const rect = drawCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * (drawCanvas.width / rect.width),
+        y: (clientY - rect.top) * (drawCanvas.height / rect.height)
+      };
+    }
+
+    // --- POINTER EVENTS (HANDLES BOTH INLINE CROPPER & FREEHAND DRAWING) ---
+    drawCanvas.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      const pt = getCanvasPt(e);
+
+      if (cropMode) {
+        cropLastPt = pt;
+        const hx = cropBox.x + cropBox.size;
+        const hy = cropBox.y + cropBox.size;
+        if (Math.abs(pt.x - hx) <= 26 && Math.abs(pt.y - hy) <= 26) {
+          cropDragMode = "resize";
+        } else if (pt.x >= cropBox.x && pt.x <= hx && pt.y >= cropBox.y && pt.y <= hy) {
+          cropDragMode = "move";
+        } else {
+          // Tap outside to recenter crop box
+          cropBox.x = Math.max(0, Math.min(drawCanvas.width - cropBox.size, pt.x - cropBox.size / 2));
+          cropBox.y = Math.max(0, Math.min(drawCanvas.height - cropBox.size, pt.y - cropBox.size / 2));
+          cropDragMode = "move";
+          redrawCanvas();
+        }
+        return;
+      }
+
+      if (uploadedBinaryImage) {
+        uploadedBinaryImage = null;
+        strokes = [];
+      }
+      isDrawing = true;
+      const size = parseInt(document.getElementById("penSize").value, 10);
+      currentStroke = { size, pts: [pt] };
+      strokes.push(currentStroke);
+      redrawCanvas();
+    });
+
+    drawCanvas.addEventListener("pointermove", e => {
+      const pt = getCanvasPt(e);
+      if (cropMode) {
+        if (!cropDragMode) return;
+        e.preventDefault();
+        const dx = pt.x - cropLastPt.x;
+        const dy = pt.y - cropLastPt.y;
+        cropLastPt = pt;
+        if (cropDragMode === "move") {
+          cropBox.x = Math.max(0, Math.min(drawCanvas.width - cropBox.size, cropBox.x + dx));
+          cropBox.y = Math.max(0, Math.min(drawCanvas.height - cropBox.size, cropBox.y + dy));
+        } else {
+          const delta = Math.max(dx, dy);
+          const maxS = Math.min(drawCanvas.width - cropBox.x, drawCanvas.height - cropBox.y);
+          cropBox.size = Math.max(48, Math.min(maxS, cropBox.size + delta));
+        }
+        redrawCanvas();
+        return;
+      }
+
+      if (!isDrawing) return;
+      e.preventDefault();
+      currentStroke.pts.push(pt);
+      redrawCanvas();
+    });
+
+    window.addEventListener("pointerup", () => {
+      if (cropMode) {
+        cropDragMode = null;
+        return;
+      }
+      if (!isDrawing) return;
+      isDrawing = false;
+      if (document.getElementById("autoPredict").checked) {
+        runPrediction();
+      }
+    });
+
+    function undoStroke() {
+      if (cropMode) { cancelInlineCrop(); return; }
+      if (strokes.length > 0) {
+        strokes.pop();
+        redrawCanvas();
+        if (strokes.length > 0 && document.getElementById("autoPredict").checked) {
+          runPrediction();
+        } else if (strokes.length === 0) {
+          resetDisplay();
+        }
+      }
+    }
+
+    function clearPad() {
+      cropMode = false;
+      cropImg = null;
+      document.getElementById("inlineCropBar").style.display = "none";
+      document.getElementById("padModeLabel").textContent = "DRAWING PAD (WRITE ONE CHARACTER)";
+      strokes = [];
+      uploadedBinaryImage = null;
+      redrawCanvas();
       resetDisplay();
     }
-  }
-}
 
-function clearPad() {
-  strokes = [];
-  uploadedCanvasImage = null;
-  redrawCanvas();
-  resetDisplay();
-}
-
-function resetDisplay() {
-  currentPredChar = "";
-  document.getElementById("heroChar").textContent = "—";
-  document.getElementById("heroChar").style.color = "#38bdf8";
-  document.getElementById("heroMeta").textContent = "Draw, drag-drop, or Ctrl+V a Bangla character...";
-  pCtx.fillStyle = "black";
-  pCtx.fillRect(0, 0, 64, 64);
-  for (const r of top5Rows) {
-    r.char.textContent = "-";
-    r.fill.style.width = "0%";
-    r.pct.textContent = "0.0%";
-  }
-}
-
-function renderStrokesBinary() {
-  const off = document.createElement("canvas");
-  off.width = 360;
-  off.height = 360;
-  const ctx = off.getContext("2d");
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, 360, 360);
-  ctx.strokeStyle = "white";
-  ctx.fillStyle = "white";
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  for (const s of strokes) {
-    ctx.lineWidth = s.size * 2;
-    if (s.pts.length === 1) {
-      ctx.beginPath();
-      ctx.arc(s.pts[0].x, s.pts[0].y, s.size, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(s.pts[0].x, s.pts[0].y);
-      for (let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i].x, s.pts[i].y);
-      ctx.stroke();
-    }
-  }
-  return off;
-}
-
-function extract64x64(sourceCanvas) {
-  const w = sourceCanvas.width;
-  const h = sourceCanvas.height;
-  const ctx = sourceCanvas.getContext("2d");
-  const imgData = ctx.getImageData(0, 0, w, h).data;
-
-  let minX = w, minY = h, maxX = -1, maxY = -1;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const val = imgData[(y * w + x) * 4];
-      if (val > 40) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+    function resetDisplay() {
+      document.getElementById("predChar").textContent = "—";
+      document.getElementById("predConf").textContent = "Draw or capture a character";
+      pCtx.fillStyle = "#000000";
+      pCtx.fillRect(0, 0, 64, 64);
+      for (let i = 0; i < 5; i++) {
+        document.getElementById(`t5char${i}`).textContent = "—";
+        document.getElementById(`t5bar${i}`).style.width = "0%";
+        document.getElementById(`t5pct${i}`).textContent = "0.0%";
       }
     }
-  }
-  if (maxX < minX || maxY < minY) return null;
 
-  const bw = maxX - minX + 1;
-  const bh = maxY - minY + 1;
-  const targetInner = 56;
-  const scale = targetInner / Math.max(bw, bh);
-  const newW = Math.max(1, Math.round(bw * scale));
-  const newH = Math.max(1, Math.round(bh * scale));
-  const offsetX = Math.floor((64 - newW) / 2);
-  const offsetY = Math.floor((64 - newH) / 2);
-
-  pCtx.fillStyle = "black";
-  pCtx.fillRect(0, 0, 64, 64);
-  pCtx.drawImage(sourceCanvas, minX, minY, bw, bh, offsetX, offsetY, newW, newH);
-  return previewCanvas;
-}
-
-function makeRotatedOrShifted(baseCanvas, deg, shiftX) {
-  const c = document.createElement("canvas");
-  c.width = 64;
-  c.height = 64;
-  const ctx = c.getContext("2d");
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, 64, 64);
-  ctx.save();
-  ctx.translate(32 + shiftX, 32);
-  ctx.rotate((deg * Math.PI) / 180);
-  ctx.drawImage(baseCanvas, -32, -32);
-  ctx.restore();
-  return c;
-}
-
-function canvasToFloatArray(c) {
-  const data = c.getContext("2d").getImageData(0, 0, 64, 64).data;
-  const arr = new Float32Array(64 * 64);
-  for (let i = 0; i < 64 * 64; i++) {
-    arr[i] = data[i * 4] / 255.0;
-  }
-  return arr;
-}
-
-async function runPrediction(customBinaryCanvas = null, sourceLabel = "Drawing Pad") {
-  if (!model) return;
-  const binCanvas = customBinaryCanvas || (strokes.length > 0 ? renderStrokesBinary() : null);
-  if (!binCanvas) return;
-
-  const box64 = extract64x64(binCanvas);
-  if (!box64) {
-    resetDisplay();
-    return;
-  }
-
-  // 5-View Test-Time Augmentation (Original, -4 deg, +4 deg, -2px X, +2px X)
-  const views = [
-    box64,
-    makeRotatedOrShifted(box64, -4, 0),
-    makeRotatedOrShifted(box64, 4, 0),
-    makeRotatedOrShifted(box64, 0, -2),
-    makeRotatedOrShifted(box64, 0, 2)
-  ];
-
-  const batchData = new Float32Array(5 * 64 * 64);
-  views.forEach((v, idx) => {
-    batchData.set(canvasToFloatArray(v), idx * 64 * 64);
-  });
-
-  const avgProbs = tf.tidy(() => {
-    const input = tf.tensor4d(batchData, [5, 64, 64, 1]);
-    const preds = model.predict(input);
-    return preds.mean(0).dataSync();
-  });
-
-  const indexed = Array.from(avgProbs).map((prob, idx) => ({ prob, idx }));
-  indexed.sort((a, b) => b.prob - a.prob);
-  const top5 = indexed.slice(0, 5);
-
-  const bestFolder = classNames[top5[0].idx];
-  const bestChar = BANGLALEKHA_MAP[bestFolder] || bestFolder;
-  const bestConf = top5[0].prob * 100;
-
-  currentPredChar = bestChar;
-  const heroEl = document.getElementById("heroChar");
-  heroEl.textContent = bestChar;
-  heroEl.style.color = bestConf >= 75 ? "#4ade80" : bestConf >= 45 ? "#facc15" : "#f87171";
-  document.getElementById("heroMeta").textContent =
-    `${bestConf.toFixed(1)}% • Class #${bestFolder} • ${getCategory(bestFolder)} [${sourceLabel}]`;
-
-  top5.forEach((item, rank) => {
-    const folder = classNames[item.idx];
-    const ch = BANGLALEKHA_MAP[folder] || folder;
-    const pct = item.prob * 100;
-    top5Rows[rank].char.textContent = ch;
-    top5Rows[rank].fill.style.width = `${pct.toFixed(1)}%`;
-    top5Rows[rank].fill.style.background = rank === 0 ? "#22c55e" : "#38bdf8";
-    top5Rows[rank].pct.textContent = `${pct.toFixed(1)}%`;
-  });
-}
-
-// --- DRAG & DROP + CLIPBOARD PASTE ON DRAWING PAD ---
-drawCanvas.addEventListener("dragover", e => {
-  e.preventDefault();
-  drawCanvas.style.borderColor = "#facc15";
-});
-
-drawCanvas.addEventListener("dragleave", () => {
-  drawCanvas.style.borderColor = "#38bdf8";
-});
-
-drawCanvas.addEventListener("drop", e => {
-  e.preventDefault();
-  drawCanvas.style.borderColor = "#38bdf8";
-  const file = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (file && file.type.startsWith("image/")) {
-    loadPhotoForCrop(file);
-  }
-});
-
-window.addEventListener("paste", e => {
-  const items = e.clipboardData && e.clipboardData.items;
-  if (!items) return;
-  for (const item of items) {
-    if (item.type.startsWith("image/")) {
-      loadPhotoForCrop(item.getAsFile());
-      break;
+    // --- ALWAYS RENDER WHITE INK ON BLACK BACKGROUND FOR CNN ---
+    function renderStrokesBinary() {
+      const off = document.createElement("canvas");
+      off.width = 360;
+      off.height = 360;
+      const ctx = off.getContext("2d");
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 360, 360);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#ffffff";
+      for (const s of strokes) {
+        if (s.pts.length === 0) continue;
+        ctx.lineWidth = s.size;
+        ctx.beginPath();
+        ctx.moveTo(s.pts[0].x, s.pts[0].y);
+        for (let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i].x, s.pts[i].y);
+        if (s.pts.length === 1) ctx.lineTo(s.pts[0].x + 0.1, s.pts[0].y);
+        ctx.stroke();
+      }
+      return off;
     }
-  }
-});
 
-// --- PHOTO CROPPER & PAPER SHADOW CLEANER ---
-const cropCanvas = document.getElementById("cropCanvas");
-const cCtx = cropCanvas.getContext("2d");
-let cropImg = new Image();
-let cropBox = { x: 40, y: 40, size: 160 };
-let cropDragMode = null;
-let cropStart = { x: 0, y: 0 };
+    function extract64x64(sourceCanvas) {
+      const w = sourceCanvas.width;
+      const h = sourceCanvas.height;
+      const ctx = sourceCanvas.getContext("2d");
+      const imgData = ctx.getImageData(0, 0, w, h).data;
 
-function loadPhotoForCrop(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    cropImg = new Image();
-    cropImg.onload = () => {
-      const maxW = 320;
-      const scale = Math.min(1, maxW / cropImg.width);
-      cropCanvas.width = Math.round(cropImg.width * scale);
-      cropCanvas.height = Math.round(cropImg.height * scale);
-      const s = Math.round(Math.min(cropCanvas.width, cropCanvas.height) * 0.65);
-      cropBox = {
-        x: Math.round((cropCanvas.width - s) / 2),
-        y: Math.round((cropCanvas.height - s) / 2),
-        size: s
-      };
-      document.getElementById("cropBoxWrap").style.display = "block";
-      drawCropper();
-    };
-    cropImg.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function drawCropper() {
-  cCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-  cCtx.drawImage(cropImg, 0, 0, cropCanvas.width, cropCanvas.height);
-
-  cCtx.fillStyle = "rgba(2, 6, 23, 0.58)";
-  cCtx.fillRect(0, 0, cropCanvas.width, cropBox.y);
-  cCtx.fillRect(0, cropBox.y + cropBox.size, cropCanvas.width, cropCanvas.height - (cropBox.y + cropBox.size));
-  cCtx.fillRect(0, cropBox.y, cropBox.x, cropBox.size);
-  cCtx.fillRect(cropBox.x + cropBox.size, cropBox.y, cropCanvas.width - (cropBox.x + cropBox.size), cropBox.size);
-
-  cCtx.strokeStyle = "#38bdf8";
-  cCtx.lineWidth = 2.5;
-  cCtx.strokeRect(cropBox.x, cropBox.y, cropBox.size, cropBox.size);
-
-  cCtx.fillStyle = "#facc15";
-  cCtx.fillRect(cropBox.x + cropBox.size - 20, cropBox.y + cropBox.size - 20, 20, 20);
-}
-
-function getCropPt(e) {
-  const rect = cropCanvas.getBoundingClientRect();
-  const cx = e.touches ? e.touches[0].clientX : e.clientX;
-  const cy = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: (cx - rect.left) * (cropCanvas.width / rect.width),
-    y: (cy - rect.top) * (cropCanvas.height / rect.height)
-  };
-}
-
-cropCanvas.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  const p = getCropPt(e);
-  const hx = cropBox.x + cropBox.size;
-  const hy = cropBox.y + cropBox.size;
-  if (Math.abs(p.x - hx) <= 30 && Math.abs(p.y - hy) <= 30) cropDragMode = "resize";
-  else if (p.x >= cropBox.x && p.x <= hx && p.y >= cropBox.y && p.y <= hy) cropDragMode = "move";
-  cropStart = p;
-});
-
-cropCanvas.addEventListener("pointermove", e => {
-  if (!cropDragMode) return;
-  e.preventDefault();
-  const p = getCropPt(e);
-  const dx = p.x - cropStart.x;
-  const dy = p.y - cropStart.y;
-  if (cropDragMode === "move") {
-    cropBox.x = Math.max(0, Math.min(cropCanvas.width - cropBox.size, cropBox.x + dx));
-    cropBox.y = Math.max(0, Math.min(cropCanvas.height - cropBox.size, cropBox.y + dy));
-  } else {
-    const delta = Math.max(dx, dy);
-    const maxS = Math.min(cropCanvas.width - cropBox.x, cropCanvas.height - cropBox.y);
-    cropBox.size = Math.max(40, Math.min(maxS, cropBox.size + delta));
-  }
-  cropStart = p;
-  drawCropper();
-});
-
-window.addEventListener("pointerup", () => { cropDragMode = null; });
-
-function applyCropAndPredict() {
-  const scaleX = cropImg.width / cropCanvas.width;
-  const scaleY = cropImg.height / cropCanvas.height;
-  const size = 240;
-  const out = document.createElement("canvas");
-  out.width = size;
-  out.height = size;
-  const ctx = out.getContext("2d");
-  ctx.drawImage(
-    cropImg,
-    cropBox.x * scaleX, cropBox.y * scaleY, cropBox.size * scaleX, cropBox.size * scaleY,
-    0, 0, size, size
-  );
-
-  // Adaptive thresholding + slight dilation for paper photos
-  const imgData = ctx.getImageData(0, 0, size, size);
-  const d = imgData.data;
-  const gray = new Float32Array(size * size);
-  let sum = 0;
-  for (let i = 0; i < size * size; i++) {
-    const g = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
-    gray[i] = g;
-    sum += g;
-  }
-  const mean = sum / (size * size);
-  const isLightPaper = mean > 127;
-
-  // Compute Otsu threshold
-  const hist = new Array(256).fill(0);
-  for (let i = 0; i < gray.length; i++) hist[Math.min(255, Math.max(0, Math.round(gray[i])))]++;
-  let total = gray.length, sumAll = 0;
-  for (let t = 0; t < 256; t++) sumAll += t * hist[t];
-  let sumB = 0, wB = 0, maxVar = 0, thresh = 128;
-  for (let t = 0; t < 256; t++) {
-    wB += hist[t];
-    if (wB === 0) continue;
-    const wF = total - wB;
-    if (wF === 0) break;
-    sumB += t * hist[t];
-    const mB = sumB / wB;
-    const mF = (sumAll - sumB) / wF;
-    const between = wB * wF * (mB - mF) * (mB - mF);
-    if (between > maxVar) { maxVar = between; thresh = t; }
-  }
-
-  const bin = new Uint8Array(size * size);
-  for (let i = 0; i < gray.length; i++) {
-    const ink = isLightPaper ? gray[i] < thresh * 0.92 : gray[i] > thresh;
-    bin[i] = ink ? 255 : 0;
-  }
-
-  // 3x3 dilation so thin pen lines match BanglaLekha stroke thickness
-  const dilated = new Uint8Array(size * size);
-  for (let y = 1; y < size - 1; y++) {
-    for (let x = 1; x < size - 1; x++) {
-      let hit = 0;
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (bin[(y + dy) * size + (x + dx)] === 255) { hit = 255; break; }
+      let minX = w, minY = h, maxX = -1, maxY = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (imgData[(y * w + x) * 4] > 40) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
         }
-        if (hit) break;
       }
-      dilated[y * size + x] = hit;
+      if (maxX < minX || maxY < minY) return null;
+
+      const bw = maxX - minX + 1;
+      const bh = maxY - minY + 1;
+      const innerSize = 56; // Matches 88% inner box in preprocess.py
+      const scale = innerSize / Math.max(bw, bh);
+      const newW = Math.max(1, Math.round(bw * scale));
+      const newH = Math.max(1, Math.round(bh * scale));
+      const offsetX = Math.floor((64 - newW) / 2);
+      const offsetY = Math.floor((64 - newH) / 2);
+
+      pCtx.fillStyle = "#000000";
+      pCtx.fillRect(0, 0, 64, 64);
+      pCtx.drawImage(sourceCanvas, minX, minY, bw, bh, offsetX, offsetY, newW, newH);
+      return previewCanvas;
     }
-  }
 
-  for (let i = 0; i < size * size; i++) {
-    const v = dilated[i];
-    d[i * 4] = v; d[i * 4 + 1] = v; d[i * 4 + 2] = v; d[i * 4 + 3] = 255;
-  }
-  ctx.putImageData(imgData, 0, 0);
+    function makeTransformedView(baseCanvas, deg, shiftX) {
+      const c = document.createElement("canvas");
+      c.width = 64;
+      c.height = 64;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 64, 64);
+      ctx.save();
+      ctx.translate(32 + shiftX, 32);
+      ctx.rotate((deg * Math.PI) / 180);
+      ctx.drawImage(baseCanvas, -32, -32);
+      ctx.restore();
+      return c;
+    }
 
-  strokes = [];
-  uploadedCanvasImage = out;
-  redrawCanvas();
-  document.getElementById("cropBoxWrap").style.display = "none";
-  runPrediction(out, "Uploaded Photo");
-}
+    function canvasToFloatArray(c) {
+      const data = c.getContext("2d").getImageData(0, 0, 64, 64).data;
+      const arr = new Float32Array(64 * 64);
+      for (let i = 0; i < 64 * 64; i++) arr[i] = data[i * 4] / 255.0;
+      return arr;
+    }
 
-// --- WORD COMPOSER ---
-function updateWordUI() {
-  document.getElementById("wordDisplay").textContent = wordBuffer;
-}
-function addCharToWord() {
-  if (currentPredChar) {
-    wordBuffer += currentPredChar;
-    updateWordUI();
-    clearPad();
-  }
-}
-function appendWord(ch) { wordBuffer += ch; updateWordUI(); }
-function backspaceWord() { wordBuffer = wordBuffer.slice(0, -1); updateWordUI(); }
-function clearWord() { wordBuffer = ""; updateWordUI(); }
-function copyWord() {
-  if (wordBuffer) navigator.clipboard.writeText(wordBuffer);
-}
+    async function runPrediction(customBinaryCanvas = null, sourceLabel = "Drawing Pad") {
+      if (!model) return;
+      const binCanvas = customBinaryCanvas || uploadedBinaryImage || (strokes.length > 0 ? renderStrokesBinary() : null);
+      if (!binCanvas) return;
 
-// --- REGISTER OFFLINE PWA SERVICE WORKER ---
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(err => console.warn("SW failed:", err));
-  });
-}
+      const box64 = extract64x64(binCanvas);
+      if (!box64) { resetDisplay(); return; }
 
-initApp();
-</script>
+      const views = [
+        box64,
+        makeTransformedView(box64, -5, 0),
+        makeTransformedView(box64, 5, 0),
+        makeTransformedView(box64, 0, -2),
+        makeTransformedView(box64, 0, 2)
+      ];
+
+      const batchData = new Float32Array(5 * 64 * 64);
+      views.forEach((v, idx) => batchData.set(canvasToFloatArray(v), idx * 64 * 64));
+
+      const probs = tf.tidy(() => {
+        const input = tf.tensor4d(batchData, [5, 64, 64, 1]);
+        return model.predict(input).mean(0).dataSync();
+      });
+
+      const ranked = Array.from(probs)
+        .map((p, idx) => ({ idx, prob: p }))
+        .sort((a, b) => b.prob - a.prob)
+        .slice(0, 5);
+
+      lastTopChar = getBanglaLabel(classNames[ranked[0].idx]);
+      document.getElementById("predChar").textContent = lastTopChar;
+      document.getElementById("predConf").textContent = `Confidence: ${(ranked[0].prob * 100).toFixed(1)}%`;
+      document.getElementById("sourceBadge").textContent = sourceLabel;
+
+      ranked.forEach((item, i) => {
+        const pct = (item.prob * 100).toFixed(1);
+        document.getElementById(`t5char${i}`).textContent = getBanglaLabel(classNames[item.idx]);
+        document.getElementById(`t5bar${i}`).style.width = `${pct}%`;
+        document.getElementById(`t5pct${i}`).textContent = `${pct}%`;
+      });
+    }
+
+    // --- WORD COMPOSER ---
+    function addCharToWord() {
+      if (!lastTopChar) return;
+      wordBuffer += lastTopChar;
+      document.getElementById("wordDisplay").textContent = wordBuffer;
+    }
+    function appendWord(ch) {
+      wordBuffer += ch;
+      document.getElementById("wordDisplay").textContent = wordBuffer;
+    }
+    function backspaceWord() {
+      wordBuffer = Array.from(wordBuffer).slice(0, -1).join("");
+      document.getElementById("wordDisplay").textContent = wordBuffer;
+    }
+    function clearWord() {
+      wordBuffer = "";
+      document.getElementById("wordDisplay").textContent = "";
+    }
+    function copyWord() {
+      if (wordBuffer) navigator.clipboard?.writeText(wordBuffer);
+    }
+
+    // --- INLINE CROPPER INSIDE DRAW PAD ---
+    function startInlineCropFromDataUrl(dataUrl) {
+      if (!dataUrl) return;
+      const img = new Image();
+      img.onload = () => {
+        cropImg = img;
+        const cw = drawCanvas.width;
+        const ch = drawCanvas.height;
+        const scale = Math.min(cw / img.width, ch / img.height);
+        const rw = Math.round(img.width * scale);
+        const rh = Math.round(img.height * scale);
+        cropDrawRect = {
+          x: Math.round((cw - rw) / 2),
+          y: Math.round((ch - rh) / 2),
+          w: rw,
+          h: rh
+        };
+        const s = Math.round(Math.min(rw, rh) * 0.65);
+        cropBox = {
+          x: Math.round((cw - s) / 2),
+          y: Math.round((ch - s) / 2),
+          size: s
+        };
+        cropMode = true;
+        document.getElementById("inlineCropBar").style.display = "flex";
+        document.getElementById("padModeLabel").textContent = "CROP MODE (ADJUST BOX ON PAD)";
+        redrawCanvas();
+      };
+      img.src = dataUrl;
+    }
+
+    function loadPhotoFileForInlineCrop(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => startInlineCropFromDataUrl(e.target.result);
+      reader.readAsDataURL(file);
+    }
+
+    function cancelInlineCrop() {
+      cropMode = false;
+      cropImg = null;
+      document.getElementById("inlineCropBar").style.display = "none";
+      document.getElementById("padModeLabel").textContent = "DRAWING PAD (WRITE ONE CHARACTER)";
+      redrawCanvas();
+    }
+
+    function applyInlineCropAndPredict() {
+      if (!cropMode || !cropImg) return;
+      const scaleX = cropImg.width / cropDrawRect.w;
+      const scaleY = cropImg.height / cropDrawRect.h;
+      const sx = (cropBox.x - cropDrawRect.x) * scaleX;
+      const sy = (cropBox.y - cropDrawRect.y) * scaleY;
+      const sw = cropBox.size * scaleX;
+      const sh = cropBox.size * scaleY;
+
+      const size = 240;
+      const out = document.createElement("canvas");
+      out.width = size;
+      out.height = size;
+      const ctx = out.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, size, size);
+
+      // Adaptive paper shadow removal + contrast binarization -> white ink on black
+      const imgData = ctx.getImageData(0, 0, size, size);
+      const d = imgData.data;
+      const gray = new Float32Array(size * size);
+      let sum = 0;
+      for (let i = 0; i < size * size; i++) {
+        const g = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+        gray[i] = g;
+        sum += g;
+      }
+      const mean = sum / (size * size);
+      const darkInkOnLightPaper = mean > 110;
+      const thresh = darkInkOnLightPaper ? mean * 0.78 : mean * 1.25;
+
+      for (let i = 0; i < size * size; i++) {
+        const isInk = darkInkOnLightPaper ? gray[i] < thresh : gray[i] > thresh;
+        const val = isInk ? 255 : 0;
+        d[i * 4] = val;
+        d[i * 4 + 1] = val;
+        d[i * 4 + 2] = val;
+        d[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+
+      cropMode = false;
+      cropImg = null;
+      strokes = [];
+      uploadedBinaryImage = out;
+      document.getElementById("inlineCropBar").style.display = "none";
+      document.getElementById("padModeLabel").textContent = "DRAWING PAD (WRITE ONE CHARACTER)";
+      redrawCanvas();
+      runPrediction(out, "Camera / Photo Crop");
+    }
+
+    // --- UNIVERSAL CAMERA (NATIVE CAPACITOR ANDROID + LIVE WEB CAMERA MODAL) ---
+    async function openUniversalCamera() {
+      const CapCamera = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Camera;
+      if (CapCamera) {
+        try {
+          const photo = await CapCamera.getPhoto({
+            quality: 90,
+            allowEditing: false,
+            resultType: "dataUrl",
+            source: "CAMERA",
+            correctOrientation: true
+          });
+          if (photo && photo.dataUrl) startInlineCropFromDataUrl(photo.dataUrl);
+          return;
+        } catch (err) {
+          if (err && String(err.message || err).toLowerCase().includes("cancel")) return;
+          console.warn("Native camera fallback to web camera:", err);
+        }
+      }
+
+      // Website / Browser Camera via getUserMedia
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          webCamStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 1280 } },
+            audio: false
+          });
+          const video = document.getElementById("webCamVideo");
+          video.srcObject = webCamStream;
+          document.getElementById("webCamModal").style.display = "flex";
+          return;
+        } catch (err) {
+          console.warn("getUserMedia unavailable, falling back to file input:", err);
+        }
+      }
+      document.getElementById("fileInput").click();
+    }
+
+    function snapWebCamPhoto() {
+      const video = document.getElementById("webCamVideo");
+      if (!video || !video.videoWidth) return;
+      const snap = document.createElement("canvas");
+      snap.width = video.videoWidth;
+      snap.height = video.videoHeight;
+      snap.getContext("2d").drawImage(video, 0, 0);
+      const dataUrl = snap.toDataURL("image/jpeg", 0.92);
+      closeWebCam();
+      startInlineCropFromDataUrl(dataUrl);
+    }
+
+    function closeWebCam() {
+      if (webCamStream) {
+        webCamStream.getTracks().forEach(t => t.stop());
+        webCamStream = null;
+      }
+      document.getElementById("webCamModal").style.display = "none";
+    }
+
+    // Drag & drop + paste support directly into inline Draw Pad cropper
+    drawCanvas.addEventListener("dragover", e => e.preventDefault());
+    drawCanvas.addEventListener("drop", e => {
+      e.preventDefault();
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) loadPhotoFileForInlineCrop(file);
+    });
+    window.addEventListener("paste", e => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          loadPhotoFileForInlineCrop(item.getAsFile());
+          break;
+        }
+      }
+    });
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+    initApp();
+  </script>
 </body>
 </html>

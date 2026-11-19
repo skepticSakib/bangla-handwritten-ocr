@@ -9,7 +9,7 @@
       "module": "keras",
       "class_name": "Sequential",
       "config": {
-        "name": "sequential",
+        "name": "sequential_1",
         "trainable": true,
         "dtype": "float32",
         "layers": [
@@ -36,8 +36,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -109,6 +109,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "Conv2D",
             "config": {
               "name": "conv2d_1",
@@ -130,8 +140,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -197,6 +207,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_1",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "MaxPooling2D",
             "config": {
               "name": "max_pooling2d",
@@ -221,7 +241,7 @@
               "name": "dropout",
               "trainable": true,
               "dtype": "float32",
-              "rate": 0.25,
+              "rate": 0.15,
               "seed": null,
               "noise_shape": null
             }
@@ -249,8 +269,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -316,6 +336,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_2",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "Conv2D",
             "config": {
               "name": "conv2d_3",
@@ -337,8 +367,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -404,6 +434,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_3",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "MaxPooling2D",
             "config": {
               "name": "max_pooling2d_1",
@@ -428,7 +468,7 @@
               "name": "dropout_1",
               "trainable": true,
               "dtype": "float32",
-              "rate": 0.25,
+              "rate": 0.2,
               "seed": null,
               "noise_shape": null
             }
@@ -456,8 +496,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -523,6 +563,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_4",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "Conv2D",
             "config": {
               "name": "conv2d_5",
@@ -544,8 +594,8 @@
                 1
               ],
               "groups": 1,
-              "activation": "relu",
-              "use_bias": true,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -611,6 +661,16 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_5",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "MaxPooling2D",
             "config": {
               "name": "max_pooling2d_2",
@@ -635,31 +695,36 @@
               "name": "dropout_2",
               "trainable": true,
               "dtype": "float32",
-              "rate": 0.3,
+              "rate": 0.25,
               "seed": null,
               "noise_shape": null
             }
           },
           {
             "module": "keras.layers",
-            "class_name": "Flatten",
+            "class_name": "Conv2D",
             "config": {
-              "name": "flatten",
+              "name": "conv2d_6",
               "trainable": true,
               "dtype": "float32",
-              "data_format": "channels_last"
-            }
-          },
-          {
-            "module": "keras.layers",
-            "class_name": "Dense",
-            "config": {
-              "name": "dense",
-              "trainable": true,
-              "dtype": "float32",
-              "units": 256,
-              "activation": "relu",
-              "use_bias": true,
+              "filters": 256,
+              "kernel_size": [
+                3,
+                3
+              ],
+              "strides": [
+                1,
+                1
+              ],
+              "padding": "same",
+              "data_format": "channels_last",
+              "dilation_rate": [
+                1,
+                1
+              ],
+              "groups": 1,
+              "activation": "linear",
+              "use_bias": false,
               "kernel_initializer": {
                 "module": "keras.initializers",
                 "class_name": "GlorotUniform",
@@ -676,9 +741,9 @@
               },
               "kernel_regularizer": null,
               "bias_regularizer": null,
+              "activity_regularizer": null,
               "kernel_constraint": null,
-              "bias_constraint": null,
-              "quantization_config": null
+              "bias_constraint": null
             }
           },
           {
@@ -725,12 +790,226 @@
           },
           {
             "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_6",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "Conv2D",
+            "config": {
+              "name": "conv2d_7",
+              "trainable": true,
+              "dtype": "float32",
+              "filters": 256,
+              "kernel_size": [
+                3,
+                3
+              ],
+              "strides": [
+                1,
+                1
+              ],
+              "padding": "same",
+              "data_format": "channels_last",
+              "dilation_rate": [
+                1,
+                1
+              ],
+              "groups": 1,
+              "activation": "linear",
+              "use_bias": false,
+              "kernel_initializer": {
+                "module": "keras.initializers",
+                "class_name": "GlorotUniform",
+                "config": {
+                  "seed": null,
+                  "input_axes": null,
+                  "output_axes": null
+                }
+              },
+              "bias_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "kernel_regularizer": null,
+              "bias_regularizer": null,
+              "activity_regularizer": null,
+              "kernel_constraint": null,
+              "bias_constraint": null
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "BatchNormalization",
+            "config": {
+              "name": "batch_normalization_7",
+              "trainable": true,
+              "dtype": "float32",
+              "axis": -1,
+              "momentum": 0.99,
+              "epsilon": 0.001,
+              "center": true,
+              "scale": true,
+              "beta_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "gamma_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Ones",
+                "config": {}
+              },
+              "moving_mean_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "moving_variance_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Ones",
+                "config": {}
+              },
+              "beta_regularizer": null,
+              "gamma_regularizer": null,
+              "beta_constraint": null,
+              "gamma_constraint": null,
+              "synchronized": false,
+              "renorm": false,
+              "renorm_clipping": null,
+              "renorm_momentum": 0.99
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_7",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "GlobalAveragePooling2D",
+            "config": {
+              "name": "global_average_pooling2d",
+              "trainable": true,
+              "dtype": "float32",
+              "data_format": "channels_last",
+              "keepdims": false
+            }
+          },
+          {
+            "module": "keras.layers",
             "class_name": "Dropout",
             "config": {
               "name": "dropout_3",
               "trainable": true,
               "dtype": "float32",
-              "rate": 0.5,
+              "rate": 0.35,
+              "seed": null,
+              "noise_shape": null
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "Dense",
+            "config": {
+              "name": "dense",
+              "trainable": true,
+              "dtype": "float32",
+              "units": 256,
+              "activation": "linear",
+              "use_bias": false,
+              "kernel_initializer": {
+                "module": "keras.initializers",
+                "class_name": "GlorotUniform",
+                "config": {
+                  "seed": null,
+                  "input_axes": null,
+                  "output_axes": null
+                }
+              },
+              "bias_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "kernel_regularizer": null,
+              "bias_regularizer": null,
+              "kernel_constraint": null,
+              "bias_constraint": null,
+              "quantization_config": null
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "BatchNormalization",
+            "config": {
+              "name": "batch_normalization_8",
+              "trainable": true,
+              "dtype": "float32",
+              "axis": -1,
+              "momentum": 0.99,
+              "epsilon": 0.001,
+              "center": true,
+              "scale": true,
+              "beta_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "gamma_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Ones",
+                "config": {}
+              },
+              "moving_mean_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Zeros",
+                "config": {}
+              },
+              "moving_variance_initializer": {
+                "module": "keras.initializers",
+                "class_name": "Ones",
+                "config": {}
+              },
+              "beta_regularizer": null,
+              "gamma_regularizer": null,
+              "beta_constraint": null,
+              "gamma_constraint": null,
+              "synchronized": false,
+              "renorm": false,
+              "renorm_clipping": null,
+              "renorm_momentum": 0.99
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "Activation",
+            "config": {
+              "name": "activation_8",
+              "trainable": true,
+              "dtype": "float32",
+              "activation": "relu"
+            }
+          },
+          {
+            "module": "keras.layers",
+            "class_name": "Dropout",
+            "config": {
+              "name": "dropout_4",
+              "trainable": true,
+              "dtype": "float32",
+              "rate": 0.4,
               "seed": null,
               "noise_shape": null
             }
@@ -793,13 +1072,6 @@
           "dtype": "float32"
         },
         {
-          "name": "conv2d/bias",
-          "shape": [
-            32
-          ],
-          "dtype": "float32"
-        },
-        {
           "name": "batch_normalization/gamma",
           "shape": [
             32
@@ -833,13 +1105,6 @@
             3,
             3,
             32,
-            32
-          ],
-          "dtype": "float32"
-        },
-        {
-          "name": "conv2d_1/bias",
-          "shape": [
             32
           ],
           "dtype": "float32"
@@ -883,13 +1148,6 @@
           "dtype": "float32"
         },
         {
-          "name": "conv2d_2/bias",
-          "shape": [
-            64
-          ],
-          "dtype": "float32"
-        },
-        {
           "name": "batch_normalization_2/gamma",
           "shape": [
             64
@@ -923,13 +1181,6 @@
             3,
             3,
             64,
-            64
-          ],
-          "dtype": "float32"
-        },
-        {
-          "name": "conv2d_3/bias",
-          "shape": [
             64
           ],
           "dtype": "float32"
@@ -973,13 +1224,6 @@
           "dtype": "float32"
         },
         {
-          "name": "conv2d_4/bias",
-          "shape": [
-            128
-          ],
-          "dtype": "float32"
-        },
-        {
           "name": "batch_normalization_4/gamma",
           "shape": [
             128
@@ -1018,13 +1262,6 @@
           "dtype": "float32"
         },
         {
-          "name": "conv2d_5/bias",
-          "shape": [
-            128
-          ],
-          "dtype": "float32"
-        },
-        {
           "name": "batch_normalization_5/gamma",
           "shape": [
             128
@@ -1053,16 +1290,11 @@
           "dtype": "float32"
         },
         {
-          "name": "dense/kernel",
+          "name": "conv2d_6/kernel",
           "shape": [
-            8192,
-            256
-          ],
-          "dtype": "float32"
-        },
-        {
-          "name": "dense/bias",
-          "shape": [
+            3,
+            3,
+            128,
             256
           ],
           "dtype": "float32"
@@ -1090,6 +1322,80 @@
         },
         {
           "name": "batch_normalization_6/moving_variance",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "conv2d_7/kernel",
+          "shape": [
+            3,
+            3,
+            256,
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_7/gamma",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_7/beta",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_7/moving_mean",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_7/moving_variance",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "dense/kernel",
+          "shape": [
+            256,
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_8/gamma",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_8/beta",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_8/moving_mean",
+          "shape": [
+            256
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_normalization_8/moving_variance",
           "shape": [
             256
           ],

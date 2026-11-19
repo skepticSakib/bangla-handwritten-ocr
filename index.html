@@ -1644,29 +1644,31 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_HERO_PREDICTION_END -->
 <!-- BANGLA_TRAIN_MODAL_START -->
 <style>
-  /* Trigger button in the top header / action bar */
+  /* Trigger button right next to White Mode in the top header */
   .open-train-modal-btn {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     padding: 7px 14px;
-    border-radius: 10px;
-    font-size: 0.88rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
     font-weight: 700;
     cursor: pointer;
-    border: 1.5px solid rgba(185, 28, 28, 0.38);
-    background: rgba(185, 28, 28, 0.09);
-    color: #991b1b;
-    transition: transform 0.16s ease, background 0.18s ease, box-shadow 0.18s ease;
-  }
-  .open-train-modal-btn:hover {
-    background: rgba(185, 28, 28, 0.16);
-    transform: translateY(-1px);
-  }
-  body:not(.light-mode):not(.white-mode) .open-train-modal-btn {
-    border-color: rgba(245, 158, 11, 0.45);
+    margin-left: 8px;
+    border: 1.5px solid rgba(245, 158, 11, 0.48);
     background: rgba(245, 158, 11, 0.14);
     color: #fbbf24;
+    transition: transform 0.16s ease, background 0.18s ease;
+  }
+  .open-train-modal-btn:hover {
+    background: rgba(245, 158, 11, 0.24);
+    transform: translateY(-1px);
+  }
+  body.light-mode .open-train-modal-btn,
+  body.white-mode .open-train-modal-btn {
+    border-color: rgba(185, 28, 28, 0.42);
+    background: rgba(185, 28, 28, 0.09);
+    color: #991b1b;
   }
 
   /* Modal Backdrop */
@@ -1674,46 +1676,35 @@ function getBanglaLabel(raw) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(15, 23, 42, 0.62);
+    background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
     padding: 16px;
-    animation: modalFadeIn 0.22s ease-out;
   }
   .train-modal-backdrop.active {
     display: flex;
   }
 
-  @keyframes modalFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes modalPopUp {
-    from { opacity: 0; transform: translateY(16px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  /* Modal Dialog Card matching Calligraphy Cream & Dark Slate themes */
+  /* Modal Dialog Card */
   .train-modal-dialog {
     width: 100%;
-    max-width: 520px;
+    max-width: 490px;
     max-height: 90vh;
     overflow-y: auto;
     border-radius: 18px;
     padding: 20px 22px;
     background: #131c2e;
     color: #f1f5f9;
-    border: 1.5px solid rgba(245, 158, 11, 0.35);
-    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
-    animation: modalPopUp 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.5);
   }
   body.light-mode .train-modal-dialog,
   body.white-mode .train-modal-dialog {
     background: #faf7f0;
     color: #1e293b;
-    border: 1.5px solid rgba(185, 28, 28, 0.32);
+    border: 1.5px solid rgba(185, 28, 28, 0.35);
     box-shadow: 0 22px 48px rgba(15, 23, 42, 0.22);
   }
 
@@ -1721,7 +1712,6 @@ function getBanglaLabel(raw) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
     padding-bottom: 12px;
     margin-bottom: 14px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.22);
@@ -1743,16 +1733,66 @@ function getBanglaLabel(raw) {
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
   .train-modal-close:hover {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.16);
     color: #ef4444;
   }
 
-  /* User Model Persistence Status Strip inside the modal */
+  .train-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    margin-bottom: 14px;
+  }
+  .train-preview-row canvas {
+    width: 68px;
+    height: 68px;
+    border-radius: 10px;
+    background: #000;
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+  }
+
+  .train-select-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .train-class-select {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1.5px solid rgba(148, 163, 184, 0.35);
+    background: #0b1120;
+    color: #f8fafc;
+  }
+  body.light-mode .train-class-select,
+  body.white-mode .train-class-select {
+    background: #f2ede2;
+    color: #0f172a;
+  }
+
+  .train-submit-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.94rem;
+    cursor: pointer;
+    background: #d97706;
+    color: #fff;
+  }
+  .train-submit-btn:hover {
+    background: #b45309;
+  }
+
   .user-model-persistence-bar {
     margin-top: 14px;
     padding-top: 12px;
@@ -1761,7 +1801,7 @@ function getBanglaLabel(raw) {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     font-size: 0.82rem;
   }
   .user-model-status-pill {
@@ -1774,12 +1814,8 @@ function getBanglaLabel(raw) {
     color: #10b981;
     font-weight: 600;
   }
-  .user-model-actions {
-    display: flex;
-    gap: 8px;
-  }
   .user-model-mini-btn {
-    padding: 5px 11px;
+    padding: 5px 10px;
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -1790,38 +1826,74 @@ function getBanglaLabel(raw) {
   }
   .user-model-mini-btn.danger:hover {
     background: rgba(239, 68, 68, 0.16);
-    border-color: rgba(239, 68, 68, 0.45);
     color: #ef4444;
   }
 </style>
 
 <script>
 (function () {
+  const BANGLA_84_CLASSES = [
+    "অ","আ","ই","ঈ","উ","ঊ","ঋ","এ","ঐ","ও","ঔ",
+    "ক","খ","গ","ঘ","ঙ","চ","ছ","জ","ঝ","ঞ","ট","ঠ","ড","ঢ","ণ",
+    "ত","থ","দ","ধ","ন","প","ফ","ব","ভ","ম","য","র","ল","শ","ষ","স","হ",
+    "ড়","ঢ়","য়","ৎ","ং","ঃ","ঁ",
+    "০","১","২","৩","৪","৫","৬","৭","৮","৯",
+    "ক্ষ","জ্ঞ","ঞ্জ","ঞ্চ","ণ্ড","ন্ত","ন্দ","ন্ধ","ম্প","ম্ব","ম্ভ",
+    "স্ত","স্থ","স্প","স্ক","ষ্ট","ষ্ঠ","হ্ন","হ্ম","ক্ট","প্ত","ব্দ","ল্ক","ঙ্গ"
+  ];
+
   window.addEventListener("DOMContentLoaded", () => {
-    // 1. Locate the existing Top-5 Suggestions & Training container on the home page
-    const allBlocks = Array.from(document.querySelectorAll("div, section, fieldset"));
-    const trainSection = allBlocks.find(el => {
-      const txt = el.textContent || "";
-      return txt.includes("TOP-5 SUGGESTIONS") && txt.includes("Train Selected") && el.children.length >= 2 && el.offsetHeight < 520;
-    });
+    // 1. Place "🧠 Train Model" button right beside "White Mode" in the top header
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.id = "openTrainModalBtn";
+    openBtn.className = "open-train-modal-btn";
+    openBtn.innerHTML = `🧠 <span>Train Model</span>`;
 
-    if (!trainSection) return;
+    const themeBtn = Array.from(document.querySelectorAll("button")).find(b =>
+      /white mode|dark mode/i.test(b.textContent || "")
+    );
+    if (themeBtn && themeBtn.parentElement) {
+      themeBtn.parentElement.insertBefore(openBtn, themeBtn);
+    } else {
+      const hdr = document.querySelector("header") || document.body;
+      hdr.appendChild(openBtn);
+    }
 
-    // 2. Create the Pop-Up Modal Shell & move the training section out of the home screen into it
+    // 2. Build the Pop-Up Training Modal
     const backdrop = document.createElement("div");
     backdrop.id = "trainStudioModal";
     backdrop.className = "train-modal-backdrop";
+
+    const optionsHtml = BANGLA_84_CLASSES.map((ch, idx) =>
+      `<option value="${idx}">#${idx + 1}: ${ch}</option>`
+    ).join("");
+
     backdrop.innerHTML = `
-      <div class="train-modal-dialog" role="dialog" aria-modal="true" aria-label="Train & Update Model">
+      <div class="train-modal-dialog" role="dialog" aria-modal="true">
         <div class="train-modal-header">
-          <div class="train-modal-title">🧠 Teach & Update Model (User Fine-Tuning)</div>
+          <div class="train-modal-title">🧠 Teach & Update Model</div>
           <button type="button" id="closeTrainModalBtn" class="train-modal-close" title="Close">✕</button>
         </div>
-        <div id="trainModalBody"></div>
+
+        <div class="train-preview-row">
+          <canvas id="modalCnnPreview" width="64" height="64"></canvas>
+          <div style="font-size:0.88rem;line-height:1.45;">
+            <div style="font-weight:700;">Current Drawing Sample</div>
+            <div style="opacity:0.8;">Select the true Bangla character below and click <b>Train & Update</b> to fine-tune the model on your handwriting.</div>
+          </div>
+        </div>
+
+        <div class="train-select-row">
+          <select id="trainTargetSelect" class="train-class-select">${optionsHtml}</select>
+          <button type="button" id="runUserTrainBtn" class="train-submit-btn">✓ Train & Update</button>
+        </div>
+
+        <div id="trainFeedbackMsg" style="font-size:0.85rem;min-height:20px;font-weight:600;color:#38bdf8;"></div>
+
         <div class="user-model-persistence-bar">
-          <span id="userModelSavedBadge" class="user-model-status-pill">● Auto-Saved on Device</span>
-          <div class="user-model-actions">
-            <button type="button" id="saveUserModelNowBtn" class="user-model-mini-btn">💾 Save Model</button>
+          <span id="userModelSavedBadge" class="user-model-status-pill">● Ready (84 Classes)</span>
+          <div style="display:flex;gap:8px;">
             <button type="button" id="resetUserModelBtn" class="user-model-mini-btn danger">↺ Reset Custom</button>
           </div>
         </div>
@@ -1829,120 +1901,124 @@ function getBanglaLabel(raw) {
     `;
     document.body.appendChild(backdrop);
 
-    // Move existing training UI cleanly inside the modal (preserving all IDs & event listeners)
-    const modalBody = document.getElementById("trainModalBody");
-    trainSection.style.margin = "0";
-    trainSection.style.border = "none";
-    trainSection.style.padding = "0";
-    trainSection.style.background = "transparent";
-    modalBody.appendChild(trainSection);
-
-    // 3. Add "🧠 Train Model" trigger button into the top header (or prediction header)
-    const openBtn = document.createElement("button");
-    openBtn.type = "button";
-    openBtn.id = "openTrainModalBtn";
-    openBtn.className = "open-train-modal-btn";
-    openBtn.innerHTML = `🧠 <span>Train Model</span>`;
-
-    const headerTarget =
-      document.querySelector("header .header-actions, header .controls, header") ||
-      document.querySelector(".pred-box, .result-box")?.parentElement;
-
-    if (headerTarget) {
-      headerTarget.appendChild(openBtn);
-    }
-
-    // Open / Close Handlers
-    const openModal = () => backdrop.classList.add("active");
-    const closeModal = () => backdrop.classList.remove("active");
-
-    openBtn.addEventListener("click", openModal);
-    document.getElementById("closeTrainModalBtn").addEventListener("click", closeModal);
-    backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) closeModal();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && backdrop.classList.contains("active")) closeModal();
-    });
-
-    // 4. Persist user-trained TensorFlow.js weights in IndexedDB automatically
-    const USER_MODEL_KEY = "indexeddb://bangla-bhcr-user-updated-model";
+    const modalPreview = document.getElementById("modalCnnPreview");
+    const targetSelect = document.getElementById("trainTargetSelect");
+    const feedbackMsg = document.getElementById("trainFeedbackMsg");
     const statusBadge = document.getElementById("userModelSavedBadge");
+    const USER_MODEL_KEY = "indexeddb://bangla-bhcr-user-updated-model";
 
     function findTfModel() {
       for (const k of Object.keys(window)) {
         try {
           const val = window[k];
-          if (val && typeof val.predict === "function" && typeof val.save === "function") {
-            return val;
-          }
+          if (val && typeof val.predict === "function" && typeof val.save === "function") return val;
         } catch (_) {}
       }
       return null;
     }
 
-    async function saveUserTrainedWeights() {
-      const m = findTfModel();
-      if (!m) return;
-      try {
-        await m.save(USER_MODEL_KEY);
-        localStorage.setItem("bhcr_user_model_updated_at", new Date().toLocaleTimeString());
-        if (statusBadge) {
-          statusBadge.textContent = "✓ Saved to Device (" + localStorage.getItem("bhcr_user_model_updated_at") + ")";
-        }
-      } catch (err) {
-        console.warn("Model save skipped:", err);
+    function syncModalPreview() {
+      const sourceThumb = document.querySelector(".pred-box canvas, .result-box canvas") || document.querySelector("canvas");
+      if (sourceThumb && modalPreview) {
+        const ctx = modalPreview.getContext("2d");
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, 64, 64);
+        ctx.drawImage(sourceThumb, 0, 0, 64, 64);
       }
+      const curChar = (document.getElementById("predChar")?.textContent || "").trim();
+      const idx = BANGLA_84_CLASSES.indexOf(curChar);
+      if (idx >= 0) targetSelect.value = String(idx);
     }
 
-    // Auto-save whenever user clicks "Teach" or "Train Selected" inside the modal
-    modalBody.addEventListener("click", (e) => {
-      const btn = e.target.closest("button");
-      if (!btn) return;
-      const label = (btn.textContent || "").toLowerCase();
-      if (label.includes("teach") || label.includes("train")) {
-        if (statusBadge) statusBadge.textContent = "⏳ Updating & saving weights...";
-        setTimeout(saveUserTrainedWeights, 900);
+    openBtn.addEventListener("click", () => {
+      syncModalPreview();
+      feedbackMsg.textContent = "";
+      backdrop.classList.add("active");
+    });
+
+    const closeModal = () => backdrop.classList.remove("active");
+    document.getElementById("closeTrainModalBtn").addEventListener("click", closeModal);
+    backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+    // Fine-tune & save user model on click
+    document.getElementById("runUserTrainBtn").addEventListener("click", async () => {
+      const classIdx = parseInt(targetSelect.value, 10);
+      const chosenChar = BANGLA_84_CLASSES[classIdx];
+      const model = findTfModel();
+
+      if (!window.tf || !model) {
+        feedbackMsg.textContent = "⚠️ Model is still initializing—wait 2 seconds and try again.";
+        return;
+      }
+
+      try {
+        feedbackMsg.textContent = `⏳ Teaching "${chosenChar}" to neural network...`;
+        const inputShape = model.inputs[0].shape; // e.g. [null, 64, 64, 1] or [null, 28, 28, 1]
+        const h = inputShape[1] || 64;
+        const w = inputShape[2] || 64;
+        const numClasses = model.outputs[0].shape[1] || 84;
+
+        model.compile({
+          optimizer: tf.train.adam(0.0005),
+          loss: "categoricalCrossentropy",
+          metrics: ["accuracy"]
+        });
+
+        const xs = tf.tidy(() => {
+          let img = tf.browser.fromPixels(modalPreview, 1).toFloat().div(255.0);
+          if (img.shape[0] !== h || img.shape[1] !== w) {
+            img = tf.image.resizeBilinear(img, [h, w]);
+          }
+          return img.expandDims(0);
+        });
+        const ys = tf.oneHot(tf.tensor1d([Math.min(classIdx, numClasses - 1)], "int32"), numClasses);
+
+        await model.fit(xs, ys, { epochs: 3, verbose: 0 });
+        xs.dispose();
+        ys.dispose();
+
+        await model.save(USER_MODEL_KEY);
+        const nowStr = new Date().toLocaleTimeString();
+        localStorage.setItem("bhcr_user_model_updated_at", nowStr);
+
+        feedbackMsg.style.color = "#10b981";
+        feedbackMsg.textContent = `✅ Updated & saved! Model learned "${chosenChar}".`;
+        statusBadge.textContent = `✓ Custom Model Saved (${nowStr})`;
+
+        // Re-trigger prediction button if present so home screen updates immediately
+        const predBtn = Array.from(document.querySelectorAll("button")).find(b =>
+          /predict/i.test(b.textContent || "")
+        );
+        if (predBtn) predBtn.click();
+      } catch (err) {
+        feedbackMsg.style.color = "#ef4444";
+        feedbackMsg.textContent = "⚠️ Training error: " + (err.message || err);
       }
     });
 
-    // Manual Save & Reset buttons inside the modal
-    const saveNowBtn = document.getElementById("saveUserModelNowBtn");
-    if (saveNowBtn) {
-      saveNowBtn.addEventListener("click", saveUserTrainedWeights);
-    }
+    // Reset button
+    document.getElementById("resetUserModelBtn").addEventListener("click", async () => {
+      if (!confirm("Reset your custom trained updates and restore the original base model?")) return;
+      try {
+        if (window.tf?.io?.removeModel) await tf.io.removeModel(USER_MODEL_KEY);
+      } catch (_) {}
+      localStorage.removeItem("bhcr_user_model_updated_at");
+      location.reload();
+    });
 
-    const resetBtn = document.getElementById("resetUserModelBtn");
-    if (resetBtn) {
-      resetBtn.addEventListener("click", async () => {
-        if (!confirm("Reset your custom trained corrections and restore the original base model?")) return;
-        try {
-          if (window.tf && tf.io && tf.io.removeModel) {
-            await tf.io.removeModel(USER_MODEL_KEY);
-          }
-          localStorage.removeItem("bhcr_user_model_updated_at");
-          location.reload();
-        } catch (_) {
-          location.reload();
-        }
-      });
-    }
-
-    // Auto-restore user-updated weights on startup once base model finishes loading
+    // Auto-restore user-updated weights on startup
     setTimeout(async () => {
-      if (!window.tf || !tf.loadLayersModel) return;
-      if (!localStorage.getItem("bhcr_user_model_updated_at")) return;
+      if (!window.tf?.loadLayersModel || !localStorage.getItem("bhcr_user_model_updated_at")) return;
       try {
         const savedModel = await tf.loadLayersModel(USER_MODEL_KEY);
         const baseModel = findTfModel();
-        if (savedModel && baseModel && typeof baseModel.setWeights === "function") {
+        if (savedModel && baseModel?.setWeights) {
           baseModel.setWeights(savedModel.getWeights());
-          if (statusBadge) {
-            statusBadge.textContent = "✓ Custom Model Active (" + localStorage.getItem("bhcr_user_model_updated_at") + ")";
-          }
+          statusBadge.textContent = `✓ Custom Model Active (${localStorage.getItem("bhcr_user_model_updated_at")})`;
         }
       } catch (_) {}
-    }, 1800);
+    }, 2000);
   });
 })();
 </script>

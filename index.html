@@ -1298,5 +1298,78 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_LIVE_TYPE_VOICE_END -->
+<!-- CREAM_WHITE_BG_ONLY_START -->
+<style>
+  /* Only change the outer page background to soft cream-white; keep all UI cards in dark theme */
+  html:has(body.light-mode),
+  html:has(body.white-mode),
+  body.light-mode,
+  body.white-mode {
+    background: #f6f4ee !important;
+    background-color: #f6f4ee !important;
+  }
+
+  /* Keep header, main panels, inner prediction box, and composer in dark slate theme */
+  body.light-mode header,
+  body.white-mode header,
+  body.light-mode .card,
+  body.white-mode .card,
+  body.light-mode .panel,
+  body.white-mode .panel,
+  body.light-mode main > section,
+  body.white-mode main > section,
+  body.light-mode main > div,
+  body.white-mode main > div {
+    background: #131c2e !important;
+    background-color: #131c2e !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.22) !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14) !important;
+  }
+
+  /* Keep inner prediction card and composer box dark with high contrast text */
+  body.light-mode .pred-box,
+  body.white-mode .pred-box,
+  body.light-mode .result-box,
+  body.white-mode .result-box,
+  body.light-mode #wordOutput,
+  body.white-mode #wordOutput,
+  body.light-mode textarea,
+  body.white-mode textarea,
+  body.light-mode input[type="text"],
+  body.white-mode input[type="text"] {
+    background: #0b1120 !important;
+    background-color: #0b1120 !important;
+    color: #f1f5f9 !important;
+    border-color: rgba(148, 163, 184, 0.25) !important;
+  }
+
+  /* Preserve dark-mode badge colors since the cards remain dark */
+  body.light-mode .bangla-type-badge.vowel,
+  body.white-mode .bangla-type-badge.vowel {
+    background: rgba(16, 185, 129, 0.16) !important;
+    color: #34d399 !important;
+  }
+  body.light-mode .bangla-type-badge.consonant,
+  body.white-mode .bangla-type-badge.consonant {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38bdf8 !important;
+  }
+  body.light-mode .bangla-type-badge.digit,
+  body.white-mode .bangla-type-badge.digit {
+    background: rgba(245, 158, 11, 0.16) !important;
+    color: #fbbf24 !important;
+  }
+  body.light-mode .bangla-type-badge.compound,
+  body.white-mode .bangla-type-badge.compound {
+    background: rgba(168, 85, 247, 0.18) !important;
+    color: #c084fc !important;
+  }
+  body.light-mode .bangla-voice-btn,
+  body.white-mode .bangla-voice-btn {
+    color: #e2e8f0 !important;
+  }
+</style>
+<!-- CREAM_WHITE_BG_ONLY_END -->
 </body>
 </html>

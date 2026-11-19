@@ -283,6 +283,83 @@ body > * {
   position: relative;
   z-index: 1;
 }
+
+/* Rich Linguistic Metadata & Informative Guide Styles */
+.meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.meta-badge {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+.meta-badge.vowel { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+.meta-badge.consonant { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); }
+.meta-badge.digit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
+.meta-badge.compound { background: rgba(168, 85, 247, 0.16); color: #c084fc; border-color: rgba(168, 85, 247, 0.38); }
+body.light-mode .meta-badge, body.white-mode .meta-badge { background: rgba(2, 132, 199, 0.1); color: #0369a1; border-color: rgba(2, 132, 199, 0.3); }
+body.light-mode .meta-badge.vowel, body.white-mode .meta-badge.vowel { background: rgba(5, 150, 105, 0.1); color: #047857; }
+body.light-mode .meta-badge.digit, body.white-mode .meta-badge.digit { background: rgba(217, 119, 6, 0.1); color: #b45309; }
+body.light-mode .meta-badge.compound, body.white-mode .meta-badge.compound { background: rgba(126, 34, 206, 0.1); color: #7e22ce; }
+
+.char-breakdown {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+.matra-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.matra-btn {
+  padding: 4px 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.12);
+  color: inherit;
+  cursor: pointer;
+}
+.matra-btn:hover { background: rgba(56, 189, 248, 0.22); border-color: #38bdf8; }
+
+.info-guide-card {
+  max-width: 1120px;
+  margin: 16px auto 24px auto;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+}
+body.light-mode .info-guide-card, body.white-mode .info-guide-card {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(15, 23, 42, 0.14);
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.info-box {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(148, 163, 184, 0.06);
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+.info-box strong { display: block; margin-bottom: 3px; font-size: 0.88rem; }
 </style>
 </head>
 <body>
@@ -369,6 +446,7 @@ body > * {
             <button class="btn-slate" onclick="copyWord()">Copy</button>
             <button class="btn-red" onclick="clearWord()">Reset</button>
           </div>
+<div class="matra-bar"><button type="button" class="matra-btn" onclick="appendQuickChar('া')">া</button><button type="button" class="matra-btn" onclick="appendQuickChar('ি')">ি</button><button type="button" class="matra-btn" onclick="appendQuickChar('ী')">ী</button><button type="button" class="matra-btn" onclick="appendQuickChar('ু')">ু</button><button type="button" class="matra-btn" onclick="appendQuickChar('ূ')">ূ</button><button type="button" class="matra-btn" onclick="appendQuickChar('ে')">ে</button><button type="button" class="matra-btn" onclick="appendQuickChar('ো')">ো</button><button type="button" class="matra-btn" onclick="appendQuickChar('্')">্ (হসন্ত)</button><button type="button" class="matra-btn" onclick="appendQuickChar('।' )">। (দাঁড়ি)</button></div>
         </div>
       </div>
     </div>
@@ -389,6 +467,102 @@ body > * {
   <script>
     let model = null;
     let classNames = [];
+const BANGLA_CHAR_DETAILS = {
+  "অ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O / A", parts: "মূল স্বরবর্ণ • ১ম বর্ণ" },
+  "আ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Aa", parts: "কার-চিহ্ন: া (আ-কার)" },
+  "ই": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "I", parts: "কার-চিহ্ন: ি (হ্রস্ব ই-কার)" },
+  "ঈ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ee", parts: "কার-চিহ্ন: ী (দীর্ঘ ঈ-কার)" },
+  "উ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "U", parts: "কার-চিহ্ন: ু (হ্রস্ব উ-কার)" },
+  "ঊ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oo", parts: "কার-চিহ্ন: ূ (দীর্ঘ ঊ-কার)" },
+  "ঋ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ri", parts: "কার-চিহ্ন: ৃ (ঋ-কার)" },
+  "এ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "E", parts: "কার-চিহ্ন: ে (এ-কার)" },
+  "ঐ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Oi", parts: "কার-চিহ্ন: ৈ (ঐ-কার)" },
+  "ও": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "O", parts: "কার-চিহ্ন: ো (ও-কার)" },
+  "ঔ": { type: "স্বরবর্ণ (Vowel)", cls: "vowel", rom: "Ou", parts: "কার-চিহ্ন: ৌ (ঔ-কার)" },
+  "ক্ষ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksha", parts: "বিশ্লেষণ: ক + ষ্ + ষ" },
+  "জ্ঞ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gya / Jna", parts: "বিশ্লেষণ: জ + ্ + ঞ" },
+  "ঞ্চ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ncha", parts: "বিশ্লেষণ: ঞ + ্ + চ" },
+  "ঞ্ছ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nchha", parts: "বিশ্লেষণ: ঞ + ্ + ছ" },
+  "ঞ্জ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nja", parts: "বিশ্লেষণ: ঞ + ্ + জ" },
+  "ত্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tta", parts: "বিশ্লেষণ: ত + ্ + ত" },
+  "ত্র": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Tra", parts: "বিশ্লেষণ: ত + ্ + র (র-ফলা)" },
+  "ক্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kta", parts: "বিশ্লেষণ: ক + ্ + ত" },
+  "ক্ল": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Kla", parts: "বিশ্লেষণ: ক + ্ + ল" },
+  "ক্স": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ksa", parts: "বিশ্লেষণ: ক + ্ + স" },
+  "গু": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Gu", parts: "বিশ্লেষণ: গ + উ-কার (ু)" },
+  "ঙ্গ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nga", parts: "বিশ্লেষণ: ঙ + ্ + গ" },
+  "ঙ্ক": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nka", parts: "বিশ্লেষণ: ঙ + ্ + ক" },
+  "চ্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Chwa", parts: "বিশ্লেষণ: চ + ্ + ব (ব-ফলা)" },
+  "জ্জ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Jja", parts: "বিশ্লেষণ: জ + ্ + জ" },
+  "ত্থ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ttha", parts: "বিশ্লেষণ: ত + ্ + থ" },
+  "ত্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Twa", parts: "বিশ্লেষণ: ত + ্ + ব (ব-ফলা)" },
+  "দ্দ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dda", parts: "বিশ্লেষণ: দ + ্ + দ" },
+  "দ্ধ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ddha", parts: "বিশ্লেষণ: দ + ্ + ধ" },
+  "দ্ব": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Dwa", parts: "বিশ্লেষণ: দ + ্ + ব (ব-ফলা)" },
+  "ন্ত": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nta", parts: "বিশ্লেষণ: ন + ্ + ত" },
+  "ন্দ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Nda", parts: "বিশ্লেষণ: ন + ্ + দ" },
+  "ন্ধ": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Ndha", parts: "বিশ্লেষণ: ন + ্ + ধ" },
+  "ম্প": { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Mpa", parts: "বিশ্লেষণ: ম + ্ + প" }
+};
+
+const CONSONANT_ROM = {
+  "ক":"Ka","খ":"Kha","গ":"Ga","ঘ":"Gha","ঙ":"Umo","চ":"Cha","ছ":"Chha","জ":"Ja","ঝ":"Jha","ঞ":"Nio",
+  "ট":"Ta","ঠ":"Tha","ড":"Da","ঢ":"Dha","ণ":"Murdhonno Na","ত":"Ta","থ":"Tha","দ":"Da","ধ":"Dha","ন":"Donto Na",
+  "প":"Pa","ফ":"Pha","ব":"Ba","ভ":"Bha","ম":"Ma","য":"Antastha Ja","র":"Ra","ল":"La","শ":"Talobbo Sha","ষ":"Murdhonno Sha",
+  "স":"Donto Sa","হ":"Ha","ড়":"Ra (Bindu)","ঢ়":"Rha (Bindu)","য়":"Antastha Ya","ৎ":"Khanda Ta","ং":"Anusvara","ঃ":"Visarga","ঁ":"Chandrabindu"
+};
+
+const DIGIT_NAMES = {
+  "০":"শূন্য (Zero)","১":"এক (One)","২":"দুই (Two)","৩":"তিন (Three)","৪":"চার (Four)",
+  "৫":"পাঁচ (Five)","৬":"ছয় (Six)","৭":"সাত (Seven)","৮":"আট (Eight)","৯":"নয় (Nine)"
+};
+
+function updateCharacterInfoPanel(ch, rawClassId, confidencePct) {
+  let box = document.getElementById("charLinguisticInfo");
+  if (!box) {
+    const confEl = document.getElementById("predConf") || Array.from(document.querySelectorAll("*")).find(el => el.children.length === 0 && el.textContent.includes("Confidence:"));
+    if (!confEl) return;
+    box = document.createElement("div");
+    box.id = "charLinguisticInfo";
+    confEl.insertAdjacentElement("afterend", box);
+  }
+  if (!ch || ch === "?" || ch === "—") {
+    box.innerHTML = "";
+    return;
+  }
+
+  const codePoints = Array.from(ch).map(c => "U+" + c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")).join(" ");
+  let info = BANGLA_CHAR_DETAILS[ch];
+  if (!info) {
+    if (DIGIT_NAMES[ch]) {
+      info = { type: "সংখ্যা (Digit)", cls: "digit", rom: DIGIT_NAMES[ch], parts: "বাংলা সংখ্যা পদ্ধতি (০–৯)" };
+    } else if (CONSONANT_ROM[ch]) {
+      info = { type: "ব্যঞ্জনবর্ণ (Consonant)", cls: "consonant", rom: CONSONANT_ROM[ch], parts: "স্পর্শ / উষ্ম / অন্তঃস্থ ব্যঞ্জনবর্ণ" };
+    } else if (ch.includes("্") || Array.from(ch).length > 1) {
+      info = { type: "যুক্তবর্ণ (Compound)", cls: "compound", rom: "Juktoborno", parts: "বিশ্লেষণ: " + Array.from(ch).join(" + ") };
+    } else {
+      info = { type: "বাংলা বর্ণ (Character)", cls: "consonant", rom: ch, parts: "৮৪-শ্রেণির বাংলা হস্তাক্ষর ডেটাসেট" };
+    }
+  }
+
+  const level = confidencePct >= 85 ? "উচ্চ নিশ্চয়তা (High)" : (confidencePct >= 55 ? "মধ্যম নিশ্চয়তা (Moderate)" : "কম নিশ্চয়তা — স্পষ্ট করে লিখুন");
+  box.innerHTML = `
+    <div class="meta-badges">
+      <span class="meta-badge ${info.cls}">${info.type}</span>
+      <span class="meta-badge">Class #${rawClassId}</span>
+      <span class="meta-badge">${codePoints}</span>
+      <span class="meta-badge">${info.rom}</span>
+    </div>
+    <div class="char-breakdown">${info.parts} • <strong>${level}</strong></div>
+  `;
+}
+
+function appendQuickChar(str) {
+  const wordBox = document.getElementById("wordOutput") || document.querySelector("#wordComposer, [id*='word']");
+  if (!wordBox) return;
+  if ("value" in wordBox) { wordBox.value += str; }
+  else { wordBox.textContent += str; }
+}
 const BANGLALEKHA_MAP = {
   "1": "অ", "2": "আ", "3": "ই", "4": "ঈ", "5": "উ", "6": "ঊ", "7": "ঋ", "8": "এ", "9": "ঐ", "10": "ও", "11": "ঔ",
   "12": "ক", "13": "খ", "14": "গ", "15": "ঘ", "16": "ঙ", "17": "চ", "18": "ছ", "19": "জ", "20": "ঝ", "21": "ঞ",
@@ -1012,5 +1186,30 @@ function getBanglaLabel(raw) {
     }
     initApp();
   </script>
+
+<section class="info-guide-card" aria-label="Bangla OCR System Information">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+    <strong style="font-size:0.95rem;letter-spacing:0.3px;">📊 মডেল ও বর্ণমালা পরিচিতি • 84-Class Bangla BHCR System</strong>
+    <span style="font-size:0.78rem;opacity:0.8;">Architecture: Custom CNN • 5-View TTA • 64×64 Grayscale Tensor</span>
+  </div>
+  <div class="info-grid">
+    <div class="info-box">
+      <strong>🔤 ১১টি স্বরবর্ণ (Vowels • Class 0–10)</strong>
+      অ, আ, ই, ঈ, উ, ঊ, ঋ, এ, ঐ, ও, ঔ — পূর্ণমাত্রা, অর্ধমাত্রা ও মাত্রাহীন স্বরবর্ণ শনাক্তকরণ।
+    </div>
+    <div class="info-box">
+      <strong>🔠 ৩৯টি ব্যঞ্জনবর্ণ (Consonants • Class 11–49)</strong>
+      ক থেকে ঁ পর্যন্ত সকল বর্গীয় ও অবর্গীয় ব্যঞ্জনবর্ণ এবং অনুস্বার, বিসর্গ ও চন্দ্রবিন্দু।
+    </div>
+    <div class="info-box">
+      <strong>🔢 ১০টি সংখ্যা (Digits • Class 50–59)</strong>
+      ০, ১, ২, ৩, ৪, ৫, ৬, ৭, ৮, ৯ — হাতে লেখা বাংলা সংখ্যার নির্ভুল শ্রেণিবিন্যাস।
+    </div>
+    <div class="info-box">
+      <strong>🧩 ২৪টি যুক্তবর্ণ (Compounds • Class 60–83)</strong>
+      ক্ষ, জ্ঞ, ঞ্চ, ঞ্জ, ত্ত, ত্র, ক্ত, ঙ্গ, ন্ত, ন্দ, ন্ধ, ম্প সহ বহুল ব্যবহৃত বাংলা যুক্তাক্ষর।
+    </div>
+  </div>
+</section>
 </body>
 </html>

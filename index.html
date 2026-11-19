@@ -1644,7 +1644,17 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_HERO_PREDICTION_END -->
 <!-- BANGLA_TRAIN_MODAL_START -->
 <style>
-  /* Trigger button right next to White Mode in the top header */
+  /* Right-aligned header control group: [🧠 Train Model] [Theme Button] */
+  .header-right-controls {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* Trigger button placed directly before the Theme button on the right */
   .open-train-modal-btn {
     display: inline-flex;
     align-items: center;
@@ -1654,7 +1664,6 @@ function getBanglaLabel(raw) {
     font-size: 0.86rem;
     font-weight: 700;
     cursor: pointer;
-    margin-left: 8px;
     border: 1.5px solid rgba(245, 158, 11, 0.48);
     background: rgba(245, 158, 11, 0.14);
     color: #fbbf24;
@@ -1712,6 +1721,8 @@ function getBanglaLabel(raw) {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    width: 100%;
     padding-bottom: 12px;
     margin-bottom: 14px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.22);
@@ -1719,20 +1730,28 @@ function getBanglaLabel(raw) {
   .train-modal-title {
     font-size: 1.05rem;
     font-weight: 700;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    margin: 0;
   }
   .train-modal-close {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    background: transparent;
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    line-height: 1;
+    border-radius: 9px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.08);
     color: inherit;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .train-modal-close:hover {
     background: rgba(239, 68, 68, 0.16);
@@ -1854,7 +1873,12 @@ function getBanglaLabel(raw) {
       /white mode|dark mode/i.test(b.textContent || "")
     );
     if (themeBtn && themeBtn.parentElement) {
-      themeBtn.parentElement.insertBefore(openBtn, themeBtn);
+      const parent = themeBtn.parentElement;
+      const rightGroup = document.createElement("div");
+      rightGroup.className = "header-right-controls";
+      parent.insertBefore(rightGroup, themeBtn);
+      rightGroup.appendChild(openBtn);
+      rightGroup.appendChild(themeBtn);
     } else {
       const hdr = document.querySelector("header") || document.body;
       hdr.appendChild(openBtn);

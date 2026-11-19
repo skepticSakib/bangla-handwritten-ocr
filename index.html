@@ -1012,5 +1012,225 @@ function getBanglaLabel(raw) {
     }
     initApp();
   </script>
+<!-- BANGLA_LIVE_TYPE_VOICE_START -->
+<style>
+  .live-type-voice-box {
+    flex: 1;
+    min-width: 135px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 10px;
+  }
+  .bangla-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.16);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+  }
+  .bangla-type-badge.vowel {
+    background: rgba(16, 185, 129, 0.16);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  .bangla-type-badge.consonant {
+    background: rgba(56, 189, 248, 0.16);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+  .bangla-type-badge.digit {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+  }
+  .bangla-type-badge.compound {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.42);
+  }
+  body.light-mode .bangla-type-badge.vowel,
+  body.white-mode .bangla-type-badge.vowel {
+    background: rgba(5, 150, 105, 0.12);
+    color: #047857;
+  }
+  body.light-mode .bangla-type-badge.consonant,
+  body.white-mode .bangla-type-badge.consonant {
+    background: rgba(2, 132, 199, 0.12);
+    color: #0369a1;
+  }
+  body.light-mode .bangla-type-badge.digit,
+  body.white-mode .bangla-type-badge.digit {
+    background: rgba(217, 119, 6, 0.12);
+    color: #b45309;
+  }
+  body.light-mode .bangla-type-badge.compound,
+  body.white-mode .bangla-type-badge.compound {
+    background: rgba(126, 34, 206, 0.12);
+    color: #7e22ce;
+  }
+  .bangla-voice-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background: rgba(56, 189, 248, 0.14);
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease;
+  }
+  .bangla-voice-btn:hover {
+    background: rgba(56, 189, 248, 0.26);
+  }
+  .bangla-voice-btn:active {
+    transform: scale(0.96);
+  }
+  .bangla-voice-btn.speaking {
+    border-color: #34d399;
+    background: rgba(16, 185, 129, 0.22);
+  }
+</style>
+<script>
+(function () {
+  const VOWELS = new Set(["অ", "আ", "ই", "ঈ", "উ", "ঊ", "ঋ", "এ", "ঐ", "ও", "ঔ"]);
+  const DIGITS = new Set(["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"]);
+  const CONSONANTS = new Set([
+    "ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ", "ঝ", "ঞ",
+    "ট", "ঠ", "ড", "ঢ", "ণ", "ত", "থ", "দ", "ধ", "ন",
+    "প", "ফ", "ব", "ভ", "ম", "য", "র", "ল", "শ", "ষ",
+    "স", "হ", "ড়", "ঢ়", "য়", "ৎ", "ং", "ঃ", "ঁ"
+  ]);
+
+  const SPOKEN_NAMES = {
+    "অ": "স্বরে অ", "আ": "স্বরে আ", "ই": "হ্রস্ব ই", "ঈ": "দীর্ঘ ঈ",
+    "উ": "হ্রস্ব উ", "ঊ": "দীর্ঘ ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
+    "ঙ": "উঁয়ো", "ঞ": "ইঁয়ো", "ণ": "মূর্ধন্য ন", "ন": "দন্ত্য ন",
+    "শ": "তালব্য শ", "ষ": "মূর্ধন্য ষ", "স": "দন্ত্য স",
+    "ড়": "ড-এ শূন্য ড়", "ঢ়": "ঢ-এ শূন্য ঢ়", "য়": "অন্তঃস্থ য়",
+    "ৎ": "খণ্ড ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
+    "ক্ষ": "যুক্ত ক্ষ", "জ্ঞ": "যুক্ত জ্ঞ", "ত্র": "ত-এ র-ফলা ত্র"
+  };
+
+  function classifyBanglaChar(ch) {
+    if (VOWELS.has(ch)) return { label: "স্বরবর্ণ (Shorborno)", cls: "vowel" };
+    if (DIGITS.has(ch)) return { label: "সংখ্যা (Digit)", cls: "digit" };
+    if (CONSONANTS.has(ch)) return { label: "ব্যঞ্জনবর্ণ (Byanjonborno)", cls: "consonant" };
+    if (ch.includes("্") || Array.from(ch).length > 1) {
+      return { label: "যুক্তবর্ণ (Juktoborno)", cls: "compound" };
+    }
+    return { label: "বাংলা বর্ণ", cls: "consonant" };
+  }
+
+  let currentSpokenAudio = null;
+
+  function speakBanglaChar(ch) {
+    if (!ch || ch === "?" || ch === "—" || ch === "-") return;
+    const textToSpeak = SPOKEN_NAMES[ch] || ch;
+    const btn = document.getElementById("banglaSpeakBtn");
+    if (btn) btn.classList.add("speaking");
+
+    const clearSpeaking = () => {
+      if (btn) btn.classList.remove("speaking");
+    };
+
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const voices = window.speechSynthesis.getVoices();
+        const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("bn"));
+        if (bnVoice || voices.length === 0) {
+          const utter = new SpeechSynthesisUtterance(textToSpeak);
+          utter.lang = bnVoice ? bnVoice.lang : "bn-BD";
+          if (bnVoice) utter.voice = bnVoice;
+          utter.rate = 0.92;
+          utter.onend = clearSpeaking;
+          utter.onerror = () => fallbackTtsAudio(textToSpeak, clearSpeaking);
+          window.speechSynthesis.speak(utter);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    fallbackTtsAudio(textToSpeak, clearSpeaking);
+  }
+
+  function fallbackTtsAudio(text, onDone) {
+    try {
+      if (currentSpokenAudio) {
+        currentSpokenAudio.pause();
+        currentSpokenAudio = null;
+      }
+      const url = "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=" + encodeURIComponent(text);
+      const audio = new Audio(url);
+      currentSpokenAudio = audio;
+      audio.onended = onDone;
+      audio.onerror = onDone;
+      audio.play().catch(onDone);
+    } catch (_) {
+      onDone();
+    }
+  }
+
+  function updateLiveTypeAndVoice() {
+    const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+    if (!charEl || !charEl.parentElement) return;
+
+    const leftCol = charEl.parentElement;
+    let infoBox = document.getElementById("liveTypeVoiceBox");
+    if (!infoBox) {
+      infoBox = document.createElement("div");
+      infoBox.id = "liveTypeVoiceBox";
+      infoBox.className = "live-type-voice-box";
+      leftCol.insertAdjacentElement("afterend", infoBox);
+    }
+
+    const ch = (charEl.textContent || "").trim();
+    if (!ch || ch === "?" || ch === "—" || ch === "-") {
+      infoBox.innerHTML = `<span style="font-size:0.8rem;opacity:0.65;">বর্ণ লিখুন • টাইপ ও উচ্চারণ দেখতে</span>`;
+      return;
+    }
+
+    const info = classifyBanglaChar(ch);
+    infoBox.innerHTML = `
+      <span class="bangla-type-badge ${info.cls}">${info.label}</span>
+      <button type="button" id="banglaSpeakBtn" class="bangla-voice-btn" title="বাংলায় উচ্চারণ শুনুন">
+        🔊 <span>উচ্চারণ (${ch})</span>
+      </button>
+    `;
+
+    const speakBtn = document.getElementById("banglaSpeakBtn");
+    if (speakBtn) {
+      speakBtn.onclick = () => speakBanglaChar(ch);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+    }
+    updateLiveTypeAndVoice();
+    const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+    if (charEl) {
+      new MutationObserver(updateLiveTypeAndVoice).observe(charEl, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
+  });
+})();
+</script>
+<!-- BANGLA_LIVE_TYPE_VOICE_END -->
 </body>
 </html>

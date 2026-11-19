@@ -1080,25 +1080,25 @@ function getBanglaLabel(raw) {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
-    font-size: 0.82rem;
+    padding: 6px 13px;
+    font-size: 0.84rem;
     font-weight: 600;
     border-radius: 8px;
     border: 1px solid rgba(56, 189, 248, 0.45);
-    background: rgba(56, 189, 248, 0.14);
+    background: rgba(56, 189, 248, 0.15);
     color: inherit;
     cursor: pointer;
     transition: transform 0.12s ease, background 0.15s ease;
   }
   .bangla-voice-btn:hover {
-    background: rgba(56, 189, 248, 0.26);
+    background: rgba(56, 189, 248, 0.28);
   }
   .bangla-voice-btn:active {
     transform: scale(0.96);
   }
   .bangla-voice-btn.speaking {
     border-color: #34d399;
-    background: rgba(16, 185, 129, 0.22);
+    background: rgba(16, 185, 129, 0.25);
   }
 </style>
 <script>
@@ -1115,10 +1115,17 @@ function getBanglaLabel(raw) {
   const SPOKEN_NAMES = {
     "অ": "স্বরে অ", "আ": "স্বরে আ", "ই": "হ্রস্ব ই", "ঈ": "দীর্ঘ ঈ",
     "উ": "হ্রস্ব উ", "ঊ": "দীর্ঘ ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
-    "ঙ": "উঁয়ো", "ঞ": "ইঁয়ো", "ণ": "মূর্ধন্য ন", "ন": "দন্ত্য ন",
-    "শ": "তালব্য শ", "ষ": "মূর্ধন্য ষ", "স": "দন্ত্য স",
+    "ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ", "ঙ": "উঁয়ো",
+    "চ": "চ", "ছ": "ছ", "জ": "বর্গীয় জ", "ঝ": "ঝ", "ঞ": "ইঁয়ো",
+    "ট": "ট", "ঠ": "ঠ", "ড": "ড", "ঢ": "ঢ", "ণ": "মূর্ধন্য ন",
+    "ত": "ত", "থ": "থ", "দ": "দ", "ধ": "ধ", "ন": "দন্ত্য ন",
+    "প": "প", "ফ": "ফ", "ব": "ব", "ভ": "ভ", "ম": "ম",
+    "য": "অন্তঃস্থ য", "র": "র", "ল": "ল",
+    "শ": "তালব্য শ", "ষ": "মূর্ধন্য ষ", "স": "দন্ত্য স", "হ": "হ",
     "ড়": "ড-এ শূন্য ড়", "ঢ়": "ঢ-এ শূন্য ঢ়", "য়": "অন্তঃস্থ য়",
     "ৎ": "খণ্ড ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
+    "০": "শূন্য", "১": "এক", "২": "দুই", "৩": "তিন", "৪": "চার",
+    "৫": "পাঁচ", "৬": "ছয়", "৭": "সাত", "৮": "আট", "৯": "নয়",
     "ক্ষ": "যুক্ত ক্ষ", "জ্ঞ": "যুক্ত জ্ঞ", "ত্র": "ত-এ র-ফলা ত্র"
   };
 
@@ -1134,51 +1141,84 @@ function getBanglaLabel(raw) {
 
   let currentSpokenAudio = null;
 
-  function speakBanglaChar(ch) {
+  function playAudioUrl(url) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (currentSpokenAudio) {
+          currentSpokenAudio.pause();
+          currentSpokenAudio = null;
+        }
+        const audio = new Audio();
+        audio.crossOrigin = "anonymous";
+        audio.referrerPolicy = "no-referrer";
+        audio.preload = "auto";
+        audio.src = url;
+        currentSpokenAudio = audio;
+        audio.onended = () => resolve(true);
+        audio.onerror = () => reject(new Error("Audio load error"));
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.then === "function") {
+          playPromise.catch(reject);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  function speakWithSystemBanglaVoice(text) {
+    return new Promise((resolve, reject) => {
+      if (!("speechSynthesis" in window)) return reject(new Error("No speechSynthesis"));
+      const voices = window.speechSynthesis.getVoices();
+      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("bn"));
+      if (!bnVoice) return reject(new Error("No bn voice installed"));
+
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.voice = bnVoice;
+      utter.lang = bnVoice.lang || "bn-BD";
+      utter.volume = 1.0;
+      utter.rate = 0.9;
+      let started = false;
+      utter.onstart = () => { started = true; };
+      utter.onend = () => resolve(true);
+      utter.onerror = () => reject(new Error("Utterance failed"));
+      window.speechSynthesis.speak(utter);
+
+      setTimeout(() => {
+        if (!started) reject(new Error("Speech timeout"));
+      }, 900);
+    });
+  }
+
+  async function speakBanglaChar(ch) {
     if (!ch || ch === "?" || ch === "—" || ch === "-") return;
     const textToSpeak = SPOKEN_NAMES[ch] || ch;
     const btn = document.getElementById("banglaSpeakBtn");
     if (btn) btn.classList.add("speaking");
 
-    const clearSpeaking = () => {
-      if (btn) btn.classList.remove("speaking");
-    };
+    const encoded = encodeURIComponent(textToSpeak);
+    const ttsUrls = [
+      `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=bn&q=${encoded}`,
+      `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${encoded}`
+    ];
 
     try {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const voices = window.speechSynthesis.getVoices();
-        const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("bn"));
-        if (bnVoice || voices.length === 0) {
-          const utter = new SpeechSynthesisUtterance(textToSpeak);
-          utter.lang = bnVoice ? bnVoice.lang : "bn-BD";
-          if (bnVoice) utter.voice = bnVoice;
-          utter.rate = 0.92;
-          utter.onend = clearSpeaking;
-          utter.onerror = () => fallbackTtsAudio(textToSpeak, clearSpeaking);
-          window.speechSynthesis.speak(utter);
+      // 1. Try native Bangla voice if installed on OS/Android
+      try {
+        await speakWithSystemBanglaVoice(textToSpeak);
+        return;
+      } catch (_) {}
+
+      // 2. Fallback to Bangla TTS MP3 stream (works on Windows/Chrome/Android even without local bn voice pack)
+      for (const url of ttsUrls) {
+        try {
+          await playAudioUrl(url);
           return;
-        }
+        } catch (_) {}
       }
-    } catch (_) {}
-
-    fallbackTtsAudio(textToSpeak, clearSpeaking);
-  }
-
-  function fallbackTtsAudio(text, onDone) {
-    try {
-      if (currentSpokenAudio) {
-        currentSpokenAudio.pause();
-        currentSpokenAudio = null;
-      }
-      const url = "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=" + encodeURIComponent(text);
-      const audio = new Audio(url);
-      currentSpokenAudio = audio;
-      audio.onended = onDone;
-      audio.onerror = onDone;
-      audio.play().catch(onDone);
-    } catch (_) {
-      onDone();
+    } finally {
+      if (btn) btn.classList.remove("speaking");
     }
   }
 
@@ -1218,6 +1258,7 @@ function getBanglaLabel(raw) {
   window.addEventListener("DOMContentLoaded", () => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
     updateLiveTypeAndVoice();
     const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");

@@ -255,7 +255,35 @@
       max-height: 340px;
       object-fit: cover;
     }
-  </style>
+  
+/* Shaheed Minar Transparent Background Watermark */
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.11;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: min(560px, 92vw) auto;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 420'%3E%3Ccircle cx='300' cy='185' r='92' fill='%23ef4444' fill-opacity='0.55'/%3E%3Cg fill='none' stroke='%2338bdf8' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='95' y='372' width='410' height='12' rx='3'/%3E%3Crect x='70' y='388' width='460' height='14' rx='3'/%3E%3C!-- Far Left Pillar --%3E%3Crect x='132' y='210' width='26' height='162'/%3E%3Cline x1='145' y1='210' x2='145' y2='372'/%3E%3C!-- Inner Left Pillar --%3E%3Crect x='180' y='155' width='32' height='217'/%3E%3Cline x1='196' y1='155' x2='196' y2='372'/%3E%3C!-- Center Bent Pillar --%3E%3Cpath d='M248 372 V112 L222 52 H378 L352 112 V372 Z'/%3E%3Cline x1='276' y1='52' x2='286' y2='112'/%3E%3Cline x1='286' y1='112' x2='286' y2='372'/%3E%3Cline x1='324' y1='52' x2='314' y2='112'/%3E%3Cline x1='314' y1='112' x2='314' y2='372'/%3E%3C!-- Inner Right Pillar --%3E%3Crect x='388' y='155' width='32' height='217'/%3E%3Cline x1='404' y1='155' x2='404' y2='372'/%3E%3C!-- Far Right Pillar --%3E%3Crect x='442' y='210' width='26' height='162'/%3E%3Cline x1='455' y1='210' x2='455' y2='372'/%3E%3C/g%3E%3C/svg%3E");
+}
+body.light-mode::before,
+body.white-mode::before,
+[data-theme="light"] body::before {
+  opacity: 0.09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 420'%3E%3Ccircle cx='300' cy='185' r='92' fill='%23dc2626' fill-opacity='0.5'/%3E%3Cg fill='none' stroke='%230f172a' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='95' y='372' width='410' height='12' rx='3'/%3E%3Crect x='70' y='388' width='460' height='14' rx='3'/%3E%3Crect x='132' y='210' width='26' height='162'/%3E%3Cline x1='145' y1='210' x2='145' y2='372'/%3E%3Crect x='180' y='155' width='32' height='217'/%3E%3Cline x1='196' y1='155' x2='196' y2='372'/%3E%3Cpath d='M248 372 V112 L222 52 H378 L352 112 V372 Z'/%3E%3Cline x1='276' y1='52' x2='286' y2='112'/%3E%3Cline x1='286' y1='112' x2='286' y2='372'/%3E%3Cline x1='324' y1='52' x2='314' y2='112'/%3E%3Cline x1='314' y1='112' x2='314' y2='372'/%3E%3Crect x='388' y='155' width='32' height='217'/%3E%3Cline x1='404' y1='155' x2='404' y2='372'/%3E%3Crect x='442' y='210' width='26' height='162'/%3E%3Cline x1='455' y1='210' x2='455' y2='372'/%3E%3C/g%3E%3C/svg%3E");
+}
+body > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
 </head>
 <body>
   <div class="container">

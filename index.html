@@ -1768,5 +1768,256 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_CALLIGRAPHY_MOTION_END -->
+<!-- BANGLA_HERO_PREDICTION_START -->
+<style>
+  /* =========================================================
+     1. HERO-SIZED PREDICTED CHARACTER SECTION
+     ========================================================= */
+  .pred-box,
+  .result-box {
+    position: relative !important;
+    overflow: hidden !important;
+    padding: 28px 28px !important;
+    min-height: 205px !important;
+    gap: 24px !important;
+    border-radius: 18px !important;
+    border-width: 2px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease !important;
+  }
+
+  /* Subtle sweeping shimmer across the Predicted Character card */
+  @keyframes cardSheenSweep {
+    0% { transform: translateX(-140%) skewX(-18deg); }
+    45%, 100% { transform: translateX(260%) skewX(-18deg); }
+  }
+
+  .pred-box::after,
+  .result-box::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.28),
+      rgba(185, 28, 28, 0.05),
+      transparent
+    );
+    pointer-events: none;
+    animation: cardSheenSweep 5.5s ease-in-out infinite;
+  }
+
+  /* Extra-Large Terracotta Manuscript Seal Tile */
+  #predChar,
+  .pred-char,
+  .big-char {
+    position: relative !important;
+    min-width: 136px !important;
+    min-height: 136px !important;
+    font-size: 4.5rem !important;
+    padding: 12px 22px !important;
+    border-radius: 18px !important;
+    border-width: 3px !important;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease !important;
+  }
+
+  /* Make Confidence text directly under the seal larger and clearer */
+  .pred-box > div:first-child,
+  .result-box > div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+  }
+
+  /* Larger middle type badge & pronunciation button */
+  .live-type-voice-box {
+    gap: 14px !important;
+    padding: 8px 14px !important;
+  }
+  .bangla-type-badge {
+    font-size: 1.05rem !important;
+    padding: 8px 18px !important;
+    letter-spacing: 0.01em;
+  }
+  .bangla-voice-btn {
+    font-size: 1.02rem !important;
+    padding: 10px 20px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Larger CNN Input (64x64) preview box on the right */
+  .pred-box > div:last-child,
+  .result-box > div:last-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+  }
+
+  .pred-box canvas,
+  .result-box canvas,
+  .pred-box img,
+  .result-box img {
+    width: 116px !important;
+    height: 116px !important;
+    border-radius: 14px !important;
+    border: 1.5px solid rgba(185, 28, 28, 0.28) !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16) !important;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease !important;
+  }
+
+  /* =========================================================
+     2. DEDICATED PREDICTED LETTER ANIMATIONS
+     ========================================================= */
+
+  /* Deep Ink-Seal Stamp Impact + Elastic Settle */
+  @keyframes heroStampImpact {
+    0% {
+      opacity: 0.25;
+      transform: scale(1.36) rotate(-6deg);
+      box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.55);
+    }
+    45% {
+      opacity: 1;
+      transform: scale(0.91) rotate(1.8deg);
+      box-shadow: 0 0 0 14px rgba(185, 28, 28, 0.18);
+    }
+    75% {
+      transform: scale(1.03) rotate(-0.6deg);
+      box-shadow: 0 0 0 22px rgba(185, 28, 28, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.5),
+        0 6px 18px rgba(153, 27, 27, 0.16);
+    }
+  }
+
+  #predChar.hero-stamp-pop,
+  .pred-char.hero-stamp-pop,
+  .big-char.hero-stamp-pop {
+    animation: heroStampImpact 0.52s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  /* Gentle floating & warm ink aura on the big character seal */
+  @keyframes heroSealFloat {
+    0%, 100% {
+      transform: translateY(0px);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.5),
+        0 5px 14px rgba(153, 27, 27, 0.12);
+    }
+    50% {
+      transform: translateY(-3px);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.65),
+        0 10px 24px rgba(185, 28, 28, 0.24);
+    }
+  }
+
+  #predChar:not(.hero-stamp-pop),
+  .pred-char:not(.hero-stamp-pop),
+  .big-char:not(.hero-stamp-pop) {
+    animation: heroSealFloat 3.4s ease-in-out infinite;
+  }
+
+  /* Interactive hover tilt & zoom on the big seal */
+  #predChar:hover,
+  .pred-char:hover,
+  .big-char:hover {
+    transform: scale(1.06) rotate(-1.5deg) !important;
+  }
+
+  /* CNN Preview pulse scan effect when a new stroke is evaluated */
+  @keyframes cnnScanPulse {
+    0% {
+      transform: scale(0.93);
+      filter: brightness(1.35) contrast(1.2);
+      box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.55);
+    }
+    60% {
+      transform: scale(1.03);
+      filter: brightness(1.05);
+      box-shadow: 0 0 0 10px rgba(2, 132, 199, 0);
+    }
+    100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+  }
+
+  .cnn-scan-active {
+    animation: cnnScanPulse 0.48s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  /* Mobile responsiveness so the larger card fits cleanly on narrow screens */
+  @media (max-width: 540px) {
+    .pred-box,
+    .result-box {
+      padding: 20px 16px !important;
+      gap: 14px !important;
+    }
+    #predChar,
+    .pred-char,
+    .big-char {
+      min-width: 112px !important;
+      min-height: 112px !important;
+      font-size: 3.7rem !important;
+    }
+    .pred-box canvas,
+    .result-box canvas,
+    .pred-box img,
+    .result-box img {
+      width: 96px !important;
+      height: 96px !important;
+    }
+  }
+</style>
+<script>
+(function () {
+  window.addEventListener("DOMContentLoaded", () => {
+    const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
+    const predBox = document.querySelector(".pred-box, .result-box");
+    const cnnThumb = predBox ? predBox.querySelector("canvas, img") : null;
+    if (!charEl) return;
+
+    let lastChar = (charEl.textContent || "").trim();
+    new MutationObserver(() => {
+      const current = (charEl.textContent || "").trim();
+      if (current && current !== lastChar && current !== "?" && current !== "—") {
+        lastChar = current;
+
+        // Replay the big ink-seal stamp impact animation
+        charEl.classList.remove("hero-stamp-pop");
+        void charEl.offsetWidth;
+        charEl.classList.add("hero-stamp-pop");
+        setTimeout(() => charEl.classList.remove("hero-stamp-pop"), 560);
+
+        // Pulse the CNN Input (64x64) preview simultaneously
+        if (cnnThumb) {
+          cnnThumb.classList.remove("cnn-scan-active");
+          void cnnThumb.offsetWidth;
+          cnnThumb.classList.add("cnn-scan-active");
+          setTimeout(() => cnnThumb.classList.remove("cnn-scan-active"), 520);
+        }
+      }
+    }).observe(charEl, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
+<!-- BANGLA_HERO_PREDICTION_END -->
 </body>
 </html>

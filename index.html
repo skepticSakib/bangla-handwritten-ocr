@@ -1396,5 +1396,117 @@ function getBanglaLabel(raw) {
   }
 </style>
 <!-- CREAM_WHITE_BG_ONLY_END -->
+<!-- BANGLA_EDITORIAL_SEAL_START -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Editorial Bengali typography */
+  body, button, input, textarea, select {
+    font-family: 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Subtle archival paper grain texture on warm cream interface cards */
+  body.light-mode header,
+  body.white-mode header,
+  body.light-mode .card,
+  body.white-mode .card,
+  body.light-mode .panel,
+  body.white-mode .panel,
+  body.light-mode main > section,
+  body.white-mode main > section,
+  body.light-mode main > div,
+  body.white-mode main > div {
+    background-image:
+      radial-gradient(rgba(120, 113, 108, 0.045) 1px, transparent 0),
+      radial-gradient(rgba(180, 83, 9, 0.03) 1px, transparent 0) !important;
+    background-size: 22px 22px, 31px 31px !important;
+    background-position: 0 0, 11px 15px !important;
+    box-shadow:
+      0 10px 26px rgba(15, 23, 42, 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+  }
+
+  /* Editorial Stamp / Seal styling for the Live Prediction Card */
+  .pred-box,
+  .result-box {
+    position: relative;
+    border: 1.5px solid rgba(180, 83, 9, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 0 0 3px rgba(180, 83, 9, 0.06) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Traditional Terracotta / Ink Stamp Tile around the predicted character */
+  #predChar,
+  .pred-char,
+  .big-char {
+    font-family: 'Noto Serif Bengali', serif !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    min-height: 84px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: 2.5px double rgba(185, 28, 28, 0.58);
+    background: rgba(185, 28, 28, 0.06);
+    color: #991b1b;
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.45),
+      0 3px 10px rgba(153, 27, 27, 0.1);
+    letter-spacing: 0;
+    line-height: 1.1;
+  }
+
+  /* Dark mode adaptation for the Stamp / Seal tile */
+  body:not(.light-mode):not(.white-mode) #predChar,
+  body:not(.light-mode):not(.white-mode) .pred-char,
+  body:not(.light-mode):not(.white-mode) .big-char {
+    border-color: rgba(248, 113, 113, 0.55);
+    background: rgba(248, 113, 113, 0.09);
+    color: #fca5a5;
+    box-shadow:
+      inset 0 0 0 2px rgba(15, 23, 42, 0.35),
+      0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  body:not(.light-mode):not(.white-mode) .pred-box,
+  body:not(.light-mode):not(.white-mode) .result-box {
+    border-color: rgba(248, 113, 113, 0.26) !important;
+    box-shadow: inset 0 0 0 3px rgba(248, 113, 113, 0.05) !important;
+  }
+
+  /* Subtle corner seal registration ticks on the prediction box */
+  .pred-box::before,
+  .result-box::before {
+    content: "✦";
+    position: absolute;
+    top: 6px;
+    right: 9px;
+    font-size: 0.68rem;
+    color: rgba(185, 28, 28, 0.42);
+    pointer-events: none;
+  }
+
+  body:not(.light-mode):not(.white-mode) .pred-box::before,
+  body:not(.light-mode):not(.white-mode) .result-box::before {
+    color: rgba(248, 113, 113, 0.38);
+  }
+
+  /* Warm editorial styling for the voice button to match the stamp seal */
+  body.light-mode .bangla-voice-btn,
+  body.white-mode .bangla-voice-btn {
+    background: rgba(185, 28, 28, 0.08) !important;
+    border-color: rgba(185, 28, 28, 0.32) !important;
+    color: #7f1d1d !important;
+  }
+  body.light-mode .bangla-voice-btn:hover,
+  body.white-mode .bangla-voice-btn:hover {
+    background: rgba(185, 28, 28, 0.16) !important;
+  }
+</style>
+<!-- BANGLA_EDITORIAL_SEAL_END -->
 </body>
 </html>

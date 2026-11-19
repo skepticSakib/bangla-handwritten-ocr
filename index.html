@@ -1112,39 +1112,40 @@ function getBanglaLabel(raw) {
     "স", "হ", "ড়", "ঢ়", "য়", "ৎ", "ং", "ঃ", "ঁ"
   ]);
 
+  // Clear, unhurried Bangla pronunciation strings with natural pauses
   const SPOKEN_BN = {
-    "অ": "স্বরে অ", "আ": "স্বরে আ", "ই": "হ্রস্ব ই", "ঈ": "দীর্ঘ ঈ",
-    "উ": "হ্রস্ব উ", "ঊ": "দীর্ঘ ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
+    "অ": "স্বরে... অ", "আ": "স্বরে... আ", "ই": "হ্রস্ব... ই", "ঈ": "দীর্ঘ... ঈ",
+    "উ": "হ্রস্ব... উ", "ঊ": "দীর্ঘ... ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
     "ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ", "ঙ": "উঁয়ো",
-    "চ": "চ", "ছ": "ছ", "জ": "বর্গীয় জ", "ঝ": "ঝ", "ঞ": "ইঁয়ো",
-    "ট": "ট", "ঠ": "ঠ", "ড": "ড", "ঢ": "ঢ", "ণ": "মূর্ধন্য ন",
-    "ত": "ত", "থ": "থ", "দ": "দ", "ধ": "ধ", "ন": "দন্ত্য ন",
+    "চ": "চ", "ছ": "ছ", "জ": "বর্গীয়... জ", "ঝ": "ঝ", "ঞ": "ইঁয়ো",
+    "ট": "ট", "ঠ": "ঠ", "ড": "ড", "ঢ": "ঢ", "ণ": "মূর্ধন্য... ন",
+    "ত": "ত", "থ": "থ", "দ": "দ", "ধ": "ধ", "ন": "দন্ত্য... ন",
     "প": "প", "ফ": "ফ", "ব": "ব", "ভ": "ভ", "ম": "ম",
-    "য": "অন্তঃস্থ য", "র": "র", "ল": "ল",
-    "শ": "তালব্য শ", "ষ": "মূর্ধন্য ষ", "স": "দন্ত্য স", "হ": "হ",
-    "ড়": "ড-এ শূন্য ড়", "ঢ়": "ঢ-এ শূন্য ঢ়", "য়": "অন্তঃস্থ য়",
-    "ৎ": "খণ্ড ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
+    "য": "অন্তঃস্থ... য", "র": "র", "ল": "ল",
+    "শ": "তালব্য... শ", "ষ": "মূর্ধন্য... ষ", "স": "দন্ত্য... স", "হ": "হ",
+    "ড়": "ড-এ শূন্য... ড়", "ঢ়": "ঢ-এ শূন্য... ঢ়", "য়": "অন্তঃস্থ... য়",
+    "ৎ": "খণ্ড... ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
     "০": "শূন্য", "১": "এক", "২": "দুই", "৩": "তিন", "৪": "চার",
     "৫": "পাঁচ", "৬": "ছয়", "৭": "সাত", "৮": "আট", "৯": "নয়",
-    "ক্ষ": "যুক্ত ক্ষ", "জ্ঞ": "যুক্ত জ্ঞ", "ত্র": "ত-এ র-ফলা ত্র"
+    "ক্ষ": "যুক্ত... ক্ষ", "জ্ঞ": "যুক্ত... জ্ঞ", "ত্র": "ত-এ র-ফলা... ত্র"
   };
 
-  // Phonetic pronunciation fallback for devices that lack a local bn-BD TTS pack
+  // Slow, clearly articulated phonetic syllables with pauses for non-Bangla voices
   const PHONETIC_FALLBACK = {
-    "অ": "Shore Aw", "আ": "Shore Aa", "ই": "Hroshsho Ee", "ঈ": "Dirgho Ee",
-    "উ": "Hroshsho Oo", "ঊ": "Dirgho Oo", "ঋ": "Ri", "এ": "Ay", "ঐ": "Oi", "ও": "O", "ঔ": "Ou",
-    "ক": "Kaw", "খ": "Khaw", "গ": "Gaw", "ঘ": "Ghaw", "ঙ": "Umo",
-    "চ": "Chaw", "ছ": "Chhaw", "জ": "Jaw", "ঝ": "Jhaw", "ঞ": "Niyo",
-    "ট": "Taw", "ঠ": "Thaw", "ড": "Daw", "ঢ": "Dhaw", "ণ": "Murdhonno Naw",
-    "ত": "Taw", "থ": "Thaw", "দ": "Daw", "ধ": "Dhaw", "ন": "Donto Naw",
+    "অ": "Sho-ray, Aw", "আ": "Sho-ray, Aa", "ই": "Hrosh-sho, Ee", "ঈ": "Dir-gho, Ee",
+    "উ": "Hrosh-sho, Oo", "ঊ": "Dir-gho, Oo", "ঋ": "Ree", "এ": "Ay", "ঐ": "Oi", "ও": "Oh", "ঔ": "Ou",
+    "ক": "Kaw", "খ": "Khaw", "গ": "Gaw", "ঘ": "Ghaw", "ঙ": "Oo-mo",
+    "চ": "Chaw", "ছ": "Chhaw", "জ": "Bor-gi-yo, Jaw", "ঝ": "Jhaw", "ঞ": "Ee-yo",
+    "ট": "Taw", "ঠ": "Thaw", "ড": "Daw", "ঢ": "Dhaw", "ণ": "Mur-dhon-no, Naw",
+    "ত": "Taw", "থ": "Thaw", "দ": "Daw", "ধ": "Dhaw", "ন": "Don-to, Naw",
     "প": "Paw", "ফ": "Phaw", "ব": "Baw", "ভ": "Bhaw", "ম": "Maw",
-    "য": "Antostho Jaw", "র": "Raw", "ল": "Law",
-    "শ": "Talobbo Shaw", "ষ": "Murdhonno Shaw", "স": "Donto Saw", "হ": "Haw",
-    "ড়": "Raw", "ঢ়": "Rhaw", "য়": "Antostho Yaw",
-    "ৎ": "Khondo Taw", "ং": "Onushshar", "ঃ": "Bishorgo", "ঁ": "Chondrobindu",
-    "০": "Shunno", "১": "Ek", "২": "Dui", "৩": "Tin", "৪": "Char",
+    "য": "On-tos-tho, Jaw", "র": "Raw", "ল": "Law",
+    "শ": "Ta-lob-bo, Shaw", "ষ": "Mur-dhon-no, Shaw", "স": "Don-to, Saw", "হ": "Haw",
+    "ড়": "Raw", "ঢ়": "Rhaw", "য়": "On-tos-tho, Yaw",
+    "ৎ": "Khon-do, Taw", "ং": "O-nush-shar", "ঃ": "Bi-shor-go", "ঁ": "Chon-dro-bin-du",
+    "০": "Shun-no", "১": "Ek", "২": "Dui", "৩": "Tin", "৪": "Char",
     "৫": "Pach", "৬": "Chhoy", "৭": "Shat", "৮": "Aat", "৯": "Noy",
-    "ক্ষ": "Jukto Ksho", "জ্ঞ": "Jukto Gyo", "ঞ্চ": "Ncho", "ঞ্ছ": "Nchho", "ঞ্জ": "Njo",
+    "ক্ষ": "Juk-to, Ksho", "জ্ঞ": "Juk-to, Gyo", "ঞ্চ": "Ncho", "ঞ্ছ": "Nchho", "ঞ্জ": "Njo",
     "ত্ত": "Tto", "ত্র": "Tro", "ক্ত": "Kto", "ক্ল": "Klo", "ক্স": "Kso",
     "গু": "Gu", "ঙ্গ": "Ngo", "ঙ্ক": "Nko", "চ্ব": "Chwo", "জ্জ": "Jjo",
     "ত্থ": "Ttho", "ত্ব": "Two", "দ্দ": "Ddo", "দ্ধ": "Ddho", "দ্ব": "Dwo",
@@ -1201,7 +1202,6 @@ function getBanglaLabel(raw) {
 
     try {
       window.speechSynthesis.cancel();
-      // Resume in case browser paused speechSynthesis queue
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
@@ -1216,12 +1216,10 @@ function getBanglaLabel(raw) {
         utter.lang = bnVoice.lang;
         utter.text = SPOKEN_BN[ch] || ch;
       } else if (hiVoice) {
-        // Hindi Devanagari/Indic engine pronounces Bangla script/phonetics accurately offline
         utter.voice = hiVoice;
         utter.lang = hiVoice.lang;
         utter.text = PHONETIC_FALLBACK[ch] || ch;
       } else {
-        // Universal offline English/default system voice with Bangla phonetic spelling
         const defaultVoice = voices.find(v => v.default) || voices[0];
         if (defaultVoice) utter.voice = defaultVoice;
         utter.lang = (defaultVoice && defaultVoice.lang) ? defaultVoice.lang : "en-US";
@@ -1229,8 +1227,8 @@ function getBanglaLabel(raw) {
       }
 
       utter.volume = 1.0;
-      utter.rate = 0.88;
-      utter.pitch = 1.0;
+      utter.rate = 0.68; // Slower, clearer articulation
+      utter.pitch = 0.98;
 
       utter.onend = finishUi;
       utter.onerror = () => {
@@ -1240,8 +1238,8 @@ function getBanglaLabel(raw) {
 
       window.speechSynthesis.speak(utter);
 
-      // Guaranteed UI reset even if a WebView fires neither onend nor onerror
-      setTimeout(finishUi, 1800);
+      // Extended UI reset timeout to match the slower, clearer speech pace
+      setTimeout(finishUi, 2600);
     } catch (_) {
       playSoftChime();
       finishUi();

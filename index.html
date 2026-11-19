@@ -1112,44 +1112,29 @@ function getBanglaLabel(raw) {
     "স", "হ", "ড়", "ঢ়", "য়", "ৎ", "ং", "ঃ", "ঁ"
   ]);
 
-  // Clear, unhurried Bangla pronunciation strings with natural pauses
+  // Authentic native Bangla names & compound breakdowns
   const SPOKEN_BN = {
-    "অ": "স্বরে... অ", "আ": "স্বরে... আ", "ই": "হ্রস্ব... ই", "ঈ": "দীর্ঘ... ঈ",
-    "উ": "হ্রস্ব... উ", "ঊ": "দীর্ঘ... ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
+    "অ": "স্বরে অ", "আ": "স্বরে আ", "ই": "হ্রস্ব ই", "ঈ": "দীর্ঘ ঈ",
+    "উ": "হ্রস্ব উ", "ঊ": "দীর্ঘ ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
     "ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ", "ঙ": "উঁয়ো",
-    "চ": "চ", "ছ": "ছ", "জ": "বর্গীয়... জ", "ঝ": "ঝ", "ঞ": "ইঁয়ো",
-    "ট": "ট", "ঠ": "ঠ", "ড": "ড", "ঢ": "ঢ", "ণ": "মূর্ধন্য... ন",
-    "ত": "ত", "থ": "থ", "দ": "দ", "ধ": "ধ", "ন": "দন্ত্য... ন",
+    "চ": "চ", "ছ": "ছ", "জ": "বর্গীয় জ", "ঝ": "ঝ", "ঞ": "ইঁয়ো",
+    "ট": "ট", "ঠ": "ঠ", "ড": "ড", "ঢ": "ঢ", "ণ": "মূর্ধন্য ন",
+    "ত": "ত", "থ": "থ", "দ": "দ", "ধ": "ধ", "ন": "দন্ত্য ন",
     "প": "প", "ফ": "ফ", "ব": "ব", "ভ": "ভ", "ম": "ম",
-    "য": "অন্তঃস্থ... য", "র": "র", "ল": "ল",
-    "শ": "তালব্য... শ", "ষ": "মূর্ধন্য... ষ", "স": "দন্ত্য... স", "হ": "হ",
-    "ড়": "ড-এ শূন্য... ড়", "ঢ়": "ঢ-এ শূন্য... ঢ়", "য়": "অন্তঃস্থ... য়",
-    "ৎ": "খণ্ড... ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
+    "য": "অন্তঃস্থ য", "র": "র", "ল": "ল",
+    "শ": "তালব্য শ", "ষ": "মূর্ধন্য ষ", "স": "দন্ত্য স", "হ": "হ",
+    "ড়": "ড-এ শূন্য ড়", "ঢ়": "ঢ-এ শূন্য ঢ়", "য়": "অন্তঃস্থ য়",
+    "ৎ": "খণ্ড ত", "ং": "অনুস্বার", "ঃ": "বিসর্গ", "ঁ": "চন্দ্রবিন্দু",
     "০": "শূন্য", "১": "এক", "২": "দুই", "৩": "তিন", "৪": "চার",
     "৫": "পাঁচ", "৬": "ছয়", "৭": "সাত", "৮": "আট", "৯": "নয়",
-    "ক্ষ": "যুক্ত... ক্ষ", "জ্ঞ": "যুক্ত... জ্ঞ", "ত্র": "ত-এ র-ফলা... ত্র"
-  };
-
-  // Slow, clearly articulated phonetic syllables with pauses for non-Bangla voices
-  const PHONETIC_FALLBACK = {
-    "অ": "Sho-ray, Aw", "আ": "Sho-ray, Aa", "ই": "Hrosh-sho, Ee", "ঈ": "Dir-gho, Ee",
-    "উ": "Hrosh-sho, Oo", "ঊ": "Dir-gho, Oo", "ঋ": "Ree", "এ": "Ay", "ঐ": "Oi", "ও": "Oh", "ঔ": "Ou",
-    "ক": "Kaw", "খ": "Khaw", "গ": "Gaw", "ঘ": "Ghaw", "ঙ": "Oo-mo",
-    "চ": "Chaw", "ছ": "Chhaw", "জ": "Bor-gi-yo, Jaw", "ঝ": "Jhaw", "ঞ": "Ee-yo",
-    "ট": "Taw", "ঠ": "Thaw", "ড": "Daw", "ঢ": "Dhaw", "ণ": "Mur-dhon-no, Naw",
-    "ত": "Taw", "থ": "Thaw", "দ": "Daw", "ধ": "Dhaw", "ন": "Don-to, Naw",
-    "প": "Paw", "ফ": "Phaw", "ব": "Baw", "ভ": "Bhaw", "ম": "Maw",
-    "য": "On-tos-tho, Jaw", "র": "Raw", "ল": "Law",
-    "শ": "Ta-lob-bo, Shaw", "ষ": "Mur-dhon-no, Shaw", "স": "Don-to, Saw", "হ": "Haw",
-    "ড়": "Raw", "ঢ়": "Rhaw", "য়": "On-tos-tho, Yaw",
-    "ৎ": "Khon-do, Taw", "ং": "O-nush-shar", "ঃ": "Bi-shor-go", "ঁ": "Chon-dro-bin-du",
-    "০": "Shun-no", "১": "Ek", "২": "Dui", "৩": "Tin", "৪": "Char",
-    "৫": "Pach", "৬": "Chhoy", "৭": "Shat", "৮": "Aat", "৯": "Noy",
-    "ক্ষ": "Juk-to, Ksho", "জ্ঞ": "Juk-to, Gyo", "ঞ্চ": "Ncho", "ঞ্ছ": "Nchho", "ঞ্জ": "Njo",
-    "ত্ত": "Tto", "ত্র": "Tro", "ক্ত": "Kto", "ক্ল": "Klo", "ক্স": "Kso",
-    "গু": "Gu", "ঙ্গ": "Ngo", "ঙ্ক": "Nko", "চ্ব": "Chwo", "জ্জ": "Jjo",
-    "ত্থ": "Ttho", "ত্ব": "Two", "দ্দ": "Ddo", "দ্ধ": "Ddho", "দ্ব": "Dwo",
-    "ন্ত": "Nto", "ন্দ": "Ndo", "ন্ধ": "Ndho", "ম্প": "Mpo"
+    "ক্ষ": "ক-এ ষ-এ যুক্ত ক্ষ", "জ্ঞ": "জ-এ ঞ-এ যুক্ত জ্ঞ", "ঞ্চ": "ঞ-এ চ-এ যুক্ত ঞ্চ",
+    "ঞ্ছ": "ঞ-এ ছ-এ যুক্ত ঞ্ছ", "ঞ্জ": "ঞ-এ জ-এ যুক্ত ঞ্জ", "ত্ত": "ত-এ ত-এ যুক্ত ত্ত",
+    "ত্র": "ত-এ র-ফলা ত্র", "ক্ত": "ক-এ ত-এ যুক্ত ক্ত", "ক্ল": "ক-এ ল-এ যুক্ত ক্ল",
+    "ক্স": "ক-এ স-এ যুক্ত ক্স", "গু": "গ-এ উ-কার গু", "ঙ্গ": "ঙ-এ গ-এ যুক্ত ঙ্গ",
+    "ঙ্ক": "ঙ-এ ক-এ যুক্ত ঙ্ক", "চ্ব": "চ-এ ব-ফলা চ্ব", "জ্জ": "জ-এ জ-এ যুক্ত জ্জ",
+    "ত্থ": "ত-এ থ-এ যুক্ত ত্থ", "ত্ব": "ত-এ ব-ফলা ত্ব", "দ্দ": "দ-এ দ-এ যুক্ত দ্দ",
+    "দ্ধ": "দ-এ ধ-এ যুক্ত দ্ধ", "দ্ব": "দ-এ ব-ফলা দ্ব", "ন্ত": "ন-এ ত-এ যুক্ত ন্ত",
+    "ন্দ": "ন-এ দ-এ যুক্ত ন্দ", "ন্ধ": "ন-এ ধ-এ যুক্ত ন্ধ", "ম্প": "ম-এ প-এ যুক্ত ম্প"
   };
 
   function classifyBanglaChar(ch) {
@@ -1162,26 +1147,62 @@ function getBanglaLabel(raw) {
     return { label: "বাংলা বর্ণ", cls: "consonant" };
   }
 
-  function playSoftChime() {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(528, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.14);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.19);
-    } catch (_) {}
+  let activeAudio = null;
+
+  // Fetch genuine human Bangla pronunciation from Wikimedia Commons API (CORS-enabled)
+  async function playWikimediaBanglaAudio(ch) {
+    const fileTitles = [
+      `File:Bn-${ch}.ogg`,
+      `File:Bn-${ch}.oga`,
+      `File:Bn-${ch}.wav`,
+      `File:LL-Q9610 (ben)-Titodutta-${ch}.wav`
+    ];
+    const apiUrl = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&titles=" +
+      encodeURIComponent(fileTitles.join("|"));
+
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error("Wikimedia fetch failed");
+    const data = await res.json();
+    const pages = (data && data.query && data.query.pages) ? Object.values(data.query.pages) : [];
+    const match = pages.find(p => p.imageinfo && p.imageinfo[0] && p.imageinfo[0].url);
+    if (!match) throw new Error("No Wikimedia recording for char");
+
+    return new Promise((resolve, reject) => {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      const audio = new Audio(match.imageinfo[0].url);
+      activeAudio = audio;
+      audio.onended = () => resolve(true);
+      audio.onerror = () => reject(new Error("Audio play error"));
+      audio.play().catch(reject);
+    });
   }
 
-  function speakBanglaChar(ch) {
+  // Native Bengali TTS (only uses real bn-BD / bn-IN voices so English accent never mangles Bangla)
+  function speakWithNativeBanglaVoice(text) {
+    return new Promise((resolve, reject) => {
+      if (!("speechSynthesis" in window)) return reject(new Error("No speechSynthesis"));
+      const voices = window.speechSynthesis.getVoices();
+      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("bn"));
+      if (!bnVoice) return reject(new Error("No native bn voice installed"));
+
+      window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.voice = bnVoice;
+      utter.lang = bnVoice.lang;
+      utter.rate = 0.85;
+      utter.pitch = 1.0;
+      utter.onend = () => resolve(true);
+      utter.onerror = () => reject(new Error("Native bn speech failed"));
+      window.speechSynthesis.speak(utter);
+    });
+  }
+
+  async function speakBanglaChar(ch) {
     if (!ch || ch === "?" || ch === "—" || ch === "-") return;
 
     const btn = document.getElementById("banglaSpeakBtn");
@@ -1189,60 +1210,40 @@ function getBanglaLabel(raw) {
     if (btn) btn.classList.add("speaking");
     if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})...`;
 
-    const finishUi = () => {
-      if (btn) btn.classList.remove("speaking");
-      if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})`;
-    };
-
-    if (!("speechSynthesis" in window)) {
-      playSoftChime();
-      setTimeout(finishUi, 350);
-      return;
-    }
+    const spokenText = SPOKEN_BN[ch] || ch;
+    let success = false;
 
     try {
-      window.speechSynthesis.cancel();
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
+      // 1. First try genuine native Bangla voice if installed on Android / Windows
+      try {
+        await speakWithNativeBanglaVoice(spokenText);
+        success = true;
+      } catch (_) {}
+
+      // 2. Next try real native-speaker Bangla recording from Wikimedia Commons
+      if (!success) {
+        try {
+          await playWikimediaBanglaAudio(ch);
+          success = true;
+        } catch (_) {}
       }
 
-      const voices = window.speechSynthesis.getVoices();
-      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("bn"));
-      const hiVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("hi"));
-
-      const utter = new SpeechSynthesisUtterance();
-      if (bnVoice) {
-        utter.voice = bnVoice;
-        utter.lang = bnVoice.lang;
-        utter.text = SPOKEN_BN[ch] || ch;
-      } else if (hiVoice) {
-        utter.voice = hiVoice;
-        utter.lang = hiVoice.lang;
-        utter.text = PHONETIC_FALLBACK[ch] || ch;
-      } else {
-        const defaultVoice = voices.find(v => v.default) || voices[0];
-        if (defaultVoice) utter.voice = defaultVoice;
-        utter.lang = (defaultVoice && defaultVoice.lang) ? defaultVoice.lang : "en-US";
-        utter.text = PHONETIC_FALLBACK[ch] || ch;
+      // 3. Final fallback: trigger speechSynthesis with lang="bn-BD" directly (works on Android Google TTS)
+      if (!success && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(spokenText);
+        utter.lang = "bn-BD";
+        utter.rate = 0.82;
+        window.speechSynthesis.speak(utter);
+        success = true;
       }
-
-      utter.volume = 1.0;
-      utter.rate = 0.68; // Slower, clearer articulation
-      utter.pitch = 0.98;
-
-      utter.onend = finishUi;
-      utter.onerror = () => {
-        playSoftChime();
-        finishUi();
-      };
-
-      window.speechSynthesis.speak(utter);
-
-      // Extended UI reset timeout to match the slower, clearer speech pace
-      setTimeout(finishUi, 2600);
-    } catch (_) {
-      playSoftChime();
-      finishUi();
+    } finally {
+      setTimeout(() => {
+        if (btn) btn.classList.remove("speaking");
+        if (labelSpan) {
+          labelSpan.textContent = success ? `উচ্চারণ (${ch})` : `Bn Voice Install করুন`;
+        }
+      }, 1200);
     }
   }
 
@@ -1268,7 +1269,7 @@ function getBanglaLabel(raw) {
     const info = classifyBanglaChar(ch);
     infoBox.innerHTML = `
       <span class="bangla-type-badge ${info.cls}">${info.label}</span>
-      <button type="button" id="banglaSpeakBtn" class="bangla-voice-btn" title="বাংলায় উচ্চারণ শুনুন">
+      <button type="button" id="banglaSpeakBtn" class="bangla-voice-btn" title="সঠিক বাংলা উচ্চারণ শুনুন">
         🔊 <span>উচ্চারণ (${ch})</span>
       </button>
     `;

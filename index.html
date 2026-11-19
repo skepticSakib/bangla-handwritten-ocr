@@ -1510,35 +1510,112 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_EDITORIAL_SEAL_END -->
 <!-- BANGLA_CALLIGRAPHY_MOTION_START -->
 <style>
-  /* 1. Gentle entrance stagger for interface panels on page load */
+  /* =========================================================
+     1. MAKE THE PREDICTED CHARACTER SECTION BIGGER & ROOMIER
+     ========================================================= */
+  .pred-box,
+  .result-box {
+    padding: 20px 22px !important;
+    min-height: 152px !important;
+    gap: 18px !important;
+    align-items: center !important;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease !important;
+  }
+
+  /* Larger Terracotta Manuscript Seal Tile */
+  #predChar,
+  .pred-char,
+  .big-char {
+    min-width: 106px !important;
+    min-height: 106px !important;
+    font-size: 3.35rem !important;
+    padding: 10px 18px !important;
+    border-radius: 15px !important;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease !important;
+  }
+
+  /* Slightly larger middle badge & pronunciation button */
+  .live-type-voice-box {
+    gap: 11px !important;
+    padding: 6px 12px !important;
+  }
+  .bangla-type-badge {
+    font-size: 0.94rem !important;
+    padding: 6px 15px !important;
+  }
+  .bangla-voice-btn {
+    font-size: 0.92rem !important;
+    padding: 8px 16px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Slightly larger CNN Input (64x64) preview thumbnail with subtle scanner sweep */
+  .pred-box canvas,
+  .result-box canvas,
+  .pred-box img,
+  .result-box img {
+    width: 96px !important;
+    height: 96px !important;
+    border-radius: 12px !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  }
+  .pred-box canvas:hover,
+  .result-box canvas:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+  }
+
+  /* =========================================================
+     2. FULL-SITE SMOOTH STUDIO ANIMATIONS
+     ========================================================= */
+
+  /* Staggered card entrance on load */
   @keyframes studioCardEnter {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(14px) scale(0.99);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
 
-  header,
+  header {
+    animation: studioCardEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  main > section:nth-child(1),
+  main > div:nth-child(1),
+  .panel:nth-child(1) {
+    animation: studioCardEnter 0.5s 0.06s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  main > section:nth-child(2),
+  main > div:nth-child(2),
+  .panel:nth-child(2) {
+    animation: studioCardEnter 0.5s 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Subtle elevation on panel hover */
   .card,
   .panel,
   main > section,
   main > div {
-    animation: studioCardEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+  }
+  .card:hover,
+  .panel:hover {
+    transform: translateY(-2px);
   }
 
-  /* 2. Authentic Ink Stamp Press animation when a new Bangla letter is predicted */
+  /* Ink Stamp Press animation when a new Bangla letter is predicted */
   @keyframes inkStampPress {
     0% {
-      opacity: 0.35;
-      transform: scale(1.22) rotate(-3deg);
+      opacity: 0.3;
+      transform: scale(1.26) rotate(-4deg);
     }
     55% {
       opacity: 1;
-      transform: scale(0.95) rotate(1deg);
+      transform: scale(0.94) rotate(1.2deg);
     }
     100% {
       opacity: 1;
@@ -1549,20 +1626,20 @@ function getBanglaLabel(raw) {
   #predChar.stamp-pop,
   .pred-char.stamp-pop,
   .big-char.stamp-pop {
-    animation: inkStampPress 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: inkStampPress 0.42s cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
 
-  /* 3. Subtle breathing ink-seal glow & rotating corner star */
+  /* Gentle breathing aura around the Terracotta Seal */
   @keyframes sealGlowBreath {
     0%, 100% {
       box-shadow:
         inset 0 0 0 2px rgba(255, 255, 255, 0.45),
-        0 3px 10px rgba(153, 27, 27, 0.10);
+        0 4px 12px rgba(153, 27, 27, 0.11);
     }
     50% {
       box-shadow:
-        inset 0 0 0 2px rgba(255, 255, 255, 0.55),
-        0 6px 18px rgba(185, 28, 28, 0.22);
+        inset 0 0 0 2px rgba(255, 255, 255, 0.6),
+        0 8px 22px rgba(185, 28, 28, 0.24);
     }
   }
 
@@ -1570,33 +1647,55 @@ function getBanglaLabel(raw) {
   body.white-mode #predChar,
   body.light-mode .pred-char,
   body.white-mode .pred-char {
-    animation: sealGlowBreath 3.6s ease-in-out infinite;
-    transition: transform 0.18s ease;
+    animation: sealGlowBreath 3.4s ease-in-out infinite;
   }
 
   #predChar:hover,
   .pred-char:hover {
-    transform: scale(1.04);
+    transform: scale(1.05) rotate(-1deg);
   }
 
+  /* Rotating corner star ornament */
   @keyframes cornerStarSpin {
     0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.45; }
-    50% { transform: rotate(90deg) scale(1.18); opacity: 0.8; }
+    50% { transform: rotate(90deg) scale(1.22); opacity: 0.85; }
   }
 
   .pred-box::before,
   .result-box::before {
     display: inline-block;
-    animation: cornerStarSpin 6s ease-in-out infinite;
+    font-size: 0.82rem !important;
+    animation: cornerStarSpin 5.5s ease-in-out infinite;
   }
 
-  /* 4. Audio pulse ripple when pronunciation is speaking */
+  /* Smooth animated fill transitions for Top-5 Probability bars */
+  .bar-fill,
+  .prob-fill,
+  .progress-bar,
+  [class*="bar"] > div,
+  [class*="fill"] {
+    transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease !important;
+  }
+
+  /* Gentle floating ambient motion on background Shaheed Minar / SVG watermark */
+  @keyframes watermarkFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  body > svg,
+  .watermark,
+  .bg-watermark {
+    animation: watermarkFloat 7s ease-in-out infinite;
+  }
+
+  /* Audio pulse ripple when pronunciation is speaking */
   @keyframes voicePulseRing {
     0% {
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.48);
     }
     70% {
-      box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
     100% {
       box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
@@ -1604,21 +1703,32 @@ function getBanglaLabel(raw) {
   }
 
   .bangla-voice-btn.speaking {
-    animation: voicePulseRing 1.1s ease-out infinite;
+    animation: voicePulseRing 1.05s ease-out infinite;
   }
 
-  /* Tactile hover & press lift on buttons */
+  /* Word Composer character pop-in animation */
+  @keyframes composerPop {
+    0% { transform: scale(0.96); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  .composer-pop {
+    animation: composerPop 0.25s ease-out;
+  }
+
+  /* Tactile hover & press lift across all buttons */
   button {
-    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, background-color 0.18s ease;
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, background-color 0.18s ease !important;
   }
   button:hover:not(:disabled) {
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
   }
   button:active:not(:disabled) {
-    transform: translateY(0) scale(0.97);
+    transform: translateY(0) scale(0.96);
   }
 
-  /* Respect OS reduced-motion accessibility setting */
+  /* Respect OS reduced-motion setting */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -1630,19 +1740,30 @@ function getBanglaLabel(raw) {
 <script>
 (function () {
   window.addEventListener("DOMContentLoaded", () => {
+    // 1. Replay Ink Stamp Press whenever predicted character updates
     const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-    if (!charEl) return;
+    if (charEl) {
+      let lastChar = (charEl.textContent || "").trim();
+      new MutationObserver(() => {
+        const current = (charEl.textContent || "").trim();
+        if (current && current !== lastChar && current !== "?" && current !== "—") {
+          lastChar = current;
+          charEl.classList.remove("stamp-pop");
+          void charEl.offsetWidth;
+          charEl.classList.add("stamp-pop");
+        }
+      }).observe(charEl, { childList: true, characterData: true, subtree: true });
+    }
 
-    let lastChar = (charEl.textContent || "").trim();
-    new MutationObserver(() => {
-      const current = (charEl.textContent || "").trim();
-      if (current && current !== lastChar && current !== "?" && current !== "—") {
-        lastChar = current;
-        charEl.classList.remove("stamp-pop");
-        void charEl.offsetWidth; // trigger reflow so animation replays cleanly
-        charEl.classList.add("stamp-pop");
-      }
-    }).observe(charEl, { childList: true, characterData: true, subtree: true });
+    // 2. Subtle pop animation on Word Composer when a letter is added
+    const wordBox = document.getElementById("wordOutput") || document.querySelector("textarea, input[type='text']");
+    if (wordBox) {
+      wordBox.addEventListener("input", () => {
+        wordBox.classList.remove("composer-pop");
+        void wordBox.offsetWidth;
+        wordBox.classList.add("composer-pop");
+      });
+    }
   });
 })();
 </script>

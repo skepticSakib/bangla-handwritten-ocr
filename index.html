@@ -2184,30 +2184,34 @@ function getBanglaLabel(raw) {
 <style>
   #shaheedMinarContainer {
     position: fixed !important;
-    bottom: 8px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: min(380px, 82vw) !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    transform: none !important;
     z-index: 0 !important;
     pointer-events: none !important;
     display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
     background: transparent !important;
-    opacity: 0.22 !important;
+    overflow: hidden !important;
+    opacity: 0.14 !important;
   }
-  #shaheedMinarContainer svg,
+  #shaheedMinarContainer svg {
+    width: 92vw !important;
+    height: 92vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    background: transparent !important;
+  }
   #shaheedMinarContainer svg * {
     background: transparent !important;
     fill: none !important;
   }
-  #shaheedMinarContainer svg {
-    width: 100% !important;
-    height: auto !important;
-    display: block !important;
-  }
   body.light-mode #shaheedMinarContainer,
   body.white-mode #shaheedMinarContainer {
-    opacity: 0.16 !important;
+    opacity: 0.11 !important;
   }
 
   /* Keep main cards stacked above the Shaheed Minar watermark */

@@ -1112,7 +1112,7 @@ function getBanglaLabel(raw) {
     "স", "হ", "ড়", "ঢ়", "য়", "ৎ", "ং", "ঃ", "ঁ"
   ]);
 
-  const SPOKEN_NAMES = {
+  const SPOKEN_BN = {
     "অ": "স্বরে অ", "আ": "স্বরে আ", "ই": "হ্রস্ব ই", "ঈ": "দীর্ঘ ঈ",
     "উ": "হ্রস্ব উ", "ঊ": "দীর্ঘ ঊ", "ঋ": "ঋ", "এ": "এ", "ঐ": "ঐ", "ও": "ও", "ঔ": "ঔ",
     "ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ", "ঙ": "উঁয়ো",
@@ -1129,6 +1129,28 @@ function getBanglaLabel(raw) {
     "ক্ষ": "যুক্ত ক্ষ", "জ্ঞ": "যুক্ত জ্ঞ", "ত্র": "ত-এ র-ফলা ত্র"
   };
 
+  // Phonetic pronunciation fallback for devices that lack a local bn-BD TTS pack
+  const PHONETIC_FALLBACK = {
+    "অ": "Shore Aw", "আ": "Shore Aa", "ই": "Hroshsho Ee", "ঈ": "Dirgho Ee",
+    "উ": "Hroshsho Oo", "ঊ": "Dirgho Oo", "ঋ": "Ri", "এ": "Ay", "ঐ": "Oi", "ও": "O", "ঔ": "Ou",
+    "ক": "Kaw", "খ": "Khaw", "গ": "Gaw", "ঘ": "Ghaw", "ঙ": "Umo",
+    "চ": "Chaw", "ছ": "Chhaw", "জ": "Jaw", "ঝ": "Jhaw", "ঞ": "Niyo",
+    "ট": "Taw", "ঠ": "Thaw", "ড": "Daw", "ঢ": "Dhaw", "ণ": "Murdhonno Naw",
+    "ত": "Taw", "থ": "Thaw", "দ": "Daw", "ধ": "Dhaw", "ন": "Donto Naw",
+    "প": "Paw", "ফ": "Phaw", "ব": "Baw", "ভ": "Bhaw", "ম": "Maw",
+    "য": "Antostho Jaw", "র": "Raw", "ল": "Law",
+    "শ": "Talobbo Shaw", "ষ": "Murdhonno Shaw", "স": "Donto Saw", "হ": "Haw",
+    "ড়": "Raw", "ঢ়": "Rhaw", "য়": "Antostho Yaw",
+    "ৎ": "Khondo Taw", "ং": "Onushshar", "ঃ": "Bishorgo", "ঁ": "Chondrobindu",
+    "০": "Shunno", "১": "Ek", "২": "Dui", "৩": "Tin", "৪": "Char",
+    "৫": "Pach", "৬": "Chhoy", "৭": "Shat", "৮": "Aat", "৯": "Noy",
+    "ক্ষ": "Jukto Ksho", "জ্ঞ": "Jukto Gyo", "ঞ্চ": "Ncho", "ঞ্ছ": "Nchho", "ঞ্জ": "Njo",
+    "ত্ত": "Tto", "ত্র": "Tro", "ক্ত": "Kto", "ক্ল": "Klo", "ক্স": "Kso",
+    "গু": "Gu", "ঙ্গ": "Ngo", "ঙ্ক": "Nko", "চ্ব": "Chwo", "জ্জ": "Jjo",
+    "ত্থ": "Ttho", "ত্ব": "Two", "দ্দ": "Ddo", "দ্ধ": "Ddho", "দ্ব": "Dwo",
+    "ন্ত": "Nto", "ন্দ": "Ndo", "ন্ধ": "Ndho", "ম্প": "Mpo"
+  };
+
   function classifyBanglaChar(ch) {
     if (VOWELS.has(ch)) return { label: "স্বরবর্ণ (Shorborno)", cls: "vowel" };
     if (DIGITS.has(ch)) return { label: "সংখ্যা (Digit)", cls: "digit" };
@@ -1139,117 +1161,90 @@ function getBanglaLabel(raw) {
     return { label: "বাংলা বর্ণ", cls: "consonant" };
   }
 
-  let activeAudio = null;
-
-  function playStreamAudio(url) {
-    return new Promise((resolve, reject) => {
-      try {
-        if (activeAudio) {
-          activeAudio.pause();
-          activeAudio.src = "";
-          activeAudio = null;
-        }
-        // IMPORTANT: Do NOT set crossOrigin="anonymous" on Google TTS URLs (they do not return CORS headers)
-        const audio = new Audio();
-        audio.referrerPolicy = "no-referrer";
-        audio.volume = 1.0;
-        activeAudio = audio;
-
-        let finished = false;
-        const done = (ok) => {
-          if (finished) return;
-          finished = true;
-          ok ? resolve(true) : reject(new Error("Audio failed"));
-        };
-
-        audio.onended = () => done(true);
-        audio.onerror = () => done(false);
-
-        audio.src = url;
-        const p = audio.play();
-        if (p && typeof p.then === "function") {
-          p.catch(() => done(false));
-        }
-
-        // Safety timeout in case stream stalls
-        setTimeout(() => {
-          if (!finished && audio.paused) done(false);
-        }, 4000);
-      } catch (err) {
-        reject(err);
-      }
-    });
+  function playSoftChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(528, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.19);
+    } catch (_) {}
   }
 
-  function speakNativeBangla(text) {
-    return new Promise((resolve, reject) => {
-      if (!("speechSynthesis" in window)) return reject(new Error("No speechSynthesis"));
-      const voices = window.speechSynthesis.getVoices();
-      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("bn"));
-      if (!bnVoice) return reject(new Error("No bn voice"));
-
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.voice = bnVoice;
-      utter.lang = bnVoice.lang;
-      utter.volume = 1.0;
-      utter.rate = 0.9;
-
-      let started = false;
-      utter.onstart = () => { started = true; };
-      utter.onend = () => resolve(true);
-      utter.onerror = () => reject(new Error("Native speech error"));
-
-      window.speechSynthesis.speak(utter);
-      setTimeout(() => {
-        if (!started) reject(new Error("Native speech timeout"));
-      }, 1000);
-    });
-  }
-
-  async function speakBanglaChar(ch) {
+  function speakBanglaChar(ch) {
     if (!ch || ch === "?" || ch === "—" || ch === "-") return;
-    const textToSpeak = SPOKEN_NAMES[ch] || ch;
+
     const btn = document.getElementById("banglaSpeakBtn");
     const labelSpan = btn ? btn.querySelector("span") : null;
-
     if (btn) btn.classList.add("speaking");
-    if (labelSpan) labelSpan.textContent = `বাজছে (${ch})...`;
+    if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})...`;
 
-    const q = encodeURIComponent(textToSpeak);
-    const urls = [
-      `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${q}`,
-      `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=bn&q=${q}`
-    ];
-
-    let played = false;
-    try {
-      // 1. Try native Bangla voice if installed on device
-      try {
-        await speakNativeBangla(textToSpeak);
-        played = true;
-      } catch (_) {}
-
-      // 2. Stream Bangla pronunciation MP3 (works on Chrome, Edge, and Android APK without local bn TTS pack)
-      if (!played) {
-        for (const url of urls) {
-          try {
-            await playStreamAudio(url);
-            played = true;
-            break;
-          } catch (_) {}
-        }
-      }
-    } finally {
+    const finishUi = () => {
       if (btn) btn.classList.remove("speaking");
-      if (labelSpan) {
-        labelSpan.textContent = played ? `উচ্চারণ (${ch})` : `নেটওয়ার্ক নেই (${ch})`;
-        if (!played) {
-          setTimeout(() => {
-            if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})`;
-          }, 2000);
-        }
+      if (labelSpan) labelSpan.textContent = `উচ্চারণ (${ch})`;
+    };
+
+    if (!("speechSynthesis" in window)) {
+      playSoftChime();
+      setTimeout(finishUi, 350);
+      return;
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+      // Resume in case browser paused speechSynthesis queue
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
+
+      const voices = window.speechSynthesis.getVoices();
+      const bnVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("bn"));
+      const hiVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes("hi"));
+
+      const utter = new SpeechSynthesisUtterance();
+      if (bnVoice) {
+        utter.voice = bnVoice;
+        utter.lang = bnVoice.lang;
+        utter.text = SPOKEN_BN[ch] || ch;
+      } else if (hiVoice) {
+        // Hindi Devanagari/Indic engine pronounces Bangla script/phonetics accurately offline
+        utter.voice = hiVoice;
+        utter.lang = hiVoice.lang;
+        utter.text = PHONETIC_FALLBACK[ch] || ch;
+      } else {
+        // Universal offline English/default system voice with Bangla phonetic spelling
+        const defaultVoice = voices.find(v => v.default) || voices[0];
+        if (defaultVoice) utter.voice = defaultVoice;
+        utter.lang = (defaultVoice && defaultVoice.lang) ? defaultVoice.lang : "en-US";
+        utter.text = PHONETIC_FALLBACK[ch] || ch;
+      }
+
+      utter.volume = 1.0;
+      utter.rate = 0.88;
+      utter.pitch = 1.0;
+
+      utter.onend = finishUi;
+      utter.onerror = () => {
+        playSoftChime();
+        finishUi();
+      };
+
+      window.speechSynthesis.speak(utter);
+
+      // Guaranteed UI reset even if a WebView fires neither onend nor onerror
+      setTimeout(finishUi, 1800);
+    } catch (_) {
+      playSoftChime();
+      finishUi();
     }
   }
 

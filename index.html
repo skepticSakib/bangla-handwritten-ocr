@@ -2182,36 +2182,24 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_FIRST_LOAD_MOTION_END -->
 <!-- BANGLA_SHAHEED_AND_LOWCONF_START -->
 <style>
-  /* 1. Ensure Shaheed Minar Watermark is always visible at the bottom center */
-  #shaheedMinarWatermark {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(360px, 78vw);
-    height: auto;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.22;
-    transition: opacity 0.3s ease;
-  }
-  body.light-mode #shaheedMinarWatermark,
-  body.white-mode #shaheedMinarWatermark {
-    opacity: 0.16;
+  /* Keep original Shaheed Minar watermark visible behind cards without stacking over it */
+  body > svg,
+  .watermark,
+  .bg-watermark,
+  [class*="minar"],
+  [id*="minar"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 0.28 !important;
+    pointer-events: none !important;
   }
 
-  /* Keep main cards & header stacked above the watermark */
-  header, main, .container, .app-wrapper {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* 2. Low-Confidence (< 60%) Pop-Up Toast / Modal Alert */
+  /* Low-Confidence (< 50%) Pop-Up Modal */
   .low-conf-popup-backdrop {
     position: fixed;
     inset: 0;
     z-index: 10050;
-    background: rgba(15, 23, 42, 0.52);
+    background: rgba(15, 23, 42, 0.56);
     backdrop-filter: blur(3px);
     display: none;
     align-items: center;
@@ -2231,7 +2219,7 @@ function getBanglaLabel(raw) {
     color: #f1f5f9;
     border: 1.5px solid rgba(239, 68, 68, 0.55);
     box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
-    animation: lowConfPop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: lowConfPop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   }
   body.light-mode .low-conf-popup-card,
   body.white-mode .low-conf-popup-card {
@@ -2260,54 +2248,19 @@ function getBanglaLabel(raw) {
   }
 </style>
 
-<!-- Dedicated Shaheed Minar SVG Watermark -->
-<svg id="shaheedMinarWatermark" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <!-- Rising Red Sun Disc -->
-  <circle cx="200" cy="118" r="64" fill="#b91c1c" fill-opacity="0.32" />
-  <!-- Base Pedestal -->
-  <rect x="36" y="226" width="328" height="10" rx="3" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.14"/>
-  <rect x="20" y="238" width="360" height="12" rx="3" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.18"/>
-  <!-- Outer Left Pillar -->
-  <rect x="68" y="132" width="32" height="94" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.10"/>
-  <line x1="78" y1="132" x2="78" y2="226" stroke="#64748b" stroke-width="2"/>
-  <line x1="90" y1="132" x2="90" y2="226" stroke="#64748b" stroke-width="2"/>
-  <!-- Inner Left Pillar -->
-  <rect x="112" y="102" width="34" height="124" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.12"/>
-  <line x1="123" y1="102" x2="123" y2="226" stroke="#64748b" stroke-width="2"/>
-  <line x1="135" y1="102" x2="135" y2="226" stroke="#64748b" stroke-width="2"/>
-  <!-- Central Bent Tall Frame -->
-  <path d="M162 226 L162 66 L148 34 L252 34 L238 66 L238 226 Z" stroke="#64748b" stroke-width="3.5" fill="#64748b" fill-opacity="0.14"/>
-  <line x1="181" y1="34" x2="181" y2="226" stroke="#64748b" stroke-width="2.2"/>
-  <line x1="200" y1="34" x2="200" y2="226" stroke="#64748b" stroke-width="2.2"/>
-  <line x1="219" y1="34" x2="219" y2="226" stroke="#64748b" stroke-width="2.2"/>
-  <!-- Inner Right Pillar -->
-  <rect x="254" y="102" width="34" height="124" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.12"/>
-  <line x1="265" y1="102" x2="265" y2="226" stroke="#64748b" stroke-width="2"/>
-  <line x1="277" y1="102" x2="277" y2="226" stroke="#64748b" stroke-width="2"/>
-  <!-- Outer Right Pillar -->
-  <rect x="300" y="132" width="32" height="94" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.10"/>
-  <line x1="310" y1="132" x2="310" y2="226" stroke="#64748b" stroke-width="2"/>
-  <line x1="322" y1="132" x2="322" y2="226" stroke="#64748b" stroke-width="2"/>
-</svg>
-
 <script>
 (function () {
   window.addEventListener("DOMContentLoaded", () => {
-    // 1. Remove any broken/duplicate legacy SVG watermarks so our clean Shaheed Minar shows clearly
-    document.querySelectorAll("body > svg:not(#shaheedMinarWatermark)").forEach(el => {
-      if (el.getBoundingClientRect().height > 120) el.remove();
-    });
-
-    // 2. Build the Low-Confidence (< 60%) Pop-Up Modal
+    // 1. Build the Low-Confidence (< 50%) Pop-Up Modal
     const popupBackdrop = document.createElement("div");
     popupBackdrop.id = "lowConfPopup";
     popupBackdrop.className = "low-conf-popup-backdrop";
     popupBackdrop.innerHTML = `
       <div class="low-conf-popup-card" role="alertdialog" aria-modal="true">
         <div style="font-size:2rem;margin-bottom:6px;">⚠️</div>
-        <div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Unclear Character (<span id="lowConfValText">&lt; 60%</span>)</div>
+        <div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Unclear Character (<span id="lowConfValText">&lt; 50%</span>)</div>
         <div style="font-size:0.88rem;opacity:0.86;line-height:1.45;">
-          Prediction confidence is below <b>60%</b>, so the result was hidden. Please clear the pad and draw a clearer Bangla character.
+          Prediction confidence is below <b>50%</b>, so the result was hidden. Please clear the pad and draw a clearer Bangla character.
         </div>
         <button type="button" id="closeLowConfPopupBtn" class="low-conf-ok-btn">OK, Try Again</button>
       </div>
@@ -2318,56 +2271,69 @@ function getBanglaLabel(raw) {
     document.getElementById("closeLowConfPopupBtn").addEventListener("click", closePopup);
     popupBackdrop.addEventListener("click", (e) => { if (e.target === popupBackdrop) closePopup(); });
 
-    // 3. Watch Confidence updates: if < 60%, hide predicted character & trigger popup
-    const predBox = document.querySelector(".pred-box, .result-box");
+    // 2. Reliable < 50% Confidence Gate watching the whole document & user strokes
+    const predBox = document.querySelector(".pred-box, .result-box") || document.body;
     const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-    if (!predBox || !charEl) return;
+    let lastShownSig = "";
+    let userDrewRecently = false;
 
-    let lastAlertKey = "";
-    let isSuppressing = false;
+    // Track when user draws or clicks Predict so popup fires reliably even on repeated low scores
+    document.querySelectorAll("canvas, button").forEach(el => {
+      el.addEventListener("pointerup", () => { userDrewRecently = true; });
+      el.addEventListener("touchend", () => { userDrewRecently = true; });
+      el.addEventListener("click", () => {
+        if (/predict/i.test(el.textContent || "")) {
+          lastShownSig = "";
+          userDrewRecently = true;
+        }
+      });
+    });
 
-    function checkConfidenceAndGate() {
-      if (isSuppressing) return;
-      const boxText = predBox.textContent || "";
-      const match = boxText.match(/Confidence:\s*([0-9]+(?:\.[0-9]+)?)%/i);
-      if (!match) return;
+    function evaluateConfidence() {
+      const containerText = predBox.innerText || predBox.textContent || "";
+      // Match "Confidence: 42.3%" or standalone percentage inside the prediction box
+      const match = containerText.match(/Confidence\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*%/i)
+                 || containerText.match(/([0-9]+(?:\.[0-9]+)?)\s*%/);
 
+      if (!match || !charEl) return;
       const conf = parseFloat(match[1]);
       const currentChar = (charEl.textContent || "").trim();
 
-      if (conf > 0 && conf < 60 && currentChar && currentChar !== "?" && currentChar !== "—") {
-        isSuppressing = true;
-        const alertKey = `${currentChar}_${conf.toFixed(1)}`;
+      // Ignore empty/initial 0% state before any stroke is drawn
+      if (conf <= 0 || currentChar === "" || currentChar === "—" || currentChar === "?") return;
 
-        // Hide the uncertain predicted character & type/voice badge
+      const badge = document.querySelector(".bangla-type-badge");
+      const voiceBtn = document.querySelector(".bangla-voice-btn");
+
+      if (conf < 50) {
+        const sig = `${currentChar}_${conf.toFixed(1)}`;
+        // Hide predicted character, type badge, and voice button
         charEl.textContent = "?";
-        const badge = predBox.querySelector(".bangla-type-badge");
-        const voiceBtn = predBox.querySelector(".bangla-voice-btn");
         if (badge) badge.style.visibility = "hidden";
         if (voiceBtn) voiceBtn.style.visibility = "hidden";
 
-        // Show popup once per uncertain prediction
-        if (alertKey !== lastAlertKey) {
-          lastAlertKey = alertKey;
+        if (sig !== lastShownSig || userDrewRecently) {
+          lastShownSig = sig;
+          userDrewRecently = false;
           const valSpan = document.getElementById("lowConfValText");
           if (valSpan) valSpan.textContent = `${conf.toFixed(1)}%`;
           popupBackdrop.classList.add("active");
         }
-        setTimeout(() => { isSuppressing = false; }, 120);
-      } else if (conf >= 60) {
-        lastAlertKey = "";
-        const badge = predBox.querySelector(".bangla-type-badge");
-        const voiceBtn = predBox.querySelector(".bangla-voice-btn");
+      } else {
+        lastShownSig = "";
+        userDrewRecently = false;
         if (badge) badge.style.visibility = "visible";
         if (voiceBtn) voiceBtn.style.visibility = "visible";
       }
     }
 
-    new MutationObserver(checkConfidenceAndGate).observe(predBox, {
+    // Observe prediction card & poll gently after pointer release so no update is missed
+    new MutationObserver(evaluateConfidence).observe(predBox, {
       childList: true,
       characterData: true,
       subtree: true
     });
+    setInterval(evaluateConfidence, 350);
   });
 })();
 </script>

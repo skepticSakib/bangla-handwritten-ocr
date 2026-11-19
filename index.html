@@ -2182,16 +2182,27 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_FIRST_LOAD_MOTION_END -->
 <!-- BANGLA_SHAHEED_AND_LOWCONF_START -->
 <style>
-  /* Keep original Shaheed Minar watermark visible behind cards without stacking over it */
+  /* Ensure original Shaheed Minar sits visibly behind cards on both Dark & Cream themes */
   body > svg,
   .watermark,
   .bg-watermark,
   [class*="minar"],
   [id*="minar"] {
+    position: fixed !important;
+    bottom: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 0 !important;
     display: block !important;
     visibility: visible !important;
-    opacity: 0.28 !important;
+    opacity: 0.34 !important;
     pointer-events: none !important;
+  }
+
+  /* Keep UI cards above the watermark without covering the background */
+  header, main, .container, .app-wrapper {
+    position: relative;
+    z-index: 2;
   }
 
   /* Low-Confidence (< 50%) Pop-Up Modal */
@@ -2219,7 +2230,7 @@ function getBanglaLabel(raw) {
     color: #f1f5f9;
     border: 1.5px solid rgba(239, 68, 68, 0.55);
     box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
-    animation: lowConfPop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: lowConfPop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
   }
   body.light-mode .low-conf-popup-card,
   body.white-mode .low-conf-popup-card {
@@ -2251,7 +2262,7 @@ function getBanglaLabel(raw) {
 <script>
 (function () {
   window.addEventListener("DOMContentLoaded", () => {
-    // 1. Build the Low-Confidence (< 50%) Pop-Up Modal
+    // 1. Build Low-Confidence (< 50%) Pop-Up Modal
     const popupBackdrop = document.createElement("div");
     popupBackdrop.id = "lowConfPopup";
     popupBackdrop.className = "low-conf-popup-backdrop";
@@ -2260,7 +2271,7 @@ function getBanglaLabel(raw) {
         <div style="font-size:2rem;margin-bottom:6px;">⚠️</div>
         <div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Unclear Character (<span id="lowConfValText">&lt; 50%</span>)</div>
         <div style="font-size:0.88rem;opacity:0.86;line-height:1.45;">
-          Prediction confidence is below <b>50%</b>, so the result was hidden. Please clear the pad and draw a clearer Bangla character.
+          Prediction confidence is below <b>50%</b>, so the result was hidden. Please clear the pad and write or upload a clearer character.
         </div>
         <button type="button" id="closeLowConfPopupBtn" class="low-conf-ok-btn">OK, Try Again</button>
       </div>
@@ -2271,69 +2282,115 @@ function getBanglaLabel(raw) {
     document.getElementById("closeLowConfPopupBtn").addEventListener("click", closePopup);
     popupBackdrop.addEventListener("click", (e) => { if (e.target === popupBackdrop) closePopup(); });
 
-    // 2. Reliable < 50% Confidence Gate watching the whole document & user strokes
+    // 2. Debounced < 50% Gate: waits 1.5s after user finishes writing or uploading
     const predBox = document.querySelector(".pred-box, .result-box") || document.body;
     const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-    let lastShownSig = "";
-    let userDrewRecently = false;
+    let isDrawing = false;
+    let popupDelayTimer = null;
+    let lastAlertedSig = "";
 
-    // Track when user draws or clicks Predict so popup fires reliably even on repeated low scores
-    document.querySelectorAll("canvas, button").forEach(el => {
-      el.addEventListener("pointerup", () => { userDrewRecently = true; });
-      el.addEventListener("touchend", () => { userDrewRecently = true; });
-      el.addEventListener("click", () => {
-        if (/predict/i.test(el.textContent || "")) {
-          lastShownSig = "";
-          userDrewRecently = true;
+    // Pause popup timer while user is actively drawing multi-stroke characters
+    document.querySelectorAll("canvas").forEach(cv => {
+      cv.addEventListener("pointerdown", () => {
+        isDrawing = true;
+        clearTimeout(popupDelayTimer);
+      });
+      cv.addEventListener("pointerup", () => {
+        isDrawing = false;
+        scheduleDelayedCheck(1500);
+      });
+      cv.addEventListener("touchstart", () => {
+        isDrawing = true;
+        clearTimeout(popupDelayTimer);
+      }, { passive: true });
+      cv.addEventListener("touchend", () => {
+        isDrawing = false;
+        scheduleDelayedCheck(1500);
+      }, { passive: true });
+    });
+
+    // Also wait 1.5s after Photo/Camera file upload or manual Predict click
+    document.querySelectorAll("input[type='file']").forEach(inp => {
+      inp.addEventListener("change", () => {
+        lastAlertedSig = "";
+        scheduleDelayedCheck(1600);
+      });
+    });
+
+    document.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const label = (btn.textContent || "").toLowerCase();
+        if (label.includes("clear") || label.includes("undo")) {
+          clearTimeout(popupDelayTimer);
+          lastAlertedSig = "";
+        } else if (label.includes("predict") || label.includes("photo") || label.includes("camera")) {
+          lastAlertedSig = "";
+          scheduleDelayedCheck(1500);
         }
       });
     });
 
-    function evaluateConfidence() {
-      const containerText = predBox.innerText || predBox.textContent || "";
-      // Match "Confidence: 42.3%" or standalone percentage inside the prediction box
-      const match = containerText.match(/Confidence\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*%/i)
-                 || containerText.match(/([0-9]+(?:\.[0-9]+)?)\s*%/);
-
-      if (!match || !charEl) return;
-      const conf = parseFloat(match[1]);
-      const currentChar = (charEl.textContent || "").trim();
-
-      // Ignore empty/initial 0% state before any stroke is drawn
-      if (conf <= 0 || currentChar === "" || currentChar === "—" || currentChar === "?") return;
-
-      const badge = document.querySelector(".bangla-type-badge");
-      const voiceBtn = document.querySelector(".bangla-voice-btn");
-
-      if (conf < 50) {
-        const sig = `${currentChar}_${conf.toFixed(1)}`;
-        // Hide predicted character, type badge, and voice button
-        charEl.textContent = "?";
-        if (badge) badge.style.visibility = "hidden";
-        if (voiceBtn) voiceBtn.style.visibility = "hidden";
-
-        if (sig !== lastShownSig || userDrewRecently) {
-          lastShownSig = sig;
-          userDrewRecently = false;
-          const valSpan = document.getElementById("lowConfValText");
-          if (valSpan) valSpan.textContent = `${conf.toFixed(1)}%`;
-          popupBackdrop.classList.add("active");
-        }
-      } else {
-        lastShownSig = "";
-        userDrewRecently = false;
-        if (badge) badge.style.visibility = "visible";
-        if (voiceBtn) voiceBtn.style.visibility = "visible";
-      }
+    function readCurrentPrediction() {
+      const text = predBox.innerText || predBox.textContent || "";
+      const match = text.match(/Confidence\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*%/i);
+      const conf = match ? parseFloat(match[1]) : 0;
+      const ch = charEl ? (charEl.textContent || "").trim() : "";
+      return { conf, ch };
     }
 
-    // Observe prediction card & poll gently after pointer release so no update is missed
-    new MutationObserver(evaluateConfidence).observe(predBox, {
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
-    setInterval(evaluateConfidence, 350);
+    function suppressUncertainResult() {
+      if (!charEl) return;
+      charEl.textContent = "?";
+      const badge = document.querySelector(".bangla-type-badge");
+      const voiceBtn = document.querySelector(".bangla-voice-btn");
+      if (badge) badge.style.visibility = "hidden";
+      if (voiceBtn) voiceBtn.style.visibility = "hidden";
+    }
+
+    function restoreCertainResult() {
+      const badge = document.querySelector(".bangla-type-badge");
+      const voiceBtn = document.querySelector(".bangla-voice-btn");
+      if (badge) badge.style.visibility = "visible";
+      if (voiceBtn) voiceBtn.style.visibility = "visible";
+    }
+
+    function scheduleDelayedCheck(delayMs) {
+      clearTimeout(popupDelayTimer);
+      popupDelayTimer = setTimeout(() => {
+        if (isDrawing) return;
+        const { conf, ch } = readCurrentPrediction();
+        if (conf > 0 && conf < 50) {
+          suppressUncertainResult();
+          const sig = ${conf.toFixed(1)};
+          if (sig !== lastAlertedSig) {
+            lastAlertedSig = sig;
+            const valSpan = document.getElementById("lowConfValText");
+            if (valSpan) valSpan.textContent = ${conf.toFixed(1)}%;
+            popupBackdrop.classList.add("active");
+          }
+        } else if (conf >= 50) {
+          lastAlertedSig = "";
+          restoreCertainResult();
+        }
+      }, delayMs);
+    }
+
+    // Immediately hide uncertain (<50%) character during live auto-predict, but wait 1.5s before showing popup
+    new MutationObserver(() => {
+      const { conf, ch } = readCurrentPrediction();
+      if (conf > 0 && conf < 50) {
+        if (ch && ch !== "?" && ch !== "—") {
+          suppressUncertainResult();
+        }
+        if (!isDrawing) {
+          scheduleDelayedCheck(1500);
+        }
+      } else if (conf >= 50) {
+        clearTimeout(popupDelayTimer);
+        lastAlertedSig = "";
+        restoreCertainResult();
+      }
+    }).observe(predBox, { childList: true, characterData: true, subtree: true });
   });
 })();
 </script>

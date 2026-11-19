@@ -2190,28 +2190,20 @@ function getBanglaLabel(raw) {
     transform: none !important;
     z-index: 0 !important;
     pointer-events: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: block !important;
     background: transparent !important;
     overflow: hidden !important;
-    opacity: 0.14 !important;
+    opacity: 0.24 !important;
   }
   #shaheedMinarContainer svg {
-    width: 92vw !important;
-    height: 92vh !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: contain !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: block !important;
     background: transparent !important;
-  }
-  #shaheedMinarContainer svg * {
-    background: transparent !important;
-    fill: none !important;
   }
   body.light-mode #shaheedMinarContainer,
   body.white-mode #shaheedMinarContainer {
-    opacity: 0.11 !important;
+    opacity: 0.16 !important;
   }
 
   /* Keep main cards stacked above the Shaheed Minar watermark */
@@ -2273,27 +2265,36 @@ function getBanglaLabel(raw) {
     background: #b91c1c;
   }
 </style>
-<div id="shaheedMinarContainer" aria-hidden="true"><svg id="origShaheedMinar" viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="210" cy="118" r="66" fill="none" fill-opacity="0" stroke="#b91c1c" stroke-width="2.5" stroke-opacity="0.55"/>
-  <rect x="64" y="224" width="292" height="10" stroke="#334155" stroke-width="3" fill="none"/>
-  <rect x="44" y="234" width="332" height="12" stroke="#334155" stroke-width="3" fill="none"/>
-  <rect x="86" y="132" width="32" height="92" stroke="#334155" stroke-width="3"/>
-  <line x1="97" y1="132" x2="97" y2="224" stroke="#334155" stroke-width="2"/>
-  <line x1="107" y1="132" x2="107" y2="224" stroke="#334155" stroke-width="2"/>
-  <rect x="128" y="102" width="34" height="122" stroke="#334155" stroke-width="3"/>
-  <line x1="139" y1="102" x2="139" y2="224" stroke="#334155" stroke-width="2"/>
-  <line x1="151" y1="102" x2="151" y2="224" stroke="#334155" stroke-width="2"/>
-  <path d="M174 224 L174 68 L160 36 L260 36 L246 68 L246 224" stroke="#334155" stroke-width="3.5"/>
-  <line x1="192" y1="36" x2="192" y2="224" stroke="#334155" stroke-width="2.2"/>
-  <line x1="210" y1="36" x2="210" y2="224" stroke="#334155" stroke-width="2.2"/>
-  <line x1="228" y1="36" x2="228" y2="224" stroke="#334155" stroke-width="2.2"/>
-  <rect x="258" y="102" width="34" height="122" stroke="#334155" stroke-width="3"/>
-  <line x1="269" y1="102" x2="269" y2="224" stroke="#334155" stroke-width="2"/>
-  <line x1="281" y1="102" x2="281" y2="224" stroke="#334155" stroke-width="2"/>
-  <rect x="302" y="132" width="32" height="92" stroke="#334155" stroke-width="3"/>
-  <line x1="313" y1="132" x2="313" y2="224" stroke="#334155" stroke-width="2"/>
-  <line x1="323" y1="132" x2="323" y2="224" stroke="#334155" stroke-width="2"/>
-</svg></div>
+<div id="shaheedMinarContainer" aria-hidden="true">
+  <svg id="firstShaheedMinarSvg" viewBox="0 0 400 260" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Rising Red Sun Disc -->
+    <circle cx="200" cy="118" r="64" fill="#b91c1c" fill-opacity="0.28" />
+    <!-- Base Pedestal -->
+    <rect x="36" y="226" width="328" height="10" rx="3" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.10"/>
+    <rect x="20" y="238" width="360" height="12" rx="3" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.14"/>
+    <!-- Outer Left Pillar -->
+    <rect x="68" y="132" width="32" height="94" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.08"/>
+    <line x1="78" y1="132" x2="78" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <line x1="90" y1="132" x2="90" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <!-- Inner Left Pillar -->
+    <rect x="112" y="102" width="34" height="124" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.10"/>
+    <line x1="123" y1="102" x2="123" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <line x1="135" y1="102" x2="135" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <!-- Central Bent Tall Frame -->
+    <path d="M162 226 L162 66 L148 34 L252 34 L238 66 L238 226 Z" stroke="#64748b" stroke-width="3" fill="#64748b" fill-opacity="0.12"/>
+    <line x1="181" y1="34" x2="181" y2="226" stroke="#64748b" stroke-width="2"/>
+    <line x1="200" y1="34" x2="200" y2="226" stroke="#64748b" stroke-width="2"/>
+    <line x1="219" y1="34" x2="219" y2="226" stroke="#64748b" stroke-width="2"/>
+    <!-- Inner Right Pillar -->
+    <rect x="254" y="102" width="34" height="124" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.10"/>
+    <line x1="265" y1="102" x2="265" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <line x1="277" y1="102" x2="277" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <!-- Outer Right Pillar -->
+    <rect x="300" y="132" width="32" height="94" stroke="#64748b" stroke-width="2.6" fill="#64748b" fill-opacity="0.08"/>
+    <line x1="310" y1="132" x2="310" y2="226" stroke="#64748b" stroke-width="1.8"/>
+    <line x1="322" y1="132" x2="322" y2="226" stroke="#64748b" stroke-width="1.8"/>
+  </svg>
+</div>
 <script>
 (function () {
   window.addEventListener("DOMContentLoaded", function () {

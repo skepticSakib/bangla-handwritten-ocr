@@ -567,7 +567,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
   if (charEl) {
     new MutationObserver(renderLiveSideInfo).observe(charEl, { childList: true, characterData: true, subtree: true });
-  }
 });
   else { wordBox.textContent += str; }
 }
@@ -991,8 +990,6 @@ function getBanglaLabel(raw) {
         document.getElementById(`t5bar${i}`).style.width = `${pct}%`;
         document.getElementById(`t5pct${i}`).textContent = `${pct}%`;
       });
-    }
-
     // --- WORD COMPOSER ---
     function addCharToWord() {
       if (!lastTopChar) return;
@@ -1191,7 +1188,6 @@ function getBanglaLabel(raw) {
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
-    }
     initApp();
   </script>
 

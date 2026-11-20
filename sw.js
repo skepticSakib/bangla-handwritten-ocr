@@ -1,4 +1,4 @@
-const CACHE_NAME = "bangla-ocr-v20261120165207";
+const CACHE_NAME = "bangla-ocr-v20261120165336";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

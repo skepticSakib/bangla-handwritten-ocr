@@ -815,6 +815,25 @@ function getBanglaLabel(raw) {
         document.getElementById(`t5bar${i}`).style.width = `${pct}%`;
         document.getElementById(`t5pct${i}`).textContent = `${pct}%`;
       });
+
+      // Replay ink-stamp & Top-5 bar sweep on EVERY prediction (even identical consecutive characters)
+      const heroEl = document.getElementById("predChar");
+      if (heroEl) {
+        heroEl.classList.remove("stamp-once");
+        void heroEl.offsetWidth;
+        heroEl.classList.add("stamp-once");
+      }
+      ranked.forEach((item, i) => {
+        const pct = (item.prob * 100).toFixed(1);
+        const bar = document.getElementById(`t5bar${i}`);
+        if (bar) {
+          bar.style.setProperty("transition", "none", "important");
+          bar.style.width = "0%";
+          void bar.offsetWidth;
+          bar.style.setProperty("transition", "width 0.42s cubic-bezier(0.22, 1, 0.36, 1)", "important");
+          bar.style.width = `${pct}%`;
+        }
+      });
     }
 
     // --- WORD COMPOSER ---
@@ -1637,8 +1656,7 @@ function getBanglaLabel(raw) {
     let lastChar = (charEl.textContent || "").trim();
     new MutationObserver(() => {
       const current = (charEl.textContent || "").trim();
-      if (current && current !== lastChar && current !== "?" && current !== "—") {
-        lastChar = current;
+      if (current && current !== "?" && current !== "—") {
         charEl.classList.remove("stamp-once");
         void charEl.offsetWidth;
         charEl.classList.add("stamp-once");
@@ -2577,7 +2595,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:49 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:51 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4278,7 +4296,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:49 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:51 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 

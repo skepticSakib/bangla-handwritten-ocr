@@ -3880,23 +3880,6 @@ window.__handleAndroidNativeBack = function () {
   return "NO_MODAL";
 };
 </script>
-<!-- BANGLA_OTA_UPDATER_START -->
-<script>
-window.__forceOtaRefresh = async function () {
-  try {
-    if ("serviceWorker" in navigator) {
-      var regs = await navigator.serviceWorker.getRegistrations();
-      for (var i = 0; i < regs.length; i++) { await regs[i].update(); }
-    }
-    if ("caches" in window) {
-      var keys = await caches.keys();
-      for (var j = 0; j < keys.length; j++) { await caches.delete(keys[j]); }
-    }
-  } catch (e) {}
-  window.location.reload(true);
-};
-</script>
-<!-- BANGLA_OTA_UPDATER_END -->
 <!-- BANGLA_NEXTGEN_UI_START -->
 <style>
   body {
@@ -4233,5 +4216,26 @@ window.__forceOtaRefresh = async function () {
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
+<!-- BANGLA_OTA_UPDATER_START -->
+<script>
+window.__forceOtaRefresh = async function () {
+  try {
+    if ("serviceWorker" in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for (var i = 0; i < regs.length; i++) {
+        await regs[i].update();
+        await regs[i].unregister();
+      }
+    }
+    if ("caches" in window) {
+      var keys = await caches.keys();
+      for (var j = 0; j < keys.length; j++) { await caches.delete(keys[j]); }
+    }
+  } catch (e) {}
+  var baseUrl = window.location.href.split("?")[0];
+  window.location.replace(baseUrl + "?ota=" + Date.now());
+};
+</script>
+<!-- BANGLA_OTA_UPDATER_END -->
 </body>
 </html>

@@ -322,7 +322,7 @@ body > * {
         </div>
 
         <div class="controls-bar">
-          <label style="color:var(--text);">Pen: <input type="range" id="penSize" min="1" max="28" value="2" /></label>
+          <label style="color:var(--text);">Pen: <input type="range" id="penSize" min="1" max="28" value="3" /></label>
           <label style="font-size:12px; font-weight:600; color:#22c55e; cursor:pointer;">
             <input type="checkbox" id="autoPredict" checked /> Auto-Predict
           </label>
@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:03 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:09 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4184,7 +4184,7 @@ window.__forceOtaRefresh = async function () {
     badge.id = "studioHeaderTelemetry";
     badge.innerHTML =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:03 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:09 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits (Web + App): <strong id="combinedVisitorCount">...</strong></span>';
     headerHost.appendChild(badge);
@@ -4392,5 +4392,30 @@ window.__forceOtaRefresh = async function () {
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
+<!-- BANGLA_DEFAULT_PEN_START -->
+<script>
+(function () {
+  function applyDefaultPen3() {
+    var sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(function (s) {
+      var idName = (s.id + " " + s.name + " " + (s.parentElement ? s.parentElement.textContent : "")).toLowerCase();
+      if (/pen|brush|stroke/.test(idName)) {
+        if (parseFloat(s.min || "1") > 3) s.min = "1";
+        s.value = "3";
+        s.dispatchEvent(new Event("input", { bubbles: true }));
+        s.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+    if (typeof window.brushSize === "number") window.brushSize = 3;
+    if (typeof window.penSize === "number") window.penSize = 3;
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyDefaultPen3);
+  } else {
+    applyDefaultPen3();
+  }
+})();
+</script>
+<!-- BANGLA_DEFAULT_PEN_END -->
 </body>
 </html>

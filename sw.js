@@ -6,14 +6,29 @@ self.addEventListener("fetch", function (event) {
       fetch(req, { cache: "no-store" })
         .then(function (res) {
           var copy = res.clone();
-          caches.open("bangla-ocr-v20261120195453").then(function (c) { c.put(req, copy); });
+          caches.open("bangla-ocr-v20261120195702").then(function (c) { c.put(req, copy); });
           return res;
         })
         .catch(function () { return caches.match(req); })
     );
   }
 });
-const CACHE_NAME = "bangla-ocr-v20261120195453";
+// Network-first for HTML documents so OTA updates appear immediately on app launch
+self.addEventListener("fetch", function (event) {
+  var req = event.request;
+  if (req.mode === "navigate" || (req.headers.get("accept") || "").indexOf("text/html") !== -1) {
+    event.respondWith(
+      fetch(req, { cache: "no-store" })
+        .then(function (res) {
+          var copy = res.clone();
+          caches.open("bangla-ocr-v20261120195702").then(function (c) { c.put(req, copy); });
+          return res;
+        })
+        .catch(function () { return caches.match(req); })
+    );
+  }
+});
+const CACHE_NAME = "bangla-ocr-v20261120195702";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

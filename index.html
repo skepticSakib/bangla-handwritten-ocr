@@ -343,7 +343,7 @@ body > * {
             <button type="button" id="penModeBtn" onclick="setDrawTool('pen')" style="padding:4px 9px; font-size:11px; font-weight:700; border-radius:7px; background:var(--accent); color:#fff;">✒️ Pen</button>
             <button type="button" id="eraserModeBtn" onclick="setDrawTool('eraser')" style="padding:4px 9px; font-size:11px; font-weight:700; border-radius:7px; background:transparent; color:var(--text);">🧽 Eraser</button>
           </div>
-          <label style="color:var(--text);"><span id="toolSizeLabel">Pen</span>: <input type="range" id="penSize" min="1" max="28" value="3" /></label>
+          <label style="color:var(--text);"><span id="toolSizeLabel">Pen</span>: <input type="range" id="penSize" min="1" max="28" value="4" /></label>
           <label style="font-size:12px; font-weight:600; color:#22c55e; cursor:pointer;">
             <input type="checkbox" id="autoPredict" checked /> Auto-Predict
           </label>
@@ -737,13 +737,13 @@ function getBanglaLabel(raw) {
 
     // --- ALWAYS RENDER WHITE INK ON BLACK BACKGROUND FOR CNN ---
     window.__activeDrawTool = "pen";
-    window.__savedPenSize = 3;
+    window.__savedPenSize = 4;
     window.__savedEraserSize = 32;
     function setDrawTool(tool) {
       const nextTool = (tool === "eraser") ? "eraser" : "pen";
       const slider = document.getElementById("penSize");
       if (slider) {
-        if (window.__activeDrawTool === "pen") window.__savedPenSize = parseInt(slider.value, 10) || 3;
+        if (window.__activeDrawTool === "pen") window.__savedPenSize = parseInt(slider.value, 10) || 4;
         if (window.__activeDrawTool === "eraser") window.__savedEraserSize = parseInt(slider.value, 10) || 32;
       }
       window.__activeDrawTool = nextTool;
@@ -2655,7 +2655,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 09:18 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 09:20 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4356,7 +4356,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 09:18 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 09:20 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 

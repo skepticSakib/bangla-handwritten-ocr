@@ -2623,15 +2623,7 @@ function getBanglaLabel(raw) {
   .crop-btn-detect:hover {
     background: #15803d;
   }
-  #manualCropTriggerBtn {
-    background: #0284c7 !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-</style>
+  </style>
 
 <script>
 (function () {
@@ -2842,34 +2834,7 @@ function getBanglaLabel(raw) {
       renderCropStage();
     });
 
-    // Dedicated "✂️ Crop" button next to Photo/Camera
-    var hiddenCropInput = document.createElement("input");
-    hiddenCropInput.type = "file";
-    hiddenCropInput.accept = "image/*";
-    hiddenCropInput.style.display = "none";
-    document.body.appendChild(hiddenCropInput);
-    hiddenCropInput.addEventListener("change", function () {
-      if (hiddenCropInput.files && hiddenCropInput.files[0]) {
-        openCropModalWithFile(hiddenCropInput.files[0]);
-        hiddenCropInput.value = "";
-      }
-    });
-
-    var allBtns = document.querySelectorAll("button");
-    for (var b = 0; b < allBtns.length; b++) {
-      var bText = allBtns[b].textContent || "";
-      if (/photo/i.test(bText)) {
-        var cropBtn = document.createElement("button");
-        cropBtn.type = "button";
-        cropBtn.id = "manualCropTriggerBtn";
-        cropBtn.className = allBtns[b].className;
-        cropBtn.innerHTML = "✂️ Crop";
-        cropBtn.addEventListener("click", function () {
-          hiddenCropInput.click();
-        });
-        allBtns[b].parentNode.insertBefore(cropBtn, allBtns[b].nextSibling);
-      }
-      // Also attach capture-phase listener on Camera button to watch newly spawned video/canvas capture
+    // Also attach capture-phase listener on Camera button to watch newly spawned video/canvas capture
       if (/camera/i.test(bText)) {
         allBtns[b].addEventListener("click", function () {
           setTimeout(function () {

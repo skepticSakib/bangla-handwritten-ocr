@@ -285,9 +285,20 @@ body > * {
 }
 </style>
 <style id="bangla-draw-canvas-lock">
+  .canvas-wrap {
+    position: relative !important;
+  }
   #drawCanvas {
+    position: relative !important;
+    z-index: 5 !important;
     touch-action: none !important;
     pointer-events: auto !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+  .canvas-wrap > :not(#drawCanvas) {
+    z-index: 6 !important;
+    pointer-events: none !important;
   }
 </style>
 </head>
@@ -468,18 +479,21 @@ function getBanglaLabel(raw) {
 
     async function initApp() {
       applyTheme(localStorage.getItem("bhcr_theme") || "dark");
+      redrawCanvas();
       const statusEl = document.getElementById("modelStatus");
       try {
-        const res = await fetch("./class_names.json");
+        const res = await fetch("./class_names.json?t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status + " loading class_names.json");
         classNames = await res.json();
-        model = await tf.loadLayersModel("./tfjs_model/model.json?v=4"); window.__loadedTfModel = model;
-        tf.tidy(() => (window.__loadedTfModel = model) && model.predict(tf.zeros([1, 64, 64, 1])));
+        model = await tf.loadLayersModel("./tfjs_model/model.json?v=5");
+        window.__loadedTfModel = model;
+        tf.tidy(() => model.predict(tf.zeros([1, 64, 64, 1])));
         statusEl.textContent = "✓ Model Ready (84 Classes • 95.11% CNN)";
         statusEl.style.color = "#22c55e";
       } catch (err) {
-        statusEl.textContent = "✖ Model Load Failed";
+        statusEl.textContent = "✖ Model Load Failed (" + (err && err.message ? err.message : "Error") + ")";
         statusEl.style.color = "#ef4444";
-        console.error(err);
+        console.error("CNN Init Error:", err);
       }
       redrawCanvas();
     }
@@ -2635,7 +2649,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 09:04 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 09:11 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4336,7 +4350,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 09:04 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 09:11 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 

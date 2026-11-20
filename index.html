@@ -2571,7 +2571,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 05:55 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 06:02 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2920,8 +2920,7 @@ function getBanglaLabel(raw) {
 
   function endDrag() { dragAction = null; }
 
-  // Build the exact 64x64 binary canvas that native runPrediction(out, "Camera / Photo Crop") expects
-  function runModalCropAndPredict() {
+    function runModalCropAndPredict() {
     if (!loadedImg) return;
 
     var sx = Math.max(0, modalCropBox.x * (loadedImg.width / previewCanvas.width));
@@ -2929,47 +2928,124 @@ function getBanglaLabel(raw) {
     var sw = Math.min(loadedImg.width - sx, modalCropBox.w * (loadedImg.width / previewCanvas.width));
     var sh = Math.min(loadedImg.height - sy, modalCropBox.h * (loadedImg.height / previewCanvas.height));
 
+    // 1. Sample cropped region onto a 128x128 working canvas (edge-clamped, no artificial white border)
+    var work = document.createElement("canvas");
+    work.width = 128;
+    work.height = 128;
+    var wCtx = work.getContext("2d");
+
+    // Fill working canvas with the photo's average background tone so padded margins blend seamlessly
+    var sampleCv = document.createElement("canvas");
+    sampleCv.width = 16; sampleCv.height = 16;
+    var sCtx = sampleCv.getContext("2d");
+    sCtx.drawImage(loadedImg, sx, sy, sw, sh, 0, 0, 16, 16);
+    var sd = sCtx.getImageData(0, 0, 16, 16).data;
+    var rSum = 0, gSum = 0, bSum = 0, lumSum = 0;
+    for (var i = 0; i < sd.length; i += 4) {
+      rSum += sd[i]; gSum += sd[i + 1]; bSum += sd[i + 2];
+      lumSum += 0.299 * sd[i] + 0.587 * sd[i + 1] + 0.114 * sd[i + 2];
+    }
+    var nPx = sd.length / 4;
+    var avgLum = lumSum / nPx;
+    var lightPaper = avgLum > 115;
+    wCtx.fillStyle = "rgb(" + Math.round(rSum / nPx) + "," + Math.round(gSum / nPx) + "," + Math.round(bSum / nPx) + ")";
+    wCtx.fillRect(0, 0, 128, 128);
+
+    // Aspect-fit cropped character into 128x128
+    var pad = 10;
+    var fit = Math.min((128 - pad * 2) / sw, (128 - pad * 2) / sh);
+    var dw = Math.round(sw * fit);
+    var dh = Math.round(sh * fit);
+    var dx = Math.round((128 - dw) / 2);
+    var dy = Math.round((128 - dh) / 2);
+    wCtx.drawImage(loadedImg, sx, sy, sw, sh, dx, dy, dw, dh);
+
+    // 2. Adaptive ink extraction (handles shadows/uneven lighting on paper)
+    var imgData = wCtx.getImageData(0, 0, 128, 128);
+    var d = imgData.data;
+    var inkMask = new Uint8Array(128 * 128);
+    var maxDiff = 0;
+    var diffs = new Float32Array(128 * 128);
+
+    for (var p = 0; p < 128 * 128; p++) {
+      var idx = p * 4;
+      var lum = 0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2];
+      var diff = lightPaper ? Math.max(0, avgLum - lum) : Math.max(0, lum - avgLum);
+      diffs[p] = diff;
+      if (diff > maxDiff) maxDiff = diff;
+    }
+
+    var thresh = Math.max(22, maxDiff * 0.34);
+    for (var p2 = 0; p2 < 128 * 128; p2++) {
+      inkMask[p2] = diffs[p2] >= thresh ? 255 : 0;
+    }
+
+    // 3. Thicken thin pen strokes (3x3 dilation) so paper photos match thick Drawing Pad strokes
+    var dilated = new Uint8Array(128 * 128);
+    for (var y = 1; y < 127; y++) {
+      for (var x = 1; x < 127; x++) {
+        var pos = y * 128 + x;
+        if (inkMask[pos] || inkMask[pos - 1] || inkMask[pos + 1] ||
+            inkMask[pos - 128] || inkMask[pos + 128] ||
+            inkMask[pos - 129] || inkMask[pos - 127] || inkMask[pos + 127] || inkMask[pos + 129]) {
+          dilated[pos] = 255;
+        }
+      }
+    }
+
+    // 4. Tight bounding-box crop & center into final 64x64 pure black-and-white CNN input
+    var minX = 128, minY = 128, maxX = 0, maxY = 0, found = false;
+    for (var yy = 0; yy < 128; yy++) {
+      for (var xx = 0; xx < 128; xx++) {
+        if (dilated[yy * 128 + xx] > 0) {
+          found = true;
+          if (xx < minX) minX = xx;
+          if (xx > maxX) maxX = xx;
+          if (yy < minY) minY = yy;
+          if (yy > maxY) maxY = yy;
+        }
+      }
+    }
+
+    var bin128 = document.createElement("canvas");
+    bin128.width = 128; bin128.height = 128;
+    var bCtx = bin128.getContext("2d");
+    var bImg = bCtx.createImageData(128, 128);
+    for (var k = 0; k < 128 * 128; k++) {
+      var v = dilated[k];
+      bImg.data[k * 4] = v;
+      bImg.data[k * 4 + 1] = v;
+      bImg.data[k * 4 + 2] = v;
+      bImg.data[k * 4 + 3] = 255;
+    }
+    bCtx.putImageData(bImg, 0, 0);
+
     var out = document.createElement("canvas");
     out.width = 64;
     out.height = 64;
     var ctx = out.getContext("2d");
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, 64, 64);
 
-    // Aspect-fit with clean margin so both Square & Free crops preserve character proportions
-    var pad = 5;
-    var fit = Math.min((64 - pad * 2) / sw, (64 - pad * 2) / sh);
-    var dw = Math.round(sw * fit);
-    var dh = Math.round(sh * fit);
-    var dx = Math.round((64 - dw) / 2);
-    var dy = Math.round((64 - dh) / 2);
-    ctx.drawImage(loadedImg, sx, sy, sw, sh, dx, dy, dw, dh);
-
-    var imgData = ctx.getImageData(0, 0, 64, 64);
-    var d = imgData.data;
-    var lumSum = 0;
-    for (var i = 0; i < d.length; i += 4) {
-      lumSum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    if (found && maxX > minX && maxY > minY) {
+      var bw = maxX - minX + 1;
+      var bh = maxY - minY + 1;
+      var targetBox = 48; // Leaves clean 8px black margin around centered character (matches Ekush/BanglaLekha training)
+      var sc = Math.min(targetBox / bw, targetBox / bh);
+      var fw = Math.round(bw * sc);
+      var fh = Math.round(bh * sc);
+      var fx = Math.round((64 - fw) / 2);
+      var fy = Math.round((64 - fh) / 2);
+      ctx.drawImage(bin128, minX, minY, bw, bh, fx, fy, fw, fh);
+    } else {
+      ctx.drawImage(bin128, 0, 0, 128, 128, 0, 0, 64, 64);
     }
-    var lightPaper = (lumSum / (d.length / 4)) > 127;
-    for (var j = 0; j < d.length; j += 4) {
-      var lum = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
-      var ink = lightPaper ? (255 - lum) : lum;
-      var val = ink > 50 ? Math.min(255, Math.round((ink - 40) * 1.5)) : 0;
-      d[j] = val;
-      d[j + 1] = val;
-      d[j + 2] = val;
-      d[j + 3] = 255;
-    }
-    ctx.putImageData(imgData, 0, 0);
 
-    // Close modal & clear any inline crop state so Drawing Pad stays clean
     modal.classList.remove("active");
     if (typeof window.cancelInlineCrop === "function") {
       try { window.cancelInlineCrop(); } catch (e) {}
     }
 
-    // Store in uploadedBinaryImage if global and invoke native runPrediction(out, "Camera / Photo Crop")
     try { window.uploadedBinaryImage = out; } catch (e) {}
     if (typeof window.runPrediction === "function") {
       window.runPrediction(out, "Camera / Photo Crop");

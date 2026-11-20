@@ -462,8 +462,8 @@ function getBanglaLabel(raw) {
       try {
         const res = await fetch("./class_names.json");
         classNames = await res.json();
-        model = await tf.loadLayersModel("./tfjs_model/model.json?v=4");
-        tf.tidy(() => model.predict(tf.zeros([1, 64, 64, 1])));
+        model = await tf.loadLayersModel("./tfjs_model/model.json?v=4"); window.__loadedTfModel = model;
+        tf.tidy(() => (window.__loadedTfModel = model) && model.predict(tf.zeros([1, 64, 64, 1])));
         statusEl.textContent = "✓ Model Ready (84 Classes • 95.11% CNN)";
         statusEl.style.color = "#22c55e";
       } catch (err) {
@@ -796,7 +796,7 @@ function getBanglaLabel(raw) {
 
       const probs = tf.tidy(() => {
         const input = tf.tensor4d(batchData, [5, 64, 64, 1]);
-        return model.predict(input).mean(0).dataSync();
+        return (window.__loadedTfModel = model) && model.predict(input).mean(0).dataSync();
       });
 
       const ranked = Array.from(probs)
@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 06:14 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 06:17 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3479,5 +3479,82 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_HEADER_TOP5_UPGRADE_END -->
+<!-- BANGLA_TEACH_MODEL_RESOLVER_START -->
+<script>
+(function () {
+  // Ensure any loaded TF.js LayersModel is discoverable for fine-tuning
+  if (window.tf && typeof window.tf.loadLayersModel === "function" && !window.tf.__patchedLoad) {
+    window.tf.__patchedLoad = true;
+    var origLoad = window.tf.loadLayersModel.bind(window.tf);
+    window.tf.loadLayersModel = function () {
+      return origLoad.apply(this, arguments).then(function (m) {
+        window.__loadedTfModel = m;
+        try { if (typeof model === "undefined") window.model = m; } catch (e) {}
+        return m;
+      });
+    };
+  }
+
+  // Intercept clicks on "Train & Update" if the local handler fails to find the model reference
+  document.addEventListener("click", async function (ev) {
+    var btn = ev.target && ev.target.closest("button");
+    if (!btn || !/train\s*&\s*update/i.test(btn.textContent || "")) return;
+
+    setTimeout(async function () {
+      var statusNode = Array.from(document.querySelectorAll("div, p, span")).find(function (el) {
+        return /Model is still initializing/i.test(el.textContent || "") && el.children.length === 0;
+      });
+      if (!statusNode) return; // Native handler already succeeded
+
+      var activeModel = window.__loadedTfModel || window.model;
+      if (!activeModel || !window.tf) return;
+
+      try {
+        var selectEl = document.querySelector("#banglaTeachModal select, select");
+        var sampleCanvas = document.querySelector("#banglaTeachModal canvas") || window.uploadedBinaryImage;
+        if (!selectEl || !sampleCanvas) return;
+
+        var classIdx = parseInt(selectEl.value, 10);
+        if (isNaN(classIdx)) return;
+
+        statusNode.textContent = "⏳ Fine-tuning model on your sample...";
+        statusNode.style.color = "#38bdf8";
+
+        // Build 64x64 normalized tensor from the Current Drawing Sample
+        var c64 = document.createElement("canvas");
+        c64.width = 64; c64.height = 64;
+        c64.getContext("2d").drawImage(sampleCanvas, 0, 0, 64, 64);
+
+        var xs = window.tf.tidy(function () {
+          return window.tf.browser.fromPixels(c64, 1).toFloat().div(255.0).expandDims(0);
+        });
+        var ys = window.tf.tensor1d([classIdx], "float32");
+
+        activeModel.compile({
+          optimizer: window.tf.train.adam(0.0005),
+          loss: "sparseCategoricalCrossentropy",
+          metrics: ["accuracy"]
+        });
+
+        await activeModel.fit(xs, ys, { epochs: 5, batchSize: 1, verbose: 0 });
+        xs.dispose();
+        ys.dispose();
+
+        try { await activeModel.save("indexeddb://bangla-ocr-custom-model"); } catch (e) {}
+
+        statusNode.textContent = "✅ Model updated & saved! Re-running prediction...";
+        statusNode.style.color = "#4ade80";
+
+        if (typeof window.runPrediction === "function") {
+          window.runPrediction(c64, "Fine-Tuned Model");
+        }
+      } catch (err) {
+        statusNode.textContent = "⚠️ Fine-tune error: " + (err && err.message ? err.message : err);
+      }
+    }, 80);
+  }, true);
+})();
+</script>
+<!-- BANGLA_TEACH_MODEL_RESOLVER_END -->
 </body>
 </html>

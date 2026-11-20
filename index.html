@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:46 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:49 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4278,7 +4278,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:46 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:49 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4646,127 +4646,5 @@ window.__forceOtaRefresh = async function () {
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
-<!-- BANGLA_PREDICT_REANIM_START -->
-<script>
-(function () {
-  var activeAnimations = [];
-
-  function cancelRunningAnims() {
-    while (activeAnimations.length) {
-      var a = activeAnimations.pop();
-      try { a.cancel(); } catch (e) {}
-    }
-  }
-
-  function runPredictionEntrance() {
-    cancelRunningAnims();
-
-    // Find the prediction section/cards by matching visible result containers or headings
-    var candidates = new Set();
-    document.querySelectorAll(
-      '#resultBox, #predictionResult, #topPrediction, #outputBox, .prediction-card, .result-card, .top-predictions, [id*="pred" i], [id*="result" i], [class*="pred" i], [class*="result" i]'
-    ).forEach(function (el) {
-      if (el && el.offsetParent !== null && !el.closest('#banglaSpeedDialWrap') && !el.closest('#banglaTraceModal')) {
-        candidates.add(el);
-      }
-    });
-
-    // Fallback: locate the container holding "Top" / "%" confidence rows if custom IDs differ
-    if (candidates.size === 0) {
-      document.querySelectorAll('section, div').forEach(function (el) {
-        if (el.children.length >= 2 && el.children.length <= 12 &&
-            /%/.test(el.textContent || "") &&
-            !/Updated:|Total Visits:|Trace Guide/i.test(el.textContent || "") &&
-            el.offsetHeight > 40 && el.offsetHeight < 520) {
-          candidates.add(el);
-        }
-      });
-    }
-
-    candidates.forEach(function (el) {
-      if (typeof el.animate === "function") {
-        var anim = el.animate(
-          [
-            { opacity: 0.15, transform: "translateY(10px) scale(0.95)" },
-            { opacity: 1, transform: "translateY(-2px) scale(1.015)", offset: 0.65 },
-            { opacity: 1, transform: "translateY(0) scale(1)" }
-          ],
-          { duration: 360, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "none" }
-        );
-        activeAnimations.push(anim);
-      }
-    });
-
-    // Animate all confidence/progress bars from scaleX(0) -> scaleX(1) using Web Animations API
-    var barSelectors = '.prob-bar, .conf-bar, .confidence-fill, .bar-fill, [class*="bar" i] > div, [style*="width:"][style*="%"]';
-    var barIdx = 0;
-    document.querySelectorAll(barSelectors).forEach(function (bar) {
-      if (!bar || bar.offsetParent === null) return;
-      if (bar.closest('#banglaSpeedDialWrap') || bar.closest('#banglaTraceModal')) return;
-      if (bar.offsetHeight > 28 || bar.offsetWidth < 12) return; // only target bar fills, not full cards
-
-      if (typeof bar.animate === "function") {
-        var bAnim = bar.animate(
-          [
-            { opacity: 0.25, transform: "scaleX(0.05)", transformOrigin: "left center" },
-            { opacity: 1, transform: "scaleX(1)", transformOrigin: "left center" }
-          ],
-          {
-            duration: 420,
-            delay: Math.min(barIdx * 40, 200),
-            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-            fill: "none"
-          }
-        );
-        activeAnimations.push(bAnim);
-        barIdx++;
-      }
-    });
-  }
-
-  var pendingTimer = null;
-  var lastRunAt = 0;
-
-  function scheduleSinglePredictionEntrance(delayMs) {
-    if (pendingTimer) clearTimeout(pendingTimer);
-    pendingTimer = setTimeout(function () {
-      pendingTimer = null;
-      var now = Date.now();
-      if (now - lastRunAt < 450) return;
-      lastRunAt = now;
-      runPredictionEntrance();
-    }, delayMs);
-  }
-
-  function bindAlwaysReplayHooks() {
-    // 1. Fire ONCE right after Predict button inference completes
-    document.addEventListener("click", function (e) {
-      var btn = e.target && e.target.closest("button");
-      if (!btn) return;
-      if (btn.closest('#banglaSpeedDialWrap') || btn.closest('#banglaTraceModal')) return;
-      if (/clear|erase|reset|undo|close|theme|dark|light|teach/i.test(btn.textContent || btn.id || "")) return;
-
-      scheduleSinglePredictionEntrance(160);
-    }, true);
-
-    // 2. Fire ONCE after lifting finger/mouse off the Drawing Pad (deduplicated across pointerup/mouseup/touchend)
-    var drawCv = document.getElementById("drawCanvas");
-    if (drawCv) {
-      ["pointerup", "mouseup", "touchend"].forEach(function (evtName) {
-        drawCv.addEventListener(evtName, function () {
-          scheduleSinglePredictionEntrance(220);
-        }, true);
-      });
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bindAlwaysReplayHooks);
-  } else {
-    bindAlwaysReplayHooks();
-  }
-})();
-</script>
-<!-- BANGLA_PREDICT_REANIM_END -->
 </body>
 </html>

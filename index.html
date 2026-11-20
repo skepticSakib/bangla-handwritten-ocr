@@ -39,7 +39,7 @@
     return u;
   };
 
-  // 3. Intercept <input type="file"> changes in capture phase (stops inline pad cropper from hijacking)
+  // 3. Intercept <input type="file"> changes in capture phase
   document.addEventListener("change", function (e) {
     var t = e.target;
     if (!window.__banglaCropBusy && t && t.tagName === "INPUT" && t.type === "file" && t.files && t.files[0]) {
@@ -78,6 +78,25 @@
       }, true);
     }
     return origClick.apply(this, arguments);
+  };
+
+  // 5. Intercept website webcam capture: when any <video> frame is drawn onto a canvas (outside our modal), route to Crop modal
+  var origDraw = CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage = function (src) {
+    try {
+      if (!window.__banglaCropBusy && src && src.tagName === "VIDEO" && src.videoWidth > 64) {
+        var targetCv = this && this.canvas;
+        if (!targetCv || targetCv.id !== "cropPreviewCanvas") {
+          var snap = document.createElement("canvas");
+          snap.width = src.videoWidth;
+          snap.height = src.videoHeight;
+          origDraw.call(snap.getContext("2d"), src, 0, 0, src.videoWidth, src.videoHeight);
+          window.__openBanglaCrop(snap.toDataURL("image/png"));
+          return; // Prevent old inline Drawing Pad cropper from taking over
+        }
+      }
+    } catch (err) {}
+    return origDraw.apply(this, arguments);
   };
 })();
 </script>
@@ -2652,7 +2671,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 05:41 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 05:48 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3043,7 +3062,7 @@ function getBanglaLabel(raw) {
 
   function endDrag() { dragAction = null; }
 
-  function runCropAndDetect() {
+    function runCropAndDetect() {
     if (!loadedImg) return;
     var mainCanvas = document.querySelector("canvas#drawCanvas, canvas#canvas, main canvas");
     if (!mainCanvas) { modal.classList.remove("active"); return; }
@@ -3076,17 +3095,51 @@ function getBanglaLabel(raw) {
     }
     tCtx.putImageData(id, 0, 0);
 
+    // Hide any leftover inline crop overlay/controls inside the Drawing Pad card so there is zero UI collision
+    document.querySelectorAll(".crop-overlay, .crop-box, #cropOverlay, [id*='crop' i]:not(#banglaCropModal):not(#cropPreviewCanvas):not(#cropModeSquareBtn):not(#cropModeFreeBtn):not(#cropSizeSlider):not(#cropFullResetBtn):not(#cropCancelBtn):not(#cropDetectBtn)").forEach(function (el) {
+      if (el.closest("main")) el.style.display = "none";
+    });
+
+    // Paint cropped character onto Drawing Pad and mark canvas non-empty via synthetic pointer/touch event
     var mCtx = mainCanvas.getContext("2d");
     mCtx.fillStyle = "#000000";
     mCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
     mCtx.drawImage(tmp, 0, 0);
 
-    modal.classList.remove("active");
-    setTimeout(function () { window.__banglaCropBusy = false; }, 350);
-
-    document.querySelectorAll("button").forEach(function (b) {
-      if (/^\s*predict\s*$/i.test(b.textContent || "")) b.click();
+    // Close any open webcam stream overlay cleanly if user captured via website Camera modal
+    document.querySelectorAll("video").forEach(function (v) {
+      try {
+        if (v.srcObject && v.srcObject.getTracks) {
+          v.srcObject.getTracks().forEach(function (t) { t.stop(); });
+        }
+      } catch (e) {}
     });
+
+    modal.classList.remove("active");
+
+    // Dispatch synthetic stroke registration & invoke prediction directly after modal closes
+    setTimeout(function () {
+      try {
+        mainCanvas.dispatchEvent(new Event("input", { bubbles: true }));
+        mainCanvas.dispatchEvent(new Event("change", { bubbles: true }));
+      } catch (e) {}
+
+      if (typeof window.predictCharacter === "function") {
+        window.predictCharacter();
+      } else if (typeof window.predict === "function") {
+        window.predict();
+      } else {
+        var btns = document.querySelectorAll("button");
+        for (var k = 0; k < btns.length; k++) {
+          if (/^\s*predict\s*$/i.test(btns[k].textContent || "")) {
+            btns[k].removeAttribute("disabled");
+            btns[k].click();
+            break;
+          }
+        }
+      }
+      setTimeout(function () { window.__banglaCropBusy = false; }, 350);
+    }, 60);
   }
 
   window.__mountBanglaCropModal = function (src) {

@@ -2657,7 +2657,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 09:45 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 09:47 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4358,7 +4358,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 09:45 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 09:47 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4904,31 +4904,29 @@ window.__forceOtaRefresh = async function () {
 <!-- BANGLA_MOBILE_VIEWPORT_POLISH_END -->
 <!-- MATRA_SCANNER_HEADER_LOGO_START -->
 <style id="matra-scanner-header-logo">
-  /* Suppress any legacy blue CSS ::before 'ক' badge on header / title-group / h1 */
   header::before,
   header .title-group::before,
-  header h1::before {
+  header h1::before,
+  header .matra-title-text-col::before {
     content: none !important;
     display: none !important;
   }
-
-  /* Unified Matra Scanner emblem beside the title */
   header .title-group {
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
   }
   #matraHeaderEmblem {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    border-radius: 11px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
     overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
-    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.28);
+    border: 1px solid rgba(56, 189, 248, 0.4);
     background: #0f172a;
     flex-shrink: 0;
     transition: width 0.25s ease, height 0.25s ease, min-width 0.25s ease;
@@ -4954,16 +4952,20 @@ window.__forceOtaRefresh = async function () {
 </style>
 <script>
 (function () {
-  function mountMatraHeaderLogo() {
-    const titleGroup = document.querySelector("header .title-group");
-    if (!titleGroup || document.getElementById("matraHeaderEmblem")) return;
+  function mountSingleMatraLogo() {
+    const hdr = document.querySelector("header");
+    const titleGroup = hdr ? hdr.querySelector(".title-group") : null;
+    if (!hdr || !titleGroup) return;
 
-    // Remove any legacy JS-injected plain blue 'ক' box inside title-group
-    Array.from(titleGroup.children).forEach(function (el) {
-      if (el.tagName !== "H1" && el.tagName !== "P" && el.textContent.trim() === "\u0995") {
+    // Remove any legacy blue 'ক' badge element anywhere inside header
+    hdr.querySelectorAll("div, span, a").forEach(function (el) {
+      if (el.id === "matraHeaderEmblem" || el.closest("#matraHeaderEmblem")) return;
+      if (el.children.length === 0 && el.textContent.trim() === "\u0995") {
         el.remove();
       }
     });
+
+    if (document.getElementById("matraHeaderEmblem")) return;
 
     const textCol = document.createElement("div");
     textCol.className = "matra-title-text-col";
@@ -4973,19 +4975,19 @@ window.__forceOtaRefresh = async function () {
 
     const emblem = document.createElement("div");
     emblem.id = "matraHeaderEmblem";
-    emblem.innerHTML = '<img src="./icon-192.png?v=6" alt="Matra Scanner Logo" />';
+    emblem.innerHTML = '<img src="./icon-192.png?v=7" alt="Matra Scanner Logo" />';
 
     titleGroup.appendChild(emblem);
     titleGroup.appendChild(textCol);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mountMatraHeaderLogo);
+    document.addEventListener("DOMContentLoaded", mountSingleMatraLogo);
   } else {
-    mountMatraHeaderLogo();
+    mountSingleMatraLogo();
   }
-  // Re-check after other scripts finish initializing
-  setTimeout(mountMatraHeaderLogo, 150);
+  setTimeout(mountSingleMatraLogo, 100);
+  setTimeout(mountSingleMatraLogo, 400);
 })();
 </script>
 <!-- MATRA_SCANNER_HEADER_LOGO_END -->

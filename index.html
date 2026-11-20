@@ -409,7 +409,7 @@ function getBanglaLabel(raw) {
   }
   return (BANGLALEKHA_MAP && BANGLALEKHA_MAP[key]) ? BANGLALEKHA_MAP[key] : key;
 }
-    let strokes = [];
+    let strokes = []; window.__scannedPadImage = null;
     let currentStroke = null;
     let isDrawing = false;
     let lastTopChar = "";
@@ -555,7 +555,13 @@ function getBanglaLabel(raw) {
         dCtx.restore();
       }
 
-      // Render strokes
+          // Render scanned Camera/Photo character inside Drawing Pad if present
+    if (window.__scannedPadImage) {
+      dCtx.save();
+      dCtx.drawImage(window.__scannedPadImage, 0, 0, w, h);
+      dCtx.restore();
+    }
+    // Render strokes
       dCtx.lineCap = "round";
       dCtx.lineJoin = "round";
       dCtx.strokeStyle = colors.ink;
@@ -607,7 +613,7 @@ function getBanglaLabel(raw) {
 
       if (uploadedBinaryImage) {
         uploadedBinaryImage = null;
-        strokes = [];
+        strokes = []; window.__scannedPadImage = null;
       }
       isDrawing = true;
       const size = parseInt(document.getElementById("penSize").value, 10);
@@ -672,7 +678,7 @@ function getBanglaLabel(raw) {
       cropImg = null;
       document.getElementById("inlineCropBar").style.display = "none";
       document.getElementById("padModeLabel").textContent = "DRAWING PAD (WRITE ONE CHARACTER)";
-      strokes = [];
+      strokes = []; window.__scannedPadImage = null;
       uploadedBinaryImage = null;
       redrawCanvas();
       resetDisplay();
@@ -923,7 +929,7 @@ function getBanglaLabel(raw) {
 
       cropMode = false;
       cropImg = null;
-      strokes = [];
+      strokes = []; window.__scannedPadImage = null;
       uploadedBinaryImage = out;
       document.getElementById("inlineCropBar").style.display = "none";
       document.getElementById("padModeLabel").textContent = "DRAWING PAD (WRITE ONE CHARACTER)";
@@ -2571,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 06:02 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 06:05 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2833,7 +2839,39 @@ function getBanglaLabel(raw) {
     });
 
     document.getElementById("cropCancelBtn").addEventListener("click", function () {
-      modal.classList.remove("active");
+          // Also create a crisp transparent-background ink layer of the scanned letter to display in the Drawing Pad
+    var padLayer = document.createElement("canvas");
+    padLayer.width = 360;
+    padLayer.height = 360;
+    var pLayerCtx = padLayer.getContext("2d");
+    pLayerCtx.imageSmoothingEnabled = true;
+    pLayerCtx.drawImage(out, 0, 0, 360, 360);
+
+    var pData = pLayerCtx.getImageData(0, 0, 360, 360);
+    var pd = pData.data;
+    var isLight = document.body.classList.contains("light-mode") || document.body.classList.contains("white-mode");
+    // Match active theme ink color: deep ink (#1e293b) on cream/light mode, crisp ice-white (#f8fafc) on dark mode
+    var inkR = isLight ? 30 : 248;
+    var inkG = isLight ? 41 : 250;
+    var inkB = isLight ? 59 : 252;
+
+    for (var m = 0; m < pd.length; m += 4) {
+      var alpha = pd[m]; // White strokes on black background -> use brightness as alpha
+      if (alpha > 35) {
+        pd[m] = inkR;
+        pd[m + 1] = inkG;
+        pd[m + 2] = inkB;
+        pd[m + 3] = Math.min(255, Math.round(alpha * 1.15));
+      } else {
+        pd[m + 3] = 0; // Transparent background so Matra & guide lines remain visible underneath
+      }
+    }
+    pLayerCtx.putImageData(pData, 0, 0);
+    window.__scannedPadImage = padLayer;
+    if (typeof window.redrawCanvas === "function") {
+      try { window.redrawCanvas(); } catch (e) {}
+    }
+    modal.classList.remove("active");
     });
 
     document.getElementById("cropDetectBtn").addEventListener("click", runModalCropAndPredict);
@@ -3041,6 +3079,38 @@ function getBanglaLabel(raw) {
       ctx.drawImage(bin128, 0, 0, 128, 128, 0, 0, 64, 64);
     }
 
+        // Also create a crisp transparent-background ink layer of the scanned letter to display in the Drawing Pad
+    var padLayer = document.createElement("canvas");
+    padLayer.width = 360;
+    padLayer.height = 360;
+    var pLayerCtx = padLayer.getContext("2d");
+    pLayerCtx.imageSmoothingEnabled = true;
+    pLayerCtx.drawImage(out, 0, 0, 360, 360);
+
+    var pData = pLayerCtx.getImageData(0, 0, 360, 360);
+    var pd = pData.data;
+    var isLight = document.body.classList.contains("light-mode") || document.body.classList.contains("white-mode");
+    // Match active theme ink color: deep ink (#1e293b) on cream/light mode, crisp ice-white (#f8fafc) on dark mode
+    var inkR = isLight ? 30 : 248;
+    var inkG = isLight ? 41 : 250;
+    var inkB = isLight ? 59 : 252;
+
+    for (var m = 0; m < pd.length; m += 4) {
+      var alpha = pd[m]; // White strokes on black background -> use brightness as alpha
+      if (alpha > 35) {
+        pd[m] = inkR;
+        pd[m + 1] = inkG;
+        pd[m + 2] = inkB;
+        pd[m + 3] = Math.min(255, Math.round(alpha * 1.15));
+      } else {
+        pd[m + 3] = 0; // Transparent background so Matra & guide lines remain visible underneath
+      }
+    }
+    pLayerCtx.putImageData(pData, 0, 0);
+    window.__scannedPadImage = padLayer;
+    if (typeof window.redrawCanvas === "function") {
+      try { window.redrawCanvas(); } catch (e) {}
+    }
     modal.classList.remove("active");
     if (typeof window.cancelInlineCrop === "function") {
       try { window.cancelInlineCrop(); } catch (e) {}

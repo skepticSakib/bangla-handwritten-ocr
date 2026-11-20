@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 07:28 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 07:36 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2646,6 +2646,7 @@ function getBanglaLabel(raw) {
     justify-content: center;
     padding: 12px;
   }
+  .crop-modal-backdrop.crop-force-hidden { display: none !important; }
   .crop-modal-backdrop.active {
     display: flex !important;
   }
@@ -2772,7 +2773,7 @@ function getBanglaLabel(raw) {
           '<button type="button" id="cropFullResetBtn" style="padding:4px 8px;border-radius:7px;border:1px solid rgba(148,163,184,0.4);background:transparent;color:inherit;font-size:0.78rem;cursor:pointer;">Full</button>' +
         '</div>' +
         '<div class="crop-btn-row">' +
-          '<button type="button" id="cropCancelBtn" class="crop-btn crop-btn-cancel">Cancel</button>' +
+          '<button type="button" id="cropCancelBtn" class="crop-btn crop-btn-cancel" onclick="window.__closeBanglaCropModal && window.__closeBanglaCropModal(event)">Cancel</button>' +
           '<button type="button" id="cropDetectBtn" class="crop-btn crop-btn-detect">✓ Crop &amp; Detect</button>' +
         '</div>' +
       '</div>';
@@ -3138,7 +3139,7 @@ function getBanglaLabel(raw) {
       modalCropBox.w = initS; modalCropBox.h = initS;
       modalCropBox.x = Math.round((previewCanvas.width - initS) / 2);
       modalCropBox.y = Math.round((previewCanvas.height - initS) / 2);
-      modal.style.display = ""; modal.classList.add("active"); try { history.pushState({ banglaModal: "crop" }, ""); } catch (e) {}
+      modal.classList.remove("crop-force-hidden"); modal.style.setProperty("display", "flex", "important"); modal.classList.remove("crop-force-hidden"); modal.style.setProperty("display", "flex", "important"); modal.classList.add("active"); try { history.pushState({ banglaModal: "crop" }, ""); } catch (e) {}
       renderStage();
     };
     img.src = dataUrl;
@@ -3821,5 +3822,51 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_HISTORY_ANDROID_NAV_END -->
+<script>
+window.__closeBanglaCropModal = function (ev) {
+  if (ev) {
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+  }
+  var m = document.getElementById("banglaCropModal");
+  if (m) {
+    m.classList.remove("active");
+    m.classList.add("crop-force-hidden");
+    m.style.setProperty("display", "none", "important");
+  }
+  if (typeof window.cancelInlineCrop === "function") {
+    try { window.cancelInlineCrop(); } catch (e) {}
+  }
+  return false;
+};
+
+document.addEventListener("click", function (ev) {
+  var t = ev.target;
+  if (!t) return;
+  if (t.id === "cropCancelBtn" || (t.closest && t.closest("#cropCancelBtn")) || t.id === "banglaCropModal") {
+    window.__closeBanglaCropModal(ev);
+  }
+}, true);
+
+// Called natively by MainActivity.java when Android hardware/gesture Back is pressed
+window.__handleAndroidNativeBack = function () {
+  var cropModal = document.getElementById("banglaCropModal");
+  if (cropModal && (cropModal.classList.contains("active") || getComputedStyle(cropModal).display !== "none")) {
+    window.__closeBanglaCropModal();
+    return "CLOSED_MODAL";
+  }
+  var otherIds = ["teachModal", "banglaTeachModal", "webCamModal", "cameraModal"];
+  for (var i = 0; i < otherIds.length; i++) {
+    var el = document.getElementById(otherIds[i]);
+    if (el && getComputedStyle(el).display !== "none") {
+      el.style.setProperty("display", "none", "important");
+      document.querySelectorAll("video").forEach(function (v) {
+        try { if (v.srcObject && v.srcObject.getTracks) v.srcObject.getTracks().forEach(function (tr) { tr.stop(); }); } catch (e) {}
+      });
+      return "CLOSED_MODAL";
+    }
+  }
+  return "NO_MODAL";
+};
+</script>
 </body>
 </html>

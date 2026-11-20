@@ -2655,7 +2655,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 09:26 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 09:29 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4356,7 +4356,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 09:26 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 09:29 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4739,22 +4739,34 @@ window.__forceOtaRefresh = async function () {
     pointer-events: auto !important;
   }
 
-  /* 2. Smooth 5-second auto-collapsing Header so Predicted Character fits on 1 mobile screen */
+  /* 2. Auto-collapse after 5s: KEEP ONLY the project logo + project title visible */
   header {
-    transition: padding 0.35s ease, margin 0.35s ease !important;
-    position: relative;
+    transition: padding 0.3s ease, margin 0.3s ease !important;
   }
-  header.header-compact {
-    padding: 8px 14px !important;
-    margin-bottom: 10px !important;
+  header.header-title-only {
+    padding: 7px 12px !important;
+    margin-bottom: 8px !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 8px !important;
   }
-  header.header-compact .title-group,
-  header.header-compact > div:first-child {
+  /* Hide subtitle ("84 Classes..."), badges ("122-CLASS..."), model status, and action buttons */
+  header.header-title-only p,
+  header.header-title-only .subtitle,
+  header.header-title-only .badge,
+  header.header-title-only .badge-pill,
+  header.header-title-only h1 span,
+  header.header-title-only #modelStatus,
+  header.header-title-only .header-actions > *:not(#headerExpandToggle) {
+    display: none !important;
+  }
+  header.header-title-only .header-actions {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  header.header-title-only > div:first-child {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -4762,65 +4774,80 @@ window.__forceOtaRefresh = async function () {
     min-width: 0 !important;
     flex: 1 !important;
   }
-  header.header-compact h1,
-  header.header-compact .subtitle,
-  header.header-compact p,
-  header.header-compact .badge-pill,
-  header.header-compact [class*="badge"] {
-    display: none !important;
-  }
-  header.header-compact .logo-box,
-  header.header-compact .brand-icon,
-  header.header-compact > div:first-child > div:first-child {
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    font-size: 16px !important;
-    border-radius: 8px !important;
+  header.header-title-only .logo-box,
+  header.header-title-only .brand-icon,
+  header.header-title-only > div:first-child > div:first-child {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    font-size: 15px !important;
+    border-radius: 7px !important;
     margin: 0 !important;
   }
-  header.header-compact #modelStatus {
-    font-size: 11.5px !important;
+  header.header-title-only h1 {
+    font-size: 13.5px !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    margin: 0 !important;
   }
-  header.header-compact .header-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 6px !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
-  }
-  header.header-compact #trainModelBtn,
-  header.header-compact button[onclick*="Train"],
-  header.header-compact a[href*="train"] {
-    display: none !important;
-  }
-  header.header-compact #themeToggleBtn {
-    padding: 5px 10px !important;
-    font-size: 11.5px !important;
-  }
+
   #headerExpandToggle {
-    display: inline-flex;
+    display: none;
     align-items: center;
     justify-content: center;
-    padding: 5px 9px;
-    font-size: 11.5px;
+    padding: 3px 8px;
+    font-size: 11px;
     font-weight: 700;
     border-radius: 999px;
     border: 1px solid rgba(56, 189, 248, 0.4);
     background: rgba(56, 189, 248, 0.14);
     color: #38bdf8;
     cursor: pointer;
-    flex-shrink: 0;
+  }
+  header.header-title-only #headerExpandToggle,
+  header.header-user-expanded #headerExpandToggle {
+    display: inline-flex !important;
+  }
+
+  /* 3. Compact mobile vertical spacing so Predicted Character fits completely on 1 screen */
+  @media (max-width: 768px) {
+    body.header-is-compact .container,
+    body.header-is-compact main,
+    body.header-is-compact .app-shell {
+      padding-top: 6px !important;
+    }
+    body.header-is-compact .grid {
+      gap: 8px !important;
+    }
+    body.header-is-compact .card {
+      padding: 10px !important;
+    }
+    body.header-is-compact .card-header {
+      margin-bottom: 6px !important;
+      font-size: 11px !important;
+    }
+    body.header-is-compact #drawCanvas {
+      max-height: 40vh !important;
+      width: auto !important;
+      max-width: 100% !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    body.header-is-compact .controls-bar {
+      margin-top: 6px !important;
+      margin-bottom: 6px !important;
+    }
+    body.header-is-compact .btn-row button {
+      padding: 7px 8px !important;
+      font-size: 12px !important;
+    }
   }
 </style>
 <script>
 (function () {
-  function setupAutoCompactHeader() {
+  function setupTitleOnlyHeader() {
     const hdr = document.querySelector("header");
     if (!hdr || document.getElementById("headerExpandToggle")) return;
 
@@ -4828,49 +4855,47 @@ window.__forceOtaRefresh = async function () {
     const toggleBtn = document.createElement("button");
     toggleBtn.id = "headerExpandToggle";
     toggleBtn.type = "button";
-    toggleBtn.title = "Expand / Collapse App Info";
-    toggleBtn.textContent = "▲ Info";
+    toggleBtn.title = "Show / Hide Header Details";
+    toggleBtn.innerHTML = "&#9660;";
+    actions.appendChild(toggleBtn);
 
     let userPinnedOpen = false;
-    function setCompact(compact) {
-      hdr.classList.toggle("header-compact", compact);
-      toggleBtn.textContent = compact ? "▼ Info" : "▲ Info";
+
+    function collapseToTitleOnly() {
+      hdr.classList.add("header-title-only");
+      hdr.classList.remove("header-user-expanded");
+      document.body.classList.add("header-is-compact");
+      toggleBtn.innerHTML = "&#9660;";
+    }
+
+    function expandFullHeader() {
+      hdr.classList.remove("header-title-only");
+      hdr.classList.add("header-user-expanded");
+      document.body.classList.remove("header-is-compact");
+      toggleBtn.innerHTML = "&#9650;";
     }
 
     toggleBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      const willCompact = !hdr.classList.contains("header-compact");
-      userPinnedOpen = !willCompact;
-      setCompact(willCompact);
-    });
-
-    actions.appendChild(toggleBtn);
-
-    // Move #modelStatus into the left title row when compact so status stays visible on 1 line
-    const statusEl = document.getElementById("modelStatus");
-    const leftGroup = hdr.querySelector(".title-group") || hdr.firstElementChild;
-    const origStatusParent = statusEl ? statusEl.parentElement : null;
-
-    const observer = new MutationObserver(function () {
-      if (!statusEl || !leftGroup || !origStatusParent) return;
-      if (hdr.classList.contains("header-compact")) {
-        if (statusEl.parentElement !== leftGroup) leftGroup.appendChild(statusEl);
+      if (hdr.classList.contains("header-title-only")) {
+        userPinnedOpen = true;
+        expandFullHeader();
       } else {
-        if (statusEl.parentElement !== origStatusParent) origStatusParent.insertBefore(statusEl, origStatusParent.firstChild);
+        userPinnedOpen = false;
+        collapseToTitleOnly();
       }
     });
-    observer.observe(hdr, { attributes: true, attributeFilter: ["class"] });
 
-    // Auto-collapse after 5 seconds so the Predicted Character card is fully visible on screen
+    // After 5 seconds, keep ONLY the project logo + project name visible
     setTimeout(function () {
-      if (!userPinnedOpen) setCompact(true);
+      if (!userPinnedOpen) collapseToTitleOnly();
     }, 5000);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupAutoCompactHeader);
+    document.addEventListener("DOMContentLoaded", setupTitleOnlyHeader);
   } else {
-    setupAutoCompactHeader();
+    setupTitleOnlyHeader();
   }
 })();
 </script>

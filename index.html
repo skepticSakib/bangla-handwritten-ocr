@@ -2655,7 +2655,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 09:20 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 09:26 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4356,7 +4356,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 09:20 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 09:26 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4720,5 +4720,160 @@ window.__forceOtaRefresh = async function () {
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
+<!-- BANGLA_MOBILE_VIEWPORT_POLISH_START -->
+<style id="bangla-mobile-viewport-polish">
+  /* 1. Never let the Trace & Tools FAB wrapper block taps on Undo / Clear / Photo buttons */
+  #banglaToolsFab,
+  .bangla-tools-fab-wrap,
+  [id*="ToolsFab"],
+  [class*="tools-fab"] {
+    pointer-events: none !important;
+  }
+  #banglaToolsFab button,
+  #banglaToolsFab a,
+  #banglaToolsFab .fab-main-btn,
+  #banglaToolsFab .fab-menu-item,
+  .bangla-tools-fab-wrap button,
+  [id*="ToolsFab"] button,
+  [class*="tools-fab"] button {
+    pointer-events: auto !important;
+  }
+
+  /* 2. Smooth 5-second auto-collapsing Header so Predicted Character fits on 1 mobile screen */
+  header {
+    transition: padding 0.35s ease, margin 0.35s ease !important;
+    position: relative;
+  }
+  header.header-compact {
+    padding: 8px 14px !important;
+    margin-bottom: 10px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+  header.header-compact .title-group,
+  header.header-compact > div:first-child {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  header.header-compact h1,
+  header.header-compact .subtitle,
+  header.header-compact p,
+  header.header-compact .badge-pill,
+  header.header-compact [class*="badge"] {
+    display: none !important;
+  }
+  header.header-compact .logo-box,
+  header.header-compact .brand-icon,
+  header.header-compact > div:first-child > div:first-child {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+  }
+  header.header-compact #modelStatus {
+    font-size: 11.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+  }
+  header.header-compact .header-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  header.header-compact #trainModelBtn,
+  header.header-compact button[onclick*="Train"],
+  header.header-compact a[href*="train"] {
+    display: none !important;
+  }
+  header.header-compact #themeToggleBtn {
+    padding: 5px 10px !important;
+    font-size: 11.5px !important;
+  }
+  #headerExpandToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    background: rgba(56, 189, 248, 0.14);
+    color: #38bdf8;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+</style>
+<script>
+(function () {
+  function setupAutoCompactHeader() {
+    const hdr = document.querySelector("header");
+    if (!hdr || document.getElementById("headerExpandToggle")) return;
+
+    const actions = hdr.querySelector(".header-actions") || hdr;
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "headerExpandToggle";
+    toggleBtn.type = "button";
+    toggleBtn.title = "Expand / Collapse App Info";
+    toggleBtn.textContent = "▲ Info";
+
+    let userPinnedOpen = false;
+    function setCompact(compact) {
+      hdr.classList.toggle("header-compact", compact);
+      toggleBtn.textContent = compact ? "▼ Info" : "▲ Info";
+    }
+
+    toggleBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const willCompact = !hdr.classList.contains("header-compact");
+      userPinnedOpen = !willCompact;
+      setCompact(willCompact);
+    });
+
+    actions.appendChild(toggleBtn);
+
+    // Move #modelStatus into the left title row when compact so status stays visible on 1 line
+    const statusEl = document.getElementById("modelStatus");
+    const leftGroup = hdr.querySelector(".title-group") || hdr.firstElementChild;
+    const origStatusParent = statusEl ? statusEl.parentElement : null;
+
+    const observer = new MutationObserver(function () {
+      if (!statusEl || !leftGroup || !origStatusParent) return;
+      if (hdr.classList.contains("header-compact")) {
+        if (statusEl.parentElement !== leftGroup) leftGroup.appendChild(statusEl);
+      } else {
+        if (statusEl.parentElement !== origStatusParent) origStatusParent.insertBefore(statusEl, origStatusParent.firstChild);
+      }
+    });
+    observer.observe(hdr, { attributes: true, attributeFilter: ["class"] });
+
+    // Auto-collapse after 5 seconds so the Predicted Character card is fully visible on screen
+    setTimeout(function () {
+      if (!userPinnedOpen) setCompact(true);
+    }, 5000);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupAutoCompactHeader);
+  } else {
+    setupAutoCompactHeader();
+  }
+})();
+</script>
+<!-- BANGLA_MOBILE_VIEWPORT_POLISH_END -->
 </body>
 </html>

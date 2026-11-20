@@ -2859,5 +2859,124 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_CROP_DETECT_MODAL_END -->
+<!-- BANGLA_STUDIO_FOOTER_BADGE_START -->
+<style>
+  @keyframes studioBadgeFadeIn {
+    0% { opacity: 0; transform: translate3d(0, 6px, 0); }
+    100% { opacity: 0.92; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes studioDotBreathe {
+    0%, 100% { opacity: 0.45; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.12); }
+  }
+
+  #studioTelemetryBadge {
+    position: fixed;
+    right: 12px;
+    bottom: 10px;
+    z-index: 950;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: #cbd5e1;
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+    pointer-events: auto;
+    user-select: none;
+    will-change: transform, opacity;
+    animation: studioBadgeFadeIn 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #studioTelemetryBadge:hover {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0);
+  }
+  body.light-mode #studioTelemetryBadge,
+  body.white-mode #studioTelemetryBadge {
+    color: #475569;
+    background: rgba(250, 247, 240, 0.90);
+    border: 1px solid rgba(185, 28, 28, 0.24);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.09);
+  }
+
+  .studio-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #b91c1c;
+    flex-shrink: 0;
+    will-change: transform, opacity;
+    animation: studioDotBreathe 3.2s ease-in-out infinite;
+  }
+  body:not(.light-mode):not(.white-mode) .studio-live-dot {
+    background: #38bdf8;
+  }
+
+  .studio-badge-sep {
+    opacity: 0.38;
+  }
+
+  @media (max-width: 768px) {
+    #studioTelemetryBadge {
+      right: 8px;
+      bottom: 6px;
+      padding: 4px 9px;
+      font-size: 0.66rem;
+      gap: 6px;
+    }
+  }
+</style>
+
+<div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
+  <span class="studio-live-dot" aria-hidden="true"></span>
+  <span>Updated: <strong>20 Nov 2026, 05:00 PM</strong></span>
+  <span class="studio-badge-sep">•</span>
+  <span>Visitors: <strong id="studioVisitorCount">...</strong></span>
+</div>
+
+<script>
+(function () {
+  window.addEventListener("DOMContentLoaded", function () {
+    var countEl = document.getElementById("studioVisitorCount");
+    if (!countEl) return;
+
+    // Session-deduplicated global visitor counter with graceful local fallback
+    var sessionKey = "bangla_ocr_visited_session";
+    var localCacheKey = "bangla_ocr_visitor_cache";
+    var isNewSession = !sessionStorage.getItem(sessionKey);
+    var endpoint = isNewSession
+      ? "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits/up"
+      : "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits";
+
+    fetch(endpoint)
+      .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+      .then(function (data) {
+        if (data && typeof data.count === "number") {
+          sessionStorage.setItem(sessionKey, "1");
+          localStorage.setItem(localCacheKey, String(data.count));
+          countEl.textContent = data.count.toLocaleString();
+        } else {
+          throw new Error("Invalid counter payload");
+        }
+      })
+      .catch(function () {
+        var cached = parseInt(localStorage.getItem(localCacheKey) || "1", 10);
+        if (isNewSession) {
+          cached += 1;
+          sessionStorage.setItem(sessionKey, "1");
+          localStorage.setItem(localCacheKey, String(cached));
+        }
+        countEl.textContent = cached.toLocaleString();
+      });
+  });
+})();
+</script>
+<!-- BANGLA_STUDIO_FOOTER_BADGE_END -->
 </body>
 </html>

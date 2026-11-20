@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 06:17 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 07:16 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3556,5 +3556,229 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_TEACH_MODEL_RESOLVER_END -->
+<!-- BANGLA_HISTORY_ANDROID_NAV_START -->
+<style>
+  #recentScansWrap {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.58);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+  }
+  body.light-mode #recentScansWrap,
+  body.white-mode #recentScansWrap {
+    background: #f4ede0;
+    border-color: rgba(185, 28, 28, 0.2);
+  }
+  .recent-scans-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+  #recentScansStrip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .recent-scan-chip {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 9px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.14s ease, border-color 0.18s ease;
+  }
+  body.light-mode .recent-scan-chip,
+  body.white-mode .recent-scan-chip {
+    background: #fcf9f2;
+    border-color: rgba(185, 28, 28, 0.22);
+  }
+  .recent-scan-chip:active {
+    transform: scale(0.95);
+  }
+  .recent-scan-chip img {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #000000;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    object-fit: contain;
+  }
+  .recent-scan-char {
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .recent-scan-conf {
+    font-size: 0.68rem;
+    opacity: 0.72;
+  }
+</style>
+
+<script>
+(function () {
+  var recentHistory = [];
+
+  // 1. Native Android Hardware / Gesture Back-Button Handler
+  function setupAndroidBackHandler() {
+    try {
+      var appPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+      if (appPlugin && typeof appPlugin.addListener === "function" && !appPlugin.__banglaBackBound) {
+        appPlugin.__banglaBackBound = true;
+        appPlugin.addListener("backButton", function (info) {
+          // Close Crop & Detect modal first if open
+          var cropModal = document.getElementById("banglaCropModal");
+          if (cropModal && cropModal.classList.contains("active")) {
+            cropModal.classList.remove("active");
+            return;
+          }
+          // Close Teach & Update or Camera modal if open
+          var openDialogs = document.querySelectorAll("[role='dialog'], .modal, #teachModal, #banglaTeachModal, #webCamModal");
+          for (var i = 0; i < openDialogs.length; i++) {
+            var dlg = openDialogs[i];
+            if (dlg && dlg.offsetParent !== null && dlg.id !== "banglaCropModal") {
+              var closeBtn = dlg.querySelector("button[onclick*='close' i], button[onclick*='cancel' i], .close-btn");
+              if (closeBtn) { closeBtn.click(); return; }
+              dlg.style.display = "none";
+              return;
+            }
+          }
+          if (info && info.canGoBack) {
+            window.history.back();
+          } else if (typeof appPlugin.exitApp === "function") {
+            appPlugin.exitApp();
+          }
+        });
+      }
+    } catch (e) {}
+  }
+
+  // 2. Recent Scans Strip UI
+  function ensureRecentScansUI() {
+    if (document.getElementById("recentScansWrap")) return;
+    var anchor = document.getElementById("top5List") || document.querySelector(".top5-title");
+    if (!anchor || !anchor.parentNode) return;
+
+    var wrap = document.createElement("div");
+    wrap.id = "recentScansWrap";
+    wrap.style.display = "none";
+    wrap.innerHTML =
+      '<div class="recent-scans-header">' +
+        '<span>🕒 Recent Scans (Tap to Append)</span>' +
+        '<button type="button" id="clearHistoryStripBtn" style="background:transparent;border:none;color:inherit;font-size:0.7rem;font-weight:700;cursor:pointer;opacity:0.75;">Clear</button>' +
+      '</div>' +
+      '<div id="recentScansStrip"></div>';
+
+    anchor.parentNode.appendChild(wrap);
+
+    document.getElementById("clearHistoryStripBtn").addEventListener("click", function () {
+      recentHistory = [];
+      wrap.style.display = "none";
+      document.getElementById("recentScansStrip").innerHTML = "";
+    });
+  }
+
+  function renderRecentStrip() {
+    ensureRecentScansUI();
+    var wrap = document.getElementById("recentScansWrap");
+    var strip = document.getElementById("recentScansStrip");
+    if (!wrap || !strip || recentHistory.length === 0) return;
+
+    wrap.style.display = "block";
+    strip.innerHTML = "";
+
+    recentHistory.forEach(function (item) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "recent-scan-chip";
+      chip.title = "Tap to append " + item.char + " to Word Composer";
+      chip.innerHTML =
+        (item.thumb ? '<img src="' + item.thumb + '" alt="' + item.char + '">' : '') +
+        '<div style="text-align:left;">' +
+          '<div class="recent-scan-char">' + item.char + '</div>' +
+          '<div class="recent-scan-conf">' + item.conf + '</div>' +
+        '</div>';
+
+      chip.addEventListener("click", function () {
+        // Append character to Word Composer if present
+        var wordBox = document.querySelector("#composedWord, #wordOutput, input[id*='word' i], textarea[id*='word' i]");
+        if (wordBox) {
+          if (wordBox.value !== undefined) wordBox.value += item.char;
+          else wordBox.textContent += item.char;
+        }
+        if (navigator.vibrate) try { navigator.vibrate(10); } catch (e) {}
+      });
+      strip.appendChild(chip);
+    });
+  }
+
+  // 3. Observe Top-5 / Hero prediction updates & capture thumbnail + haptic feedback
+  function hookPredictionHistory() {
+    ensureRecentScansUI();
+    var top5El = document.getElementById("top5List");
+    if (!top5El || top5El.dataset.historyBound) return;
+    top5El.dataset.historyBound = "1";
+
+    var lastRecordedSig = "";
+    new MutationObserver(function () {
+      var firstRow = top5El.firstElementChild;
+      if (!firstRow) return;
+      var rowTxt = (firstRow.textContent || "").trim();
+      var confMatch = rowTxt.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (!confMatch) return;
+
+      // Extract Bangla character from the first row
+      var charMatch = rowTxt.match(/[\u0980-\u09FF]+/);
+      if (!charMatch) return;
+
+      var ch = charMatch[0];
+      var conf = confMatch[1] + "%";
+      var thumb = "";
+      var cnnCv = document.querySelector("canvas[id*='cnn' i], canvas[width='64'][height='64']");
+      if (cnnCv) {
+        try { thumb = cnnCv.toDataURL("image/png"); } catch (e) {}
+      } else if (window.uploadedBinaryImage) {
+        try { thumb = window.uploadedBinaryImage.toDataURL("image/png"); } catch (e) {}
+      }
+
+      var sig = ch + "_" + conf + "_" + thumb.slice(-24);
+      if (sig === lastRecordedSig) return;
+      lastRecordedSig = sig;
+
+      if (navigator.vibrate) try { navigator.vibrate(14); } catch (e) {}
+
+      recentHistory.unshift({ char: ch, conf: conf, thumb: thumb });
+      if (recentHistory.length > 8) recentHistory.pop();
+      renderRecentStrip();
+    }).observe(top5El, { childList: true, subtree: true });
+  }
+
+  function bootAll() {
+    setupAndroidBackHandler();
+    setTimeout(setupAndroidBackHandler, 800);
+    hookPredictionHistory();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootAll);
+  } else {
+    bootAll();
+  }
+})();
+</script>
+<!-- BANGLA_HISTORY_ANDROID_NAV_END -->
 </body>
 </html>

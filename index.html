@@ -123,7 +123,7 @@
       border: 2px solid var(--accent);
       border-radius: 12px;
       background: var(--canvas-bg);
-      touch-action: none;
+      touch-action: manipulation;
       cursor: crosshair;
       display: block;
     }
@@ -1647,24 +1647,6 @@ function getBanglaLabel(raw) {
     transform: scale(0.96);
   }
 </style>
-<script>
-(function () {
-  window.addEventListener("DOMContentLoaded", () => {
-    const charEl = document.getElementById("predChar") || document.querySelector(".pred-char, .big-char");
-    if (!charEl) return;
-
-    let lastChar = (charEl.textContent || "").trim();
-    new MutationObserver(() => {
-      const current = (charEl.textContent || "").trim();
-      if (current && current !== "?" && current !== "—") {
-        charEl.classList.remove("stamp-once");
-        void charEl.offsetWidth;
-        charEl.classList.add("stamp-once");
-      }
-    }).observe(charEl, { childList: true, characterData: true, subtree: true });
-  });
-})();
-</script>
 <!-- BANGLA_HERO_PREDICTION_END -->
 <!-- BANGLA_TRAIN_MODAL_START -->
 <style>
@@ -2595,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:51 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:55 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2724,13 +2706,13 @@ function getBanglaLabel(raw) {
     display: flex;
     align-items: center;
     justify-content: center;
-    touch-action: none;
+    touch-action: manipulation;
   }
   #cropPreviewCanvas {
     display: block;
     max-width: 100%;
     max-height: 50vh;
-    touch-action: none;
+    touch-action: manipulation;
     cursor: crosshair;
   }
   .crop-controls-row {
@@ -3994,7 +3976,7 @@ window.__forceOtaRefresh = async function () {
     flex-direction: column;
     align-items: flex-end;
     gap: 10px;
-    touch-action: none;
+    touch-action: manipulation;
     user-select: none;
     transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
                 right 0.28s cubic-bezier(0.22, 1, 0.36, 1),
@@ -4296,7 +4278,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:51 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:55 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4498,7 +4480,8 @@ window.__forceOtaRefresh = async function () {
       if (!isDragging) return;
       var dx = clientX - startX;
       var dy = clientY - startY;
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      // 14px threshold prevents Android WebView finger-tap micro-jitter from cancelling menu open
+      if (Math.abs(dx) > 14 || Math.abs(dy) > 14) {
         if (!hasMoved) {
           hasMoved = true;
           wrapEl.classList.add("dragging");

@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:34 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:37 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3966,11 +3966,11 @@ window.__forceOtaRefresh = async function () {
     box-shadow: 0 0 8px rgba(185, 28, 28, 0.5);
   }
 
-  /* Movable Floating Speed-Dial FAB & Pop-Up Option Menu */
+  /* Edge-Docked Movable Speed-Dial FAB & Animated Pop-Up Menu */
   #banglaSpeedDialWrap {
     position: fixed;
-    right: 16px;
-    bottom: 66px;
+    right: 14px;
+    bottom: 68px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -3978,20 +3978,44 @@ window.__forceOtaRefresh = async function () {
     gap: 10px;
     touch-action: none;
     user-select: none;
+    transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                right 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                top 0.22s ease,
+                bottom 0.22s ease;
+  }
+  #banglaSpeedDialWrap.dragging {
+    transition: none !important;
+  }
+  #banglaSpeedDialWrap.dock-left {
+    align-items: flex-start;
+  }
+  #banglaSpeedDialWrap.dock-right {
+    align-items: flex-end;
   }
 
   #banglaSpeedDialMenu {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 7px;
     padding: 10px;
-    min-width: 168px;
+    min-width: 172px;
     border-radius: 16px;
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(56, 189, 248, 0.35);
     box-shadow: 0 16px 38px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(12px) scale(0.88);
+    transform-origin: bottom right;
+    transition: opacity 0.22s ease,
+                transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                visibility 0.22s ease;
+  }
+  #banglaSpeedDialWrap.dock-left #banglaSpeedDialMenu {
+    transform-origin: bottom left;
   }
   body.light-mode #banglaSpeedDialMenu,
   body.white-mode #banglaSpeedDialMenu {
@@ -4000,7 +4024,10 @@ window.__forceOtaRefresh = async function () {
     box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
   }
   #banglaSpeedDialMenu.open {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
   }
 
   .dial-option-btn {
@@ -4017,6 +4044,24 @@ window.__forceOtaRefresh = async function () {
     font-weight: 700;
     text-align: left;
     cursor: pointer;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease,
+                transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.15s ease,
+                border-color 0.15s ease;
+  }
+  #banglaSpeedDialMenu.open .dial-option-btn {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #banglaSpeedDialMenu.open .dial-option-btn:nth-child(1) { transition-delay: 0.03s; }
+  #banglaSpeedDialMenu.open .dial-option-btn:nth-child(2) { transition-delay: 0.06s; }
+  #banglaSpeedDialMenu.open .dial-option-btn:nth-child(3) { transition-delay: 0.09s; }
+  #banglaSpeedDialMenu.open .dial-option-btn:nth-child(4) { transition-delay: 0.12s; }
+
+  .dial-option-btn:active {
+    transform: scale(0.95) !important;
   }
   body.light-mode .dial-option-btn,
   body.white-mode .dial-option-btn {
@@ -4047,9 +4092,20 @@ window.__forceOtaRefresh = async function () {
     letter-spacing: 0.02em;
     box-shadow: 0 10px 26px rgba(2, 132, 199, 0.42);
     cursor: grab;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease,
+                background 0.22s ease;
   }
   #banglaSpeedDialFab:active {
     cursor: grabbing;
+    transform: scale(0.93);
+  }
+  #banglaSpeedDialFab .fab-icon {
+    display: inline-block;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #banglaSpeedDialFab.is-open .fab-icon {
+    transform: rotate(90deg) scale(1.1);
   }
   body.light-mode #banglaSpeedDialFab,
   body.white-mode #banglaSpeedDialFab {
@@ -4222,7 +4278,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:34 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:37 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4351,32 +4407,41 @@ window.__forceOtaRefresh = async function () {
     if (m) m.classList.remove("open");
   };
 
-  function clampSpeedDialIntoViewport() {
+  function snapSpeedDialToEdge(preferSide) {
     var wrap = document.getElementById("banglaSpeedDialWrap");
     if (!wrap) return;
     var rect = wrap.getBoundingClientRect();
-    var bottomSafeMargin = 64; // stay cleanly above the bottom telemetry pill
+    var edgeMargin = 14;
+    var bottomSafeMargin = 68;
+    var topSafeMargin = 12;
+
+    var centerX = rect.left + rect.width / 2;
+    var dockSide = preferSide || (centerX < window.innerWidth / 2 ? "left" : "right");
+
+    wrap.classList.remove("dock-left", "dock-right");
+    wrap.classList.add(dockSide === "left" ? "dock-left" : "dock-right");
+
+    if (dockSide === "left") {
+      wrap.style.left = edgeMargin + "px";
+      wrap.style.right = "auto";
+    } else {
+      wrap.style.right = edgeMargin + "px";
+      wrap.style.left = "auto";
+    }
+
+    // Keep vertically clamped above footer & below top edge
     var maxBottom = window.innerHeight - bottomSafeMargin;
     if (rect.bottom > maxBottom) {
       var shiftUp = rect.bottom - maxBottom;
       if (wrap.style.top && wrap.style.top !== "auto") {
-        wrap.style.top = Math.max(8, rect.top - shiftUp) + "px";
+        wrap.style.top = Math.max(topSafeMargin, rect.top - shiftUp) + "px";
       } else {
         wrap.style.bottom = bottomSafeMargin + "px";
       }
     }
-    if (rect.top < 8) {
-      wrap.style.top = "8px";
+    if (rect.top < topSafeMargin) {
+      wrap.style.top = topSafeMargin + "px";
       wrap.style.bottom = "auto";
-    }
-    if (rect.right > window.innerWidth - 8) {
-      if (wrap.style.left && wrap.style.left !== "auto") {
-        wrap.style.left = Math.max(8, window.innerWidth - rect.width - 8) + "px";
-      }
-    }
-    if (rect.left < 8) {
-      wrap.style.left = "8px";
-      wrap.style.right = "auto";
     }
   }
 
@@ -4385,13 +4450,16 @@ window.__forceOtaRefresh = async function () {
     var fab = document.getElementById("banglaSpeedDialFab");
     if (!menu || !fab) return;
     menu.classList.toggle("open", openState);
-    fab.innerHTML = openState ? "✕ Close" : "✦ Trace & Tools";
+    fab.classList.toggle("is-open", openState);
+    fab.innerHTML = openState
+      ? '<span class="fab-icon">✕</span><span>Close</span>'
+      : '<span class="fab-icon">✦</span><span>Trace & Tools</span>';
     if (openState) {
-      requestAnimationFrame(clampSpeedDialIntoViewport);
+      requestAnimationFrame(function () { snapSpeedDialToEdge(); });
     }
   }
 
-  // 3. Make Floating Button Smoothly Draggable (Mouse + Touch) While Preserving Click Toggle
+  // 3. Smooth Dragging That Always Snaps to Left or Right Edge on Release (Never Stays in Middle)
   function enableDraggableWidget(wrapEl, handleEl, onTapCallback) {
     var isDragging = false;
     var hasMoved = false;
@@ -4413,15 +4481,18 @@ window.__forceOtaRefresh = async function () {
       var dx = clientX - startX;
       var dy = clientY - startY;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-        hasMoved = true;
+        if (!hasMoved) {
+          hasMoved = true;
+          wrapEl.classList.add("dragging");
+        }
       }
       if (!hasMoved) return;
 
       var rect = wrapEl.getBoundingClientRect();
-      var maxLeft = window.innerWidth - rect.width - 8;
-      var maxTop = window.innerHeight - rect.height - 8;
-      var newLeft = Math.min(Math.max(8, origLeft + dx), Math.max(8, maxLeft));
-      var newTop = Math.min(Math.max(8, origTop + dy), Math.max(8, maxTop));
+      var maxLeft = window.innerWidth - rect.width - 10;
+      var maxTop = window.innerHeight - rect.height - 66;
+      var newLeft = Math.min(Math.max(10, origLeft + dx), Math.max(10, maxLeft));
+      var newTop = Math.min(Math.max(10, origTop + dy), Math.max(10, maxTop));
 
       wrapEl.style.left = newLeft + "px";
       wrapEl.style.top = newTop + "px";
@@ -4432,7 +4503,11 @@ window.__forceOtaRefresh = async function () {
     function onEnd() {
       if (!isDragging) return;
       isDragging = false;
-      if (!hasMoved && typeof onTapCallback === "function") {
+      wrapEl.classList.remove("dragging");
+      if (hasMoved) {
+        // Snap smoothly to nearest horizontal side (left or right)
+        snapSpeedDialToEdge();
+      } else if (typeof onTapCallback === "function") {
         onTapCallback();
       }
     }
@@ -4453,6 +4528,7 @@ window.__forceOtaRefresh = async function () {
       onMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
     window.addEventListener("touchend", onEnd);
+    window.addEventListener("resize", function () { snapSpeedDialToEdge(); });
   }
 
   // 4. Build Trace Modal + Movable Toggle Speed-Dial Menu
@@ -4515,7 +4591,7 @@ window.__forceOtaRefresh = async function () {
           '<button type="button" class="dial-option-btn" id="dockPhotoBtn">🖼️ Photo</button>' +
           '<button type="button" class="dial-option-btn" id="dockSyncBtn">🔄 Sync Update</button>' +
         '</div>' +
-        '<button type="button" id="banglaSpeedDialFab" aria-label="Toggle Studio Tools">✦ Trace & Tools</button>';
+        '<button type="button" id="banglaSpeedDialFab" aria-label="Toggle Studio Tools"><span class="fab-icon">✦</span><span>Trace & Tools</span></button>';
       document.body.appendChild(wrap);
 
       var fab = document.getElementById("banglaSpeedDialFab");

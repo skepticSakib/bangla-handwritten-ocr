@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 06:12 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 06:14 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3277,5 +3277,207 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_STUDIO_UI_POLISH_END -->
+<!-- BANGLA_HEADER_TOP5_UPGRADE_START -->
+<style>
+  /* 1. Elevated Dual-Theme Color Palette (Midnight Ink Slate vs. Warm Handmade Paper & Terracotta) */
+  :root {
+    --studio-bg: #0b1120;
+    --studio-card: rgba(19, 28, 46, 0.92);
+    --studio-border: rgba(56, 189, 248, 0.24);
+    --studio-accent: #38bdf8;
+    --studio-gold: #fbbf24;
+    --studio-text: #f1f5f9;
+    --studio-muted: #94a3b8;
+  }
+  body.light-mode,
+  body.white-mode {
+    --studio-bg: #f6f1e7;
+    --studio-card: #fcf9f2;
+    --studio-border: rgba(185, 28, 28, 0.22);
+    --studio-accent: #b91c1c;
+    --studio-gold: #b45309;
+    --studio-text: #1e293b;
+    --studio-muted: #64748b;
+  }
+
+  body {
+    background: var(--studio-bg) !important;
+    color: var(--studio-text) !important;
+  }
+
+  /* 2. Editorial Calligraphy Header */
+  header, .app-header, .studio-header {
+    position: relative;
+    padding: 14px 18px !important;
+    margin-bottom: 14px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96)) !important;
+    border: 1px solid var(--studio-border) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28) !important;
+  }
+  body.light-mode header,
+  body.white-mode header,
+  body.light-mode .app-header,
+  body.white-mode .app-header {
+    background: linear-gradient(135deg, #fdfbf7, #f4ede0) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  .studio-emblem-seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  body.light-mode .studio-emblem-seal,
+  body.white-mode .studio-emblem-seal {
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.28);
+  }
+
+  .studio-spec-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--studio-accent);
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid var(--studio-border);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  body.light-mode .studio-spec-pill,
+  body.white-mode .studio-spec-pill {
+    background: rgba(185, 28, 28, 0.08);
+  }
+
+  /* 3. Top-5 Prediction Cards with Rank Badges & Animated Confidence Fill */
+  #top5List {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  #top5List > div {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 9px 13px !important;
+    border-radius: 12px !important;
+    background: rgba(15, 23, 42, 0.68) !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    overflow: hidden !important;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease !important;
+  }
+  body.light-mode #top5List > div,
+  body.white-mode #top5List > div {
+    background: #f5efe4 !important;
+    border-color: rgba(185, 28, 28, 0.16) !important;
+  }
+  #top5List > div:hover {
+    transform: translateX(3px);
+  }
+
+  /* Gold / Accent highlight on #1 Top Match */
+  #top5List > div:first-child {
+    border: 1.5px solid var(--studio-accent) !important;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.16) !important;
+  }
+  body.light-mode #top5List > div:first-child,
+  body.white-mode #top5List > div:first-child {
+    box-shadow: 0 4px 14px rgba(185, 28, 28, 0.12) !important;
+  }
+
+  /* Proportional animated probability fill bar behind each Top-5 row */
+  .top5-prob-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+    border-radius: 11px;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.24), rgba(56, 189, 248, 0.06));
+    transition: width 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  body.light-mode .top5-prob-fill,
+  body.white-mode .top5-prob-fill {
+    background: linear-gradient(90deg, rgba(185, 28, 28, 0.18), rgba(185, 28, 28, 0.04));
+  }
+  #top5List > div > * {
+    position: relative;
+    z-index: 1;
+  }
+</style>
+
+<script>
+(function () {
+  function upgradeHeaderAndTop5() {
+    // 1. Enhance Header with Bangla Calligraphy Seal & Model Spec Pill
+    var h1 = document.querySelector("header h1, .app-header h1, h1");
+    if (h1 && !h1.dataset.studioEnhanced) {
+      h1.dataset.studioEnhanced = "1";
+      h1.style.display = "flex";
+      h1.style.alignItems = "center";
+      h1.style.flexWrap = "wrap";
+
+      var seal = document.createElement("span");
+      seal.className = "studio-emblem-seal";
+      seal.textContent = "ক";
+      h1.insertBefore(seal, h1.firstChild);
+
+      var pill = document.createElement("span");
+      pill.className = "studio-spec-pill";
+      pill.textContent = "122-Class • 5-View TTA";
+      h1.appendChild(pill);
+    }
+
+    // 2. Observe #top5List updates and inject proportional animated probability fill bars
+    var top5El = document.getElementById("top5List");
+    if (top5El && !top5El.dataset.barObserver) {
+      top5El.dataset.barObserver = "1";
+      var paintBars = function () {
+        var rows = top5El.children;
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          var txt = row.textContent || "";
+          var match = txt.match(/(\d+(?:\.\d+)?)\s*%/);
+          var pct = match ? Math.min(100, Math.max(4, parseFloat(match[1]))) : 0;
+          var bar = row.querySelector(".top5-prob-fill");
+          if (!bar) {
+            bar = document.createElement("span");
+            bar.className = "top5-prob-fill";
+            row.insertBefore(bar, row.firstChild);
+          }
+          bar.style.width = pct + "%";
+        }
+      };
+      paintBars();
+      new MutationObserver(paintBars).observe(top5El, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", upgradeHeaderAndTop5);
+  } else {
+    upgradeHeaderAndTop5();
+  }
+})();
+</script>
+<!-- BANGLA_HEADER_TOP5_UPGRADE_END -->
 </body>
 </html>

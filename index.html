@@ -2767,6 +2767,60 @@ function getBanglaLabel(raw) {
     return res;
   };
 
+    // Hook Image.prototype.src & Capacitor Camera plugin so Android WebView Camera/Photo triggers Crop modal
+  var imgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+  if (imgSrcDesc && imgSrcDesc.set) {
+    Object.defineProperty(HTMLImageElement.prototype, "src", {
+      set: function (val) {
+        try {
+          if (!isProcessingCrop && typeof val === "string" && val.length > 40) {
+            var isUserPhoto =
+              val.indexOf("data:image/") === 0 ||
+              val.indexOf("blob:") === 0 ||
+              val.indexOf("_capacitor_file_") !== -1 ||
+              val.indexOf("content://") === 0 ||
+              val.indexOf("file://") === 0;
+            if (isUserPhoto && (!modal || !modal.classList.contains("active"))) {
+              openCropModalWithSrc(val);
+            }
+          }
+        } catch (err) {}
+        return imgSrcDesc.set.call(this, val);
+      },
+      get: imgSrcDesc.get
+    });
+  }
+
+  // Capture-phase document listener for any <input type="file"> on Android WebView
+  document.addEventListener("change", function (ev) {
+    var el = ev.target;
+    if (!isProcessingCrop && el && el.tagName === "INPUT" && el.type === "file" && el.files && el.files[0]) {
+      openCropModalWithFile(el.files[0]);
+    }
+  }, true);
+
+  // Hook Capacitor Native Bridge (Capacitor.Plugins.Camera.getPhoto) if present in APK
+  function hookCapacitorCamera() {
+    try {
+      var cap = window.Capacitor;
+      var cam = cap && cap.Plugins && cap.Plugins.Camera;
+      if (cam && typeof cam.getPhoto === "function" && !cam.__cropPatched) {
+        cam.__cropPatched = true;
+        var origGetPhoto = cam.getPhoto.bind(cam);
+        cam.getPhoto = function (opts) {
+          return origGetPhoto(opts).then(function (photo) {
+            if (!isProcessingCrop && photo) {
+              var src = photo.dataUrl || (photo.base64String ? "data:image/" + (photo.format || "jpeg") + ";base64," + photo.base64String : photo.webPath);
+              if (src) openCropModalWithSrc(src);
+            }
+            return photo;
+          });
+        };
+      }
+    } catch (e) {}
+  }
+  hookCapacitorCamera();
+  setTimeout(hookCapacitorCamera, 600);
   // Hook HTMLInputElement.prototype.click (including camera capture inputs)
   var origInputClick = HTMLInputElement.prototype.click;
   HTMLInputElement.prototype.click = function () {

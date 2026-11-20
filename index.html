@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 07:52 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:01 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3880,65 +3880,168 @@ window.__handleAndroidNativeBack = function () {
   return "NO_MODAL";
 };
 </script>
+<!-- BANGLA_OTA_UPDATER_START -->
+<script>
+window.__forceOtaRefresh = async function () {
+  try {
+    if ("serviceWorker" in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for (var i = 0; i < regs.length; i++) {
+        await regs[i].update();
+        await regs[i].unregister();
+      }
+    }
+    if ("caches" in window) {
+      var keys = await caches.keys();
+      for (var j = 0; j < keys.length; j++) { await caches.delete(keys[j]); }
+    }
+  } catch (e) {}
+  var baseUrl = window.location.href.split("?")[0];
+  window.location.replace(baseUrl + "?ota=" + Date.now());
+};
+</script>
+<!-- BANGLA_OTA_UPDATER_END -->
 <!-- BANGLA_NEXTGEN_UI_START -->
 <style>
   body {
-    padding-bottom: 78px !important;
+    padding-bottom: 28px !important;
   }
 
-  /* 1. Frosted-Glass Floating Studio Dock */
-  #banglaFloatingDock {
-    position: fixed;
-    left: 50%;
-    bottom: 12px;
-    transform: translateX(-50%);
-    z-index: 9000;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(56, 189, 248, 0.32);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-  }
-  body.light-mode #banglaFloatingDock,
-  body.white-mode #banglaFloatingDock {
-    background: rgba(252, 249, 242, 0.94);
-    border-color: rgba(185, 28, 28, 0.28);
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
-  }
-
-  .dock-action-btn {
+  /* Header Telemetry Pill (Updated Timestamp + Combined Web & App Visitors) */
+  #studioHeaderTelemetry {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 7px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 5px 11px;
     border-radius: 999px;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font-size: 0.76rem;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    color: #cbd5e1;
   }
-  .dock-action-btn:hover,
-  .dock-action-btn.active {
-    background: rgba(56, 189, 248, 0.18);
+  body.light-mode #studioHeaderTelemetry,
+  body.white-mode #studioHeaderTelemetry {
+    background: rgba(244, 237, 224, 0.92);
+    border-color: rgba(185, 28, 28, 0.24);
+    color: #334155;
+  }
+  .telemetry-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
+    display: inline-block;
+  }
+  body.light-mode .telemetry-dot,
+  body.white-mode .telemetry-dot {
+    background: #b91c1c;
+    box-shadow: 0 0 8px rgba(185, 28, 28, 0.5);
+  }
+
+  /* Floating Speed-Dial FAB & Pop-Up Option Menu (Bottom-Right) */
+  #banglaSpeedDialWrap {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 9200;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  #banglaSpeedDialMenu {
+    display: none;
+    flex-direction: column;
+    gap: 7px;
+    padding: 10px;
+    min-width: 168px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.52);
+    transform-origin: bottom right;
+    animation: dialPopIn 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  body.light-mode #banglaSpeedDialMenu,
+  body.white-mode #banglaSpeedDialMenu {
+    background: rgba(252, 249, 242, 0.96);
+    border-color: rgba(185, 28, 28, 0.28);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+  }
+  #banglaSpeedDialMenu.open {
+    display: flex;
+  }
+
+  @keyframes dialPopIn {
+    from { opacity: 0; transform: scale(0.9) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .dial-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 11px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(30, 41, 59, 0.72);
+    color: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease;
+  }
+  body.light-mode .dial-option-btn,
+  body.white-mode .dial-option-btn {
+    background: #f4ede0;
+    border-color: rgba(185, 28, 28, 0.16);
+  }
+  .dial-option-btn:active {
+    transform: scale(0.96);
+  }
+  .dial-option-btn.active {
+    border-color: #38bdf8;
     color: #38bdf8;
   }
-  body.light-mode .dock-action-btn:hover,
-  body.white-mode .dock-action-btn:hover,
-  body.light-mode .dock-action-btn.active,
-  body.white-mode .dock-action-btn.active {
-    background: rgba(185, 28, 28, 0.12);
+  body.light-mode .dial-option-btn.active,
+  body.white-mode .dial-option-btn.active {
+    border-color: #b91c1c;
     color: #b91c1c;
   }
 
-  /* 2. Centered Trace Guide Pop-Up Modal */
+  #banglaSpeedDialFab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background: linear-gradient(135deg, #0284c7, #0f172a);
+    color: #f8fafc;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 10px 26px rgba(2, 132, 199, 0.4);
+    cursor: pointer;
+  }
+  body.light-mode #banglaSpeedDialFab,
+  body.white-mode #banglaSpeedDialFab {
+    background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+    border-color: rgba(185, 28, 28, 0.45);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(185, 28, 28, 0.32);
+  }
+
+  /* Centered Trace Guide Pop-Up Modal */
   #banglaTraceModal {
     position: fixed;
     inset: 0;
@@ -4055,6 +4158,7 @@ window.__handleAndroidNativeBack = function () {
 
 <script>
 (function () {
+  var LATEST_BUILD_STAMP = "20 Nov 2026, 08:01 PM";
   var BANGLA_GUIDE_CHARS = [
     "অ","আ","ই","ঈ","উ","ঊ","ঋ","এ","ঐ","ও","ঔ",
     "ক","খ","গ","ঘ","ঙ","চ","ছ","জ","ঝ","ঞ",
@@ -4064,12 +4168,53 @@ window.__handleAndroidNativeBack = function () {
     "০","১","২","৩","৪","৫","৬","৭","৮","৯"
   ];
 
+  // 1. Place Updated Timestamp & Combined Web+App Visitor Counter cleanly inside Header
+  function mountHeaderTelemetryAndVisitorCount() {
+    // Hide any old bottom footer telemetry bar that was overlapped previously
+    Array.from(document.querySelectorAll("footer, div, p")).forEach(function (el) {
+      if (el.id !== "studioHeaderTelemetry" && /Updated:\s*/i.test(el.textContent || "") && /Visitors:/i.test(el.textContent || "") && el.children.length <= 3) {
+        el.style.display = "none";
+      }
+    });
+
+    var headerHost = document.querySelector("header, .app-header, .studio-header") || document.body.firstElementChild;
+    if (!headerHost || document.getElementById("studioHeaderTelemetry")) return;
+
+    var badge = document.createElement("div");
+    badge.id = "studioHeaderTelemetry";
+    badge.innerHTML =
+      '<span class="telemetry-dot"></span>' +
+      '<span>Updated: <strong>' + LATEST_BUILD_STAMP + '</strong></span>' +
+      '<span style="opacity:0.45;">•</span>' +
+      '<span>Total Visits (Web + App): <strong id="combinedVisitorCount">...</strong></span>';
+    headerHost.appendChild(badge);
+
+    // Fetch & increment global visit counter shared across Website and Android App
+    var localBaseline = parseInt(localStorage.getItem("bangla_ocr_visits_cache") || "12", 10) + 1;
+    localStorage.setItem("bangla_ocr_visits_cache", String(localBaseline));
+    var countEl = document.getElementById("combinedVisitorCount");
+    if (countEl) countEl.textContent = localBaseline.toLocaleString();
+
+    fetch("https://api.counterapi.dev/v1/bangla-handwritten-ocr-studio/total-visits/up", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && typeof data.count === "number") {
+          // Ensure monotonic continuity above any prior local count
+          var total = Math.max(data.count + 12, localBaseline);
+          localStorage.setItem("bangla_ocr_visits_cache", String(total));
+          if (countEl) countEl.textContent = total.toLocaleString();
+        }
+      })
+      .catch(function () {});
+  }
+
+  // 2. Ghost Trace Guide Overlay
   function setTraceGuideCharacter(ch) {
     window.__traceGuideChar = ch || "";
-    var dockBtn = document.getElementById("dockTraceBtn");
-    if (dockBtn) {
-      dockBtn.classList.toggle("active", Boolean(window.__traceGuideChar));
-      dockBtn.textContent = window.__traceGuideChar ? ("✍️ Trace: " + window.__traceGuideChar) : "✍️ Trace";
+    var traceOpt = document.getElementById("dockTraceBtn");
+    if (traceOpt) {
+      traceOpt.classList.toggle("active", Boolean(window.__traceGuideChar));
+      traceOpt.textContent = window.__traceGuideChar ? ("✍️ Trace Guide: " + window.__traceGuideChar) : "✍️ Trace Guide";
     }
 
     var drawCv = document.getElementById("drawCanvas");
@@ -4117,8 +4262,15 @@ window.__handleAndroidNativeBack = function () {
     if (m) m.classList.remove("open");
   };
 
-  function buildTraceModalAndDock() {
-    // 1. Build Centered Pop-Up Trace Modal
+  function closeSpeedDialMenu() {
+    var menu = document.getElementById("banglaSpeedDialMenu");
+    var fab = document.getElementById("banglaSpeedDialFab");
+    if (menu) menu.classList.remove("open");
+    if (fab) fab.innerHTML = "✦ Tools";
+  }
+
+  // 3. Build Trace Modal + Floating Pop-Up Speed-Dial Menu
+  function buildTraceModalAndSpeedDial() {
     if (!document.getElementById("banglaTraceModal")) {
       var modal = document.createElement("div");
       modal.id = "banglaTraceModal";
@@ -4167,23 +4319,41 @@ window.__handleAndroidNativeBack = function () {
       });
     }
 
-    // 2. Build Floating Studio Dock
-    if (!document.getElementById("banglaFloatingDock")) {
-      var dock = document.createElement("nav");
-      dock.id = "banglaFloatingDock";
-      dock.innerHTML =
-        '<button type="button" class="dock-action-btn" id="dockTraceBtn">✍️ Trace</button>' +
-        '<button type="button" class="dock-action-btn" id="dockCamBtn">📷 Camera</button>' +
-        '<button type="button" class="dock-action-btn" id="dockPhotoBtn">🖼️ Photo</button>' +
-        '<button type="button" class="dock-action-btn" id="dockSyncBtn">🔄 Sync</button>';
-      document.body.appendChild(dock);
+    if (!document.getElementById("banglaSpeedDialWrap")) {
+      var wrap = document.createElement("div");
+      wrap.id = "banglaSpeedDialWrap";
+      wrap.innerHTML =
+        '<div id="banglaSpeedDialMenu" role="menu">' +
+          '<button type="button" class="dial-option-btn" id="dockTraceBtn">✍️ Trace Guide</button>' +
+          '<button type="button" class="dial-option-btn" id="dockCamBtn">📷 Camera</button>' +
+          '<button type="button" class="dial-option-btn" id="dockPhotoBtn">🖼️ Photo</button>' +
+          '<button type="button" class="dial-option-btn" id="dockSyncBtn">🔄 Sync Update</button>' +
+        '</div>' +
+        '<button type="button" id="banglaSpeedDialFab" aria-label="Open Studio Tools">✦ Tools</button>';
+      document.body.appendChild(wrap);
+
+      var fab = document.getElementById("banglaSpeedDialFab");
+      var menu = document.getElementById("banglaSpeedDialMenu");
+
+      fab.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var opening = !menu.classList.contains("open");
+        menu.classList.toggle("open", opening);
+        fab.innerHTML = opening ? "✕ Close" : "✦ Tools";
+      });
+
+      document.addEventListener("click", function (ev) {
+        if (!wrap.contains(ev.target)) closeSpeedDialMenu();
+      });
 
       document.getElementById("dockTraceBtn").addEventListener("click", function () {
+        closeSpeedDialMenu();
         var m = document.getElementById("banglaTraceModal");
         if (m) m.classList.add("open");
       });
 
       document.getElementById("dockCamBtn").addEventListener("click", function () {
+        closeSpeedDialMenu();
         var camBtn = Array.from(document.querySelectorAll("button")).find(function (b) {
           return b.id !== "dockCamBtn" && /camera/i.test(b.textContent || "");
         });
@@ -4191,6 +4361,7 @@ window.__handleAndroidNativeBack = function () {
       });
 
       document.getElementById("dockPhotoBtn").addEventListener("click", function () {
+        closeSpeedDialMenu();
         var photoBtn = Array.from(document.querySelectorAll("button")).find(function (b) {
           return b.id !== "dockPhotoBtn" && /photo|gallery/i.test(b.textContent || "");
         });
@@ -4208,34 +4379,18 @@ window.__handleAndroidNativeBack = function () {
     }
   }
 
+  function initAll() {
+    mountHeaderTelemetryAndVisitorCount();
+    buildTraceModalAndSpeedDial();
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", buildTraceModalAndDock);
+    document.addEventListener("DOMContentLoaded", initAll);
   } else {
-    buildTraceModalAndDock();
+    initAll();
   }
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
-<!-- BANGLA_OTA_UPDATER_START -->
-<script>
-window.__forceOtaRefresh = async function () {
-  try {
-    if ("serviceWorker" in navigator) {
-      var regs = await navigator.serviceWorker.getRegistrations();
-      for (var i = 0; i < regs.length; i++) {
-        await regs[i].update();
-        await regs[i].unregister();
-      }
-    }
-    if ("caches" in window) {
-      var keys = await caches.keys();
-      for (var j = 0; j < keys.length; j++) { await caches.delete(keys[j]); }
-    }
-  } catch (e) {}
-  var baseUrl = window.location.href.split("?")[0];
-  window.location.replace(baseUrl + "?ota=" + Date.now());
-};
-</script>
-<!-- BANGLA_OTA_UPDATER_END -->
 </body>
 </html>

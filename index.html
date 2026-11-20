@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 07:36 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 07:40 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2774,7 +2774,7 @@ function getBanglaLabel(raw) {
         '</div>' +
         '<div class="crop-btn-row">' +
           '<button type="button" id="cropCancelBtn" class="crop-btn crop-btn-cancel" onclick="window.__closeBanglaCropModal && window.__closeBanglaCropModal(event)">Cancel</button>' +
-          '<button type="button" id="cropDetectBtn" class="crop-btn crop-btn-detect">✓ Crop &amp; Detect</button>' +
+          '<button type="button" id="cropDetectBtn" class="crop-btn crop-btn-detect" onclick="setTimeout(function(){ window.__closeBanglaCropModal && window.__closeBanglaCropModal(); }, 60);">✓ Crop &amp; Detect</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(modal);
@@ -2872,7 +2872,13 @@ function getBanglaLabel(raw) {
     if (typeof window.redrawCanvas === "function") {
       try { window.redrawCanvas(); } catch (e) {}
     }
-    modal.classList.remove("active");
+    if (typeof window.__closeBanglaCropModal === "function") {
+      window.__closeBanglaCropModal();
+    } else {
+      modal.classList.remove("active");
+      modal.classList.add("crop-force-hidden");
+      modal.style.setProperty("display", "none", "important");
+    }
     });
 
     document.getElementById("cropDetectBtn").addEventListener("click", runModalCropAndPredict);
@@ -3112,7 +3118,13 @@ function getBanglaLabel(raw) {
     if (typeof window.redrawCanvas === "function") {
       try { window.redrawCanvas(); } catch (e) {}
     }
-    modal.classList.remove("active");
+    if (typeof window.__closeBanglaCropModal === "function") {
+      window.__closeBanglaCropModal();
+    } else {
+      modal.classList.remove("active");
+      modal.classList.add("crop-force-hidden");
+      modal.style.setProperty("display", "none", "important");
+    }
     if (typeof window.cancelInlineCrop === "function") {
       try { window.cancelInlineCrop(); } catch (e) {}
     }

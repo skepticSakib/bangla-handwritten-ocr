@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 07:16 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 07:28 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3138,7 +3138,7 @@ function getBanglaLabel(raw) {
       modalCropBox.w = initS; modalCropBox.h = initS;
       modalCropBox.x = Math.round((previewCanvas.width - initS) / 2);
       modalCropBox.y = Math.round((previewCanvas.height - initS) / 2);
-      modal.classList.add("active");
+      modal.style.display = ""; modal.classList.add("active"); try { history.pushState({ banglaModal: "crop" }, ""); } catch (e) {}
       renderStage();
     };
     img.src = dataUrl;
@@ -3632,34 +3632,75 @@ function getBanglaLabel(raw) {
 (function () {
   var recentHistory = [];
 
-  // 1. Native Android Hardware / Gesture Back-Button Handler
+    // 1. Universal Android Hardware / Gesture Back-Button Handler (works with or without @capacitor/app plugin)
+  function closeAnyOpenModal() {
+    var closed = false;
+
+    // A. Crop & Detect modal
+    var cropModal = document.getElementById("banglaCropModal");
+    if (cropModal && (cropModal.classList.contains("active") || getComputedStyle(cropModal).display !== "none")) {
+      cropModal.classList.remove("active");
+      cropModal.style.display = "none";
+      if (typeof window.cancelInlineCrop === "function") {
+        try { window.cancelInlineCrop(); } catch (e) {}
+      }
+      closed = true;
+    }
+
+    // B. Teach & Update Model modal or Web Camera modal
+    ["teachModal", "banglaTeachModal", "webCamModal", "cameraModal"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && getComputedStyle(el).display !== "none") {
+        el.style.display = "none";
+        closed = true;
+      }
+    });
+
+    // Stop active webcam tracks if camera modal was closed
+    if (closed) {
+      document.querySelectorAll("video").forEach(function (v) {
+        try {
+          if (v.srcObject && v.srcObject.getTracks) {
+            v.srcObject.getTracks().forEach(function (t) { t.stop(); });
+          }
+        } catch (e) {}
+      });
+    }
+    return closed;
+  }
+
   function setupAndroidBackHandler() {
+    // Push a guard history entry whenever any modal opens so Android BridgeActivity routes Back to popstate instead of finishing the Activity
+    document.addEventListener("click", function (ev) {
+      var btn = ev.target && ev.target.closest("button");
+      if (btn && /teach|train|camera/i.test(btn.textContent || "")) {
+        try { history.pushState({ banglaModal: "dialog" }, ""); } catch (e) {}
+      }
+    }, true);
+
+    if (!window.__banglaPopStateBound) {
+      window.__banglaPopStateBound = true;
+      try { history.replaceState({ banglaRoot: true }, ""); } catch (e) {}
+      window.addEventListener("popstate", function () {
+        if (closeAnyOpenModal()) {
+          try { history.pushState({ banglaRoot: true }, ""); } catch (e) {}
+        }
+      });
+    }
+
     try {
       var appPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
       if (appPlugin && typeof appPlugin.addListener === "function" && !appPlugin.__banglaBackBound) {
         appPlugin.__banglaBackBound = true;
-        appPlugin.addListener("backButton", function (info) {
-          // Close Crop & Detect modal first if open
-          var cropModal = document.getElementById("banglaCropModal");
-          if (cropModal && cropModal.classList.contains("active")) {
-            cropModal.classList.remove("active");
-            return;
-          }
-          // Close Teach & Update or Camera modal if open
-          var openDialogs = document.querySelectorAll("[role='dialog'], .modal, #teachModal, #banglaTeachModal, #webCamModal");
-          for (var i = 0; i < openDialogs.length; i++) {
-            var dlg = openDialogs[i];
-            if (dlg && dlg.offsetParent !== null && dlg.id !== "banglaCropModal") {
-              var closeBtn = dlg.querySelector("button[onclick*='close' i], button[onclick*='cancel' i], .close-btn");
-              if (closeBtn) { closeBtn.click(); return; }
-              dlg.style.display = "none";
-              return;
+        appPlugin.addListener("backButton", function () {
+          if (!closeAnyOpenModal()) {
+            // Double-back guard so accidental single back gesture never closes the app abruptly
+            var now = Date.now();
+            if (window.__lastBackPress && (now - window.__lastBackPress) < 1800) {
+              if (typeof appPlugin.exitApp === "function") appPlugin.exitApp();
+            } else {
+              window.__lastBackPress = now;
             }
-          }
-          if (info && info.canGoBack) {
-            window.history.back();
-          } else if (typeof appPlugin.exitApp === "function") {
-            appPlugin.exitApp();
           }
         });
       }

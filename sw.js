@@ -6,7 +6,7 @@ self.addEventListener("fetch", function (event) {
       fetch(req, { cache: "no-store" })
         .then(function (res) {
           var copy = res.clone();
-          caches.open("bangla-ocr-v20261120212953").then(function (c) { c.put(req, copy); });
+          caches.open("bangla-ocr-v20261120213405").then(function (c) { c.put(req, copy); });
           return res;
         })
         .catch(function () { return caches.match(req); })
@@ -21,14 +21,14 @@ self.addEventListener("fetch", function (event) {
       fetch(req, { cache: "no-store" })
         .then(function (res) {
           var copy = res.clone();
-          caches.open("bangla-ocr-v20261120212953").then(function (c) { c.put(req, copy); });
+          caches.open("bangla-ocr-v20261120213405").then(function (c) { c.put(req, copy); });
           return res;
         })
         .catch(function () { return caches.match(req); })
     );
   }
 });
-const CACHE_NAME = "bangla-ocr-v20261120212953";
+const CACHE_NAME = "bangla-ocr-v20261120213405";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

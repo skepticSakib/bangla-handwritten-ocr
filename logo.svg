@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="scanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>
+      <stop offset="20%" stop-color="#38bdf8" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#e0f2fe" stop-opacity="1"/>
+      <stop offset="80%" stop-color="#38bdf8" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="scanBand" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle background -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="8"/>
+
+  <!-- Subtle OCR grid -->
+  <g stroke="#1e293b" stroke-width="2" opacity="0.65">
+    <line x1="170" y1="72" x2="170" y2="440"/>
+    <line x1="342" y1="72" x2="342" y2="440"/>
+    <line x1="72" y1="170" x2="440" y2="170"/>
+    <line x1="72" y1="342" x2="440" y2="342"/>
+  </g>
+
+  <!-- Corner OCR Viewfinder Brackets -->
+  <g fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M96 154 L96 106 Q96 96 106 96 L154 96"/>
+    <path d="M358 96 L406 96 Q416 96 416 106 L416 154"/>
+    <path d="M96 358 L96 406 Q96 416 106 416 L154 416"/>
+    <path d="M358 416 L406 416 Q416 416 416 406 L416 358"/>
+  </g>
+
+  <!-- Crisp Bangla 'ক' Glyph -->
+  <text x="256" y="348" text-anchor="middle" fill="#f8fafc"
+        font-family="'Noto Sans Bengali', 'Hind Siliguri', 'Vrinda', 'Nirmala UI', sans-serif"
+        font-size="255" font-weight="700">&#x0995;</text>
+
+  <!-- Glowing Matra OCR Scan Beam & Trail -->
+  <rect x="86" y="198" width="340" height="58" fill="url(#scanBand)"/>
+  <rect x="74" y="192" width="364" height="10" rx="5" fill="url(#scanGlow)"/>
+  <circle cx="112" cy="197" r="6" fill="#38bdf8"/>
+  <circle cx="400" cy="197" r="6" fill="#38bdf8"/>
+</svg>

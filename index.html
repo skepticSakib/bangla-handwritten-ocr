@@ -2571,7 +2571,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 05:33 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 05:36 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3105,69 +3105,38 @@ function getBanglaLabel(raw) {
     }
   }
 
-  // Safe, non-invasive hooks for Photo/Camera inputs, FileReader, createObjectURL, and Capacitor Camera
-  var OrigFileReader = window.FileReader;
-  var origReadAsDataURL = OrigFileReader.prototype.readAsDataURL;
-  OrigFileReader.prototype.readAsDataURL = function (blob) {
-    var self = this;
-    if (!isProcessingCrop && blob && blob.type && blob.type.indexOf("image/") === 0) {
-      self.addEventListener("load", function () {
-        if (self.result && typeof self.result === "string" && self.result.indexOf("data:image/") === 0) {
-          openCropModalWithSrc(self.result);
-        }
-      }, { once: true });
-    }
-    return origReadAsDataURL.apply(this, arguments);
-  };
-
-  var origCreateObjectURL = URL.createObjectURL;
-  URL.createObjectURL = function (obj) {
-    var url = origCreateObjectURL.apply(this, arguments);
-    if (!isProcessingCrop && obj && obj.type && obj.type.indexOf("image/") === 0) {
-      openCropModalWithSrc(url);
-    }
-    return url;
-  };
-
-  var origInputClick = HTMLInputElement.prototype.click;
-  HTMLInputElement.prototype.click = function () {
-    if (this.type === "file" && !this.__cropHooked) {
-      this.__cropHooked = true;
-      this.addEventListener("change", function () {
-        if (this.files && this.files[0]) {
-          openCropModalWithFile(this.files[0]);
-        }
-      });
-    }
-    return origInputClick.apply(this, arguments);
-  };
-
-  document.addEventListener("change", function (ev) {
-    var el = ev.target;
-    if (!isProcessingCrop && el && el.tagName === "INPUT" && el.type === "file" && el.files && el.files[0]) {
-      openCropModalWithFile(el.files[0]);
-    }
-  }, true);
-
-  function hookCapacitorCamera() {
+    // Intercept when the app's existing Photo/Camera loader draws an external image or video frame onto the Drawing Pad
+  var origDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage = function (source) {
     try {
-      var cap = window.Capacitor;
-      var cam = cap && cap.Plugins && cap.Plugins.Camera;
-      if (cam && typeof cam.getPhoto === "function" && !cam.__cropPatched) {
-        cam.__cropPatched = true;
-        var origGetPhoto = cam.getPhoto.bind(cam);
-        cam.getPhoto = function (opts) {
-          return origGetPhoto(opts).then(function (photo) {
-            if (!isProcessingCrop && photo) {
-              var src = photo.dataUrl || (photo.base64String ? "data:image/" + (photo.format || "jpeg") + ";base64," + photo.base64String : photo.webPath);
-              if (src) openCropModalWithSrc(src);
-            }
-            return photo;
-          });
-        };
+      var targetCanvas = this && this.canvas;
+      var isMainPad = targetCanvas &&
+        targetCanvas.id !== "cropPreviewCanvas" &&
+        targetCanvas.width >= 150 &&
+        targetCanvas.height >= 150 &&
+        targetCanvas.closest("main");
+
+      var isExternalPhoto = source && (
+        (source instanceof HTMLImageElement && source.naturalWidth > 64 && source.naturalHeight > 64) ||
+        (source instanceof HTMLVideoElement && source.videoWidth > 64 && source.videoHeight > 64)
+      );
+
+      if (!isProcessingCrop && isMainPad && isExternalPhoto) {
+        ensureModalDom();
+        if (!modal.classList.contains("active")) {
+          var snap = document.createElement("canvas");
+          var sw = source.naturalWidth || source.videoWidth;
+          var sh = source.naturalHeight || source.videoHeight;
+          snap.width = sw;
+          snap.height = sh;
+          origDrawImage.call(snap.getContext("2d"), source, 0, 0, sw, sh);
+          openCropModalWithSrc(snap.toDataURL("image/png"));
+        }
+        return; // Hold off drawing uncropped image onto pad until user clicks "✓ Crop & Detect"
       }
     } catch (e) {}
-  }
+    return origDrawImage.apply(this, arguments);
+  };
 
   window.addEventListener("DOMContentLoaded", function () {
     ensureModalDom();

@@ -1,106 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<!-- BANGLA_CROP_EARLY_HOOKS_START -->
-<script>
-(function () {
-  window.__banglaCropQueue = [];
-  window.__openBanglaCrop = function (src) {
-    if (!src) return;
-    if (typeof window.__mountBanglaCropModal === "function") {
-      window.__mountBanglaCropModal(src);
-    } else {
-      window.__banglaCropQueue.push(src);
-    }
-  };
-
-  // 1. Intercept FileReader before inline scripts attach
-  var OrigFR = window.FileReader;
-  var origReadURL = OrigFR.prototype.readAsDataURL;
-  OrigFR.prototype.readAsDataURL = function (blob) {
-    var self = this;
-    if (!window.__banglaCropBusy && blob && blob.type && blob.type.indexOf("image/") === 0) {
-      self.addEventListener("load", function () {
-        if (typeof self.result === "string" && self.result.indexOf("data:image/") === 0) {
-          window.__openBanglaCrop(self.result);
-        }
-      }, { once: true });
-    }
-    return origReadURL.apply(this, arguments);
-  };
-
-  // 2. Intercept URL.createObjectURL
-  var origObjURL = URL.createObjectURL;
-  URL.createObjectURL = function (obj) {
-    var u = origObjURL.apply(this, arguments);
-    if (!window.__banglaCropBusy && obj && obj.type && obj.type.indexOf("image/") === 0) {
-      window.__openBanglaCrop(u);
-    }
-    return u;
-  };
-
-  // 3. Intercept <input type="file"> changes in capture phase
-  document.addEventListener("change", function (e) {
-    var t = e.target;
-    if (!window.__banglaCropBusy && t && t.tagName === "INPUT" && t.type === "file" && t.files && t.files[0]) {
-      var f = t.files[0];
-      if (f.type && f.type.indexOf("image/") === 0) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        var r = new OrigFR();
-        r.onload = function (ev) {
-          if (ev.target && ev.target.result) window.__openBanglaCrop(ev.target.result);
-        };
-        r.readAsDataURL(f);
-        t.value = "";
-      }
-    }
-  }, true);
-
-  // 4. Intercept dynamic detached <input type="file"> clicks
-  var origClick = HTMLInputElement.prototype.click;
-  HTMLInputElement.prototype.click = function () {
-    if (this.type === "file" && !this.__cropAttached) {
-      this.__cropAttached = true;
-      this.addEventListener("change", function (e) {
-        if (!window.__banglaCropBusy && this.files && this.files[0]) {
-          var f = this.files[0];
-          if (f.type && f.type.indexOf("image/") === 0) {
-            e.stopImmediatePropagation();
-            var r = new OrigFR();
-            r.onload = function (ev) {
-              if (ev.target && ev.target.result) window.__openBanglaCrop(ev.target.result);
-            };
-            r.readAsDataURL(f);
-            this.value = "";
-          }
-        }
-      }, true);
-    }
-    return origClick.apply(this, arguments);
-  };
-
-  // 5. Intercept website webcam capture: when any <video> frame is drawn onto a canvas (outside our modal), route to Crop modal
-  var origDraw = CanvasRenderingContext2D.prototype.drawImage;
-  CanvasRenderingContext2D.prototype.drawImage = function (src) {
-    try {
-      if (!window.__banglaCropBusy && src && src.tagName === "VIDEO" && src.videoWidth > 64) {
-        var targetCv = this && this.canvas;
-        if (!targetCv || targetCv.id !== "cropPreviewCanvas") {
-          var snap = document.createElement("canvas");
-          snap.width = src.videoWidth;
-          snap.height = src.videoHeight;
-          origDraw.call(snap.getContext("2d"), src, 0, 0, src.videoWidth, src.videoHeight);
-          window.__openBanglaCrop(snap.toDataURL("image/png"));
-          return; // Prevent old inline Drawing Pad cropper from taking over
-        }
-      }
-    } catch (err) {}
-    return origDraw.apply(this, arguments);
-  };
-})();
-</script>
-<!-- BANGLA_CROP_EARLY_HOOKS_END -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>বাংলা হস্তাক্ষর শনাক্তকরণ • Bangla Handwritten OCR</title>
@@ -2671,7 +2571,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 05:48 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 05:55 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -2729,6 +2629,7 @@ function getBanglaLabel(raw) {
 <!-- BANGLA_STUDIO_FOOTER_BADGE_END -->
 <!-- BANGLA_CROP_DETECT_MODAL_START -->
 <style>
+  #inlineCropBar { display: none !important; }
   .crop-modal-backdrop {
     position: fixed !important;
     inset: 0 !important;
@@ -2839,8 +2740,8 @@ function getBanglaLabel(raw) {
 <script>
 (function () {
   var modal, previewCanvas, pCtx, sizeSlider, loadedImg = null;
-  var cropMode = "square";
-  var cropBox = { x: 20, y: 20, w: 140, h: 140 };
+  var modalCropMode = "square";
+  var modalCropBox = { x: 20, y: 20, w: 140, h: 140 };
   var dragAction = null;
   var dragStart = { x: 0, y: 0, bx: 0, by: 0, bw: 0, bh: 0 };
 
@@ -2879,15 +2780,15 @@ function getBanglaLabel(raw) {
     var freeBtn = document.getElementById("cropModeFreeBtn");
 
     sqBtn.addEventListener("click", function () {
-      cropMode = "square";
+      modalCropMode = "square";
       sqBtn.classList.add("active");
       freeBtn.classList.remove("active");
-      var s = Math.min(cropBox.w, cropBox.h);
-      cropBox.w = s; cropBox.h = s;
+      var s = Math.min(modalCropBox.w, modalCropBox.h);
+      modalCropBox.w = s; modalCropBox.h = s;
       clampBox(); renderStage();
     });
     freeBtn.addEventListener("click", function () {
-      cropMode = "free";
+      modalCropMode = "free";
       freeBtn.classList.add("active");
       sqBtn.classList.remove("active");
       renderStage();
@@ -2903,30 +2804,30 @@ function getBanglaLabel(raw) {
     sizeSlider.addEventListener("input", function () {
       if (!loadedImg) return;
       var pct = parseInt(sizeSlider.value, 10) / 100;
-      var cx = cropBox.x + cropBox.w / 2, cy = cropBox.y + cropBox.h / 2;
-      if (cropMode === "square") {
+      var cx = modalCropBox.x + modalCropBox.w / 2, cy = modalCropBox.y + modalCropBox.h / 2;
+      if (modalCropMode === "square") {
         var side = Math.max(28, Math.round(Math.min(previewCanvas.width, previewCanvas.height) * pct));
-        cropBox.w = side; cropBox.h = side;
+        modalCropBox.w = side; modalCropBox.h = side;
       } else {
-        cropBox.w = Math.max(28, Math.round(previewCanvas.width * pct));
-        cropBox.h = Math.max(28, Math.round(previewCanvas.height * pct));
+        modalCropBox.w = Math.max(28, Math.round(previewCanvas.width * pct));
+        modalCropBox.h = Math.max(28, Math.round(previewCanvas.height * pct));
       }
-      cropBox.x = Math.round(cx - cropBox.w / 2);
-      cropBox.y = Math.round(cy - cropBox.h / 2);
+      modalCropBox.x = Math.round(cx - modalCropBox.w / 2);
+      modalCropBox.y = Math.round(cy - modalCropBox.h / 2);
       clampBox(); renderStage();
     });
 
     document.getElementById("cropFullResetBtn").addEventListener("click", function () {
       if (!loadedImg) return;
       sizeSlider.value = "100";
-      if (cropMode === "square") {
+      if (modalCropMode === "square") {
         var m = Math.min(previewCanvas.width, previewCanvas.height);
-        cropBox.w = m; cropBox.h = m;
-        cropBox.x = Math.round((previewCanvas.width - m) / 2);
-        cropBox.y = Math.round((previewCanvas.height - m) / 2);
+        modalCropBox.w = m; modalCropBox.h = m;
+        modalCropBox.x = Math.round((previewCanvas.width - m) / 2);
+        modalCropBox.y = Math.round((previewCanvas.height - m) / 2);
       } else {
-        cropBox.x = 0; cropBox.y = 0;
-        cropBox.w = previewCanvas.width; cropBox.h = previewCanvas.height;
+        modalCropBox.x = 0; modalCropBox.y = 0;
+        modalCropBox.w = previewCanvas.width; modalCropBox.h = previewCanvas.height;
       }
       renderStage();
     });
@@ -2935,50 +2836,7 @@ function getBanglaLabel(raw) {
       modal.classList.remove("active");
     });
 
-    document.getElementById("cropDetectBtn").addEventListener("click", runCropAndDetect);
-
-    // Hook Capacitor Camera plugin & live <video> camera snaps
-    function patchCameraSources() {
-      try {
-        var cam = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Camera;
-        if (cam && typeof cam.getPhoto === "function" && !cam.__cropPatched) {
-          cam.__cropPatched = true;
-          var orig = cam.getPhoto.bind(cam);
-          cam.getPhoto = function (opts) {
-            return orig(opts).then(function (p) {
-              if (!window.__banglaCropBusy && p) {
-                var src = p.dataUrl || (p.base64String ? "data:image/" + (p.format || "jpeg") + ";base64," + p.base64String : p.webPath);
-                if (src) window.__openBanglaCrop(src);
-              }
-              return p;
-            });
-          };
-        }
-      } catch (e) {}
-    }
-    patchCameraSources();
-    setTimeout(patchCameraSources, 800);
-
-    document.addEventListener("click", function (ev) {
-      var btn = ev.target && ev.target.closest("button");
-      if (btn && /camera|capture|snap/i.test(btn.textContent || "")) {
-        setTimeout(function () {
-          document.querySelectorAll("video").forEach(function (v) {
-            if (!v.__cropHooked) {
-              v.__cropHooked = true;
-              v.addEventListener("pause", function () {
-                if (v.videoWidth > 0 && !window.__banglaCropBusy) {
-                  var c = document.createElement("canvas");
-                  c.width = v.videoWidth; c.height = v.videoHeight;
-                  c.getContext("2d").drawImage(v, 0, 0);
-                  window.__openBanglaCrop(c.toDataURL("image/png"));
-                }
-              });
-            }
-          });
-        }, 400);
-      }
-    }, true);
+    document.getElementById("cropDetectBtn").addEventListener("click", runModalCropAndPredict);
   }
 
   function renderStage() {
@@ -2988,28 +2846,28 @@ function getBanglaLabel(raw) {
     pCtx.drawImage(loadedImg, 0, 0, cw, ch);
 
     pCtx.fillStyle = "rgba(2, 6, 23, 0.58)";
-    pCtx.fillRect(0, 0, cw, cropBox.y);
-    pCtx.fillRect(0, cropBox.y + cropBox.h, cw, ch - (cropBox.y + cropBox.h));
-    pCtx.fillRect(0, cropBox.y, cropBox.x, cropBox.h);
-    pCtx.fillRect(cropBox.x + cropBox.w, cropBox.y, cw - (cropBox.x + cropBox.w), cropBox.h);
+    pCtx.fillRect(0, 0, cw, modalCropBox.y);
+    pCtx.fillRect(0, modalCropBox.y + modalCropBox.h, cw, ch - (modalCropBox.y + modalCropBox.h));
+    pCtx.fillRect(0, modalCropBox.y, modalCropBox.x, modalCropBox.h);
+    pCtx.fillRect(modalCropBox.x + modalCropBox.w, modalCropBox.y, cw - (modalCropBox.x + modalCropBox.w), modalCropBox.h);
 
-    pCtx.strokeStyle = cropMode === "square" ? "#38bdf8" : "#f59e0b";
+    pCtx.strokeStyle = modalCropMode === "square" ? "#38bdf8" : "#f59e0b";
     pCtx.lineWidth = 2.5;
-    pCtx.strokeRect(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
+    pCtx.strokeRect(modalCropBox.x, modalCropBox.y, modalCropBox.w, modalCropBox.h);
 
     var hs = 10;
-    pCtx.fillStyle = cropMode === "square" ? "#38bdf8" : "#f59e0b";
-    [[cropBox.x, cropBox.y], [cropBox.x + cropBox.w, cropBox.y],
-     [cropBox.x, cropBox.y + cropBox.h], [cropBox.x + cropBox.w, cropBox.y + cropBox.h]].forEach(function (pt) {
+    pCtx.fillStyle = modalCropMode === "square" ? "#38bdf8" : "#f59e0b";
+    [[modalCropBox.x, modalCropBox.y], [modalCropBox.x + modalCropBox.w, modalCropBox.y],
+     [modalCropBox.x, modalCropBox.y + modalCropBox.h], [modalCropBox.x + modalCropBox.w, modalCropBox.y + modalCropBox.h]].forEach(function (pt) {
       pCtx.fillRect(pt[0] - hs / 2, pt[1] - hs / 2, hs, hs);
     });
   }
 
   function clampBox() {
-    cropBox.w = Math.max(28, Math.min(previewCanvas.width, cropBox.w));
-    cropBox.h = Math.max(28, Math.min(previewCanvas.height, cropBox.h));
-    cropBox.x = Math.max(0, Math.min(previewCanvas.width - cropBox.w, cropBox.x));
-    cropBox.y = Math.max(0, Math.min(previewCanvas.height - cropBox.h, cropBox.y));
+    modalCropBox.w = Math.max(28, Math.min(previewCanvas.width, modalCropBox.w));
+    modalCropBox.h = Math.max(28, Math.min(previewCanvas.height, modalCropBox.h));
+    modalCropBox.x = Math.max(0, Math.min(previewCanvas.width - modalCropBox.w, modalCropBox.x));
+    modalCropBox.y = Math.max(0, Math.min(previewCanvas.height - modalCropBox.h, modalCropBox.y));
   }
 
   function getPt(e) {
@@ -3021,18 +2879,18 @@ function getBanglaLabel(raw) {
 
   function startDrag(e) {
     var pt = getPt(e), r = 18;
-    dragStart = { x: pt.x, y: pt.y, bx: cropBox.x, by: cropBox.y, bw: cropBox.w, bh: cropBox.h };
-    if (Math.abs(pt.x - cropBox.x) <= r && Math.abs(pt.y - cropBox.y) <= r) dragAction = "nw";
-    else if (Math.abs(pt.x - (cropBox.x + cropBox.w)) <= r && Math.abs(pt.y - cropBox.y) <= r) dragAction = "ne";
-    else if (Math.abs(pt.x - cropBox.x) <= r && Math.abs(pt.y - (cropBox.y + cropBox.h)) <= r) dragAction = "sw";
-    else if (Math.abs(pt.x - (cropBox.x + cropBox.w)) <= r && Math.abs(pt.y - (cropBox.y + cropBox.h)) <= r) dragAction = "se";
-    else if (pt.x >= cropBox.x && pt.x <= cropBox.x + cropBox.w && pt.y >= cropBox.y && pt.y <= cropBox.y + cropBox.h) dragAction = "move";
+    dragStart = { x: pt.x, y: pt.y, bx: modalCropBox.x, by: modalCropBox.y, bw: modalCropBox.w, bh: modalCropBox.h };
+    if (Math.abs(pt.x - modalCropBox.x) <= r && Math.abs(pt.y - modalCropBox.y) <= r) dragAction = "nw";
+    else if (Math.abs(pt.x - (modalCropBox.x + modalCropBox.w)) <= r && Math.abs(pt.y - modalCropBox.y) <= r) dragAction = "ne";
+    else if (Math.abs(pt.x - modalCropBox.x) <= r && Math.abs(pt.y - (modalCropBox.y + modalCropBox.h)) <= r) dragAction = "sw";
+    else if (Math.abs(pt.x - (modalCropBox.x + modalCropBox.w)) <= r && Math.abs(pt.y - (modalCropBox.y + modalCropBox.h)) <= r) dragAction = "se";
+    else if (pt.x >= modalCropBox.x && pt.x <= modalCropBox.x + modalCropBox.w && pt.y >= modalCropBox.y && pt.y <= modalCropBox.y + modalCropBox.h) dragAction = "move";
     else {
       dragAction = "move";
-      cropBox.x = pt.x - cropBox.w / 2;
-      cropBox.y = pt.y - cropBox.h / 2;
+      modalCropBox.x = pt.x - modalCropBox.w / 2;
+      modalCropBox.y = pt.y - modalCropBox.h / 2;
       clampBox();
-      dragStart.bx = cropBox.x; dragStart.by = cropBox.y;
+      dragStart.bx = modalCropBox.x; dragStart.by = modalCropBox.y;
       renderStage();
     }
   }
@@ -3042,109 +2900,85 @@ function getBanglaLabel(raw) {
     if (e.cancelable) e.preventDefault();
     var pt = getPt(e), dx = pt.x - dragStart.x, dy = pt.y - dragStart.y;
     if (dragAction === "move") {
-      cropBox.x = dragStart.bx + dx; cropBox.y = dragStart.by + dy; clampBox();
+      modalCropBox.x = dragStart.bx + dx; modalCropBox.y = dragStart.by + dy; clampBox();
     } else {
       var nx = dragStart.bx, ny = dragStart.by, nw = dragStart.bw, nh = dragStart.bh;
       if (dragAction.indexOf("e") !== -1) nw = dragStart.bw + dx;
       if (dragAction.indexOf("s") !== -1) nh = dragStart.bh + dy;
       if (dragAction.indexOf("w") !== -1) { nx = dragStart.bx + dx; nw = dragStart.bw - dx; }
       if (dragAction.indexOf("n") !== -1) { ny = dragStart.by + dy; nh = dragStart.bh - dy; }
-      if (cropMode === "square") {
+      if (modalCropMode === "square") {
         var side = Math.max(28, Math.max(nw, nh));
         if (dragAction.indexOf("w") !== -1) nx = dragStart.bx + (dragStart.bw - side);
         if (dragAction.indexOf("n") !== -1) ny = dragStart.by + (dragStart.bh - side);
         nw = side; nh = side;
       }
-      if (nw >= 28 && nh >= 28) { cropBox.x = nx; cropBox.y = ny; cropBox.w = nw; cropBox.h = nh; clampBox(); }
+      if (nw >= 28 && nh >= 28) { modalCropBox.x = nx; modalCropBox.y = ny; modalCropBox.w = nw; modalCropBox.h = nh; clampBox(); }
     }
     renderStage();
   }
 
   function endDrag() { dragAction = null; }
 
-    function runCropAndDetect() {
+  // Build the exact 64x64 binary canvas that native runPrediction(out, "Camera / Photo Crop") expects
+  function runModalCropAndPredict() {
     if (!loadedImg) return;
-    var mainCanvas = document.querySelector("canvas#drawCanvas, canvas#canvas, main canvas");
-    if (!mainCanvas) { modal.classList.remove("active"); return; }
 
-    window.__banglaCropBusy = true;
-    var sx = Math.max(0, cropBox.x * (loadedImg.width / previewCanvas.width));
-    var sy = Math.max(0, cropBox.y * (loadedImg.height / previewCanvas.height));
-    var sw = Math.min(loadedImg.width - sx, cropBox.w * (loadedImg.width / previewCanvas.width));
-    var sh = Math.min(loadedImg.height - sy, cropBox.h * (loadedImg.height / previewCanvas.height));
+    var sx = Math.max(0, modalCropBox.x * (loadedImg.width / previewCanvas.width));
+    var sy = Math.max(0, modalCropBox.y * (loadedImg.height / previewCanvas.height));
+    var sw = Math.min(loadedImg.width - sx, modalCropBox.w * (loadedImg.width / previewCanvas.width));
+    var sh = Math.min(loadedImg.height - sy, modalCropBox.h * (loadedImg.height / previewCanvas.height));
 
-    var tmp = document.createElement("canvas");
-    tmp.width = mainCanvas.width; tmp.height = mainCanvas.height;
-    var tCtx = tmp.getContext("2d");
-    tCtx.fillStyle = "#ffffff";
-    tCtx.fillRect(0, 0, tmp.width, tmp.height);
+    var out = document.createElement("canvas");
+    out.width = 64;
+    out.height = 64;
+    var ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 64, 64);
 
-    var pad = Math.round(tmp.width * 0.08);
-    var fit = Math.min((tmp.width - pad * 2) / sw, (tmp.height - pad * 2) / sh);
-    var dw = Math.round(sw * fit), dh = Math.round(sh * fit);
-    tCtx.drawImage(loadedImg, sx, sy, sw, sh, Math.round((tmp.width - dw) / 2), Math.round((tmp.height - dh) / 2), dw, dh);
+    // Aspect-fit with clean margin so both Square & Free crops preserve character proportions
+    var pad = 5;
+    var fit = Math.min((64 - pad * 2) / sw, (64 - pad * 2) / sh);
+    var dw = Math.round(sw * fit);
+    var dh = Math.round(sh * fit);
+    var dx = Math.round((64 - dw) / 2);
+    var dy = Math.round((64 - dh) / 2);
+    ctx.drawImage(loadedImg, sx, sy, sw, sh, dx, dy, dw, dh);
 
-    var id = tCtx.getImageData(0, 0, tmp.width, tmp.height), d = id.data, sum = 0;
-    for (var i = 0; i < d.length; i += 4) sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    var lightPaper = (sum / (d.length / 4)) > 127;
+    var imgData = ctx.getImageData(0, 0, 64, 64);
+    var d = imgData.data;
+    var lumSum = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      lumSum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    }
+    var lightPaper = (lumSum / (d.length / 4)) > 127;
     for (var j = 0; j < d.length; j += 4) {
       var lum = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
       var ink = lightPaper ? (255 - lum) : lum;
-      var out = ink > 55 ? Math.min(255, Math.round((ink - 45) * 1.45)) : 0;
-      d[j] = out; d[j + 1] = out; d[j + 2] = out; d[j + 3] = 255;
+      var val = ink > 50 ? Math.min(255, Math.round((ink - 40) * 1.5)) : 0;
+      d[j] = val;
+      d[j + 1] = val;
+      d[j + 2] = val;
+      d[j + 3] = 255;
     }
-    tCtx.putImageData(id, 0, 0);
+    ctx.putImageData(imgData, 0, 0);
 
-    // Hide any leftover inline crop overlay/controls inside the Drawing Pad card so there is zero UI collision
-    document.querySelectorAll(".crop-overlay, .crop-box, #cropOverlay, [id*='crop' i]:not(#banglaCropModal):not(#cropPreviewCanvas):not(#cropModeSquareBtn):not(#cropModeFreeBtn):not(#cropSizeSlider):not(#cropFullResetBtn):not(#cropCancelBtn):not(#cropDetectBtn)").forEach(function (el) {
-      if (el.closest("main")) el.style.display = "none";
-    });
-
-    // Paint cropped character onto Drawing Pad and mark canvas non-empty via synthetic pointer/touch event
-    var mCtx = mainCanvas.getContext("2d");
-    mCtx.fillStyle = "#000000";
-    mCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
-    mCtx.drawImage(tmp, 0, 0);
-
-    // Close any open webcam stream overlay cleanly if user captured via website Camera modal
-    document.querySelectorAll("video").forEach(function (v) {
-      try {
-        if (v.srcObject && v.srcObject.getTracks) {
-          v.srcObject.getTracks().forEach(function (t) { t.stop(); });
-        }
-      } catch (e) {}
-    });
-
+    // Close modal & clear any inline crop state so Drawing Pad stays clean
     modal.classList.remove("active");
+    if (typeof window.cancelInlineCrop === "function") {
+      try { window.cancelInlineCrop(); } catch (e) {}
+    }
 
-    // Dispatch synthetic stroke registration & invoke prediction directly after modal closes
-    setTimeout(function () {
-      try {
-        mainCanvas.dispatchEvent(new Event("input", { bubbles: true }));
-        mainCanvas.dispatchEvent(new Event("change", { bubbles: true }));
-      } catch (e) {}
-
-      if (typeof window.predictCharacter === "function") {
-        window.predictCharacter();
-      } else if (typeof window.predict === "function") {
-        window.predict();
-      } else {
-        var btns = document.querySelectorAll("button");
-        for (var k = 0; k < btns.length; k++) {
-          if (/^\s*predict\s*$/i.test(btns[k].textContent || "")) {
-            btns[k].removeAttribute("disabled");
-            btns[k].click();
-            break;
-          }
-        }
-      }
-      setTimeout(function () { window.__banglaCropBusy = false; }, 350);
-    }, 60);
+    // Store in uploadedBinaryImage if global and invoke native runPrediction(out, "Camera / Photo Crop")
+    try { window.uploadedBinaryImage = out; } catch (e) {}
+    if (typeof window.runPrediction === "function") {
+      window.runPrediction(out, "Camera / Photo Crop");
+    }
   }
 
-  window.__mountBanglaCropModal = function (src) {
+  function openCropModalFromDataUrl(dataUrl) {
+    if (!dataUrl) return;
     initCropModal();
-    if (!src || modal.classList.contains("active")) return;
     var img = new Image();
     img.onload = function () {
       if (!img.width || !img.height) return;
@@ -3155,23 +2989,38 @@ function getBanglaLabel(raw) {
       var minS = Math.min(previewCanvas.width, previewCanvas.height);
       sizeSlider.value = "72";
       var initS = Math.round(minS * 0.72);
-      cropBox.w = initS; cropBox.h = initS;
-      cropBox.x = Math.round((previewCanvas.width - initS) / 2);
-      cropBox.y = Math.round((previewCanvas.height - initS) / 2);
+      modalCropBox.w = initS; modalCropBox.h = initS;
+      modalCropBox.x = Math.round((previewCanvas.width - initS) / 2);
+      modalCropBox.y = Math.round((previewCanvas.height - initS) / 2);
       modal.classList.add("active");
       renderStage();
     };
-    img.src = src;
-  };
-
-  function boot() {
-    initCropModal();
-    while (window.__banglaCropQueue && window.__banglaCropQueue.length) {
-      window.__mountBanglaCropModal(window.__banglaCropQueue.shift());
-    }
+    img.src = dataUrl;
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+
+  // Override the app's native inline crop entry points directly so Web Camera, Native Capacitor Camera, Photo Upload, and Drag & Drop ALL open this modal cleanly!
+  function bindNativeEntryPoints() {
+    initCropModal();
+    window.startInlineCropFromDataUrl = function (dataUrl) {
+      openCropModalFromDataUrl(dataUrl);
+    };
+    window.loadPhotoFileForInlineCrop = function (file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        if (ev.target && ev.target.result) {
+          openCropModalFromDataUrl(ev.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindNativeEntryPoints);
+  } else {
+    bindNativeEntryPoints();
+  }
 })();
 </script>
 <!-- BANGLA_CROP_DETECT_MODAL_END -->

@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 06:05 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 06:12 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -3170,5 +3170,112 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_CROP_DETECT_MODAL_END -->
+<!-- BANGLA_STUDIO_UI_POLISH_START -->
+<style>
+  /* 1. Hardware-accelerated tactile button feedback & subtle inner card highlights */
+  button {
+    transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, filter 0.18s ease !important;
+    will-change: transform;
+  }
+  button:active {
+    transform: scale(0.96) !important;
+  }
+
+  /* 2. Refined Drawing Pad spotlight & crisp framing */
+  #drawCanvas {
+    border-radius: 14px !important;
+    box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(56, 189, 248, 0.25) !important;
+  }
+  body.light-mode #drawCanvas,
+  body.white-mode #drawCanvas {
+    box-shadow: inset 0 2px 10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(185, 28, 28, 0.22) !important;
+  }
+
+  /* 3. Animated Top-5 Prediction Bars */
+  #top5List > div, .top5-item, .pred-row {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    margin-bottom: 6px !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  #top5List > div:first-child {
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.14), transparent) !important;
+  }
+  body.light-mode #top5List > div:first-child,
+  body.white-mode #top5List > div:first-child {
+    border-color: rgba(185, 28, 28, 0.4) !important;
+    background: linear-gradient(90deg, rgba(185, 28, 28, 0.10), transparent) !important;
+  }
+
+  /* 4. Compact Word Composer Quick-Action Bar */
+  #composerQuickStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .composer-pill-btn {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(30, 41, 59, 0.65);
+    color: #e2e8f0;
+    cursor: pointer;
+  }
+  body.light-mode .composer-pill-btn,
+  body.white-mode .composer-pill-btn {
+    background: #f2ede2;
+    color: #1e293b;
+    border-color: rgba(185, 28, 28, 0.25);
+  }
+</style>
+
+<script>
+(function () {
+  function enhanceStudioUI() {
+    // Add a subtle Copy & Speak strip inside Word Composer if a word input/box exists
+    var wordBox = document.querySelector("#composedWord, #wordOutput, input[id*='word' i], textarea[id*='word' i]");
+    if (wordBox && !document.getElementById("composerQuickStrip")) {
+      var strip = document.createElement("div");
+      strip.id = "composerQuickStrip";
+      strip.innerHTML =
+        '<button type="button" class="composer-pill-btn" id="qsCopyBtn">📋 Copy Bangla</button>' +
+        '<button type="button" class="composer-pill-btn" id="qsSpeakBtn">🔊 Speak Word</button>';
+      wordBox.parentNode.insertBefore(strip, wordBox.nextSibling);
+
+      document.getElementById("qsCopyBtn").addEventListener("click", function () {
+        var txt = (wordBox.value !== undefined ? wordBox.value : wordBox.textContent || "").trim();
+        if (!txt) return;
+        if (navigator.clipboard) navigator.clipboard.writeText(txt);
+        var btn = this;
+        btn.textContent = "✓ Copied!";
+        setTimeout(function () { btn.textContent = "📋 Copy Bangla"; }, 1200);
+      });
+
+      document.getElementById("qsSpeakBtn").addEventListener("click", function () {
+        var txt = (wordBox.value !== undefined ? wordBox.value : wordBox.textContent || "").trim();
+        if (!txt || !window.speechSynthesis) return;
+        var u = new SpeechSynthesisUtterance(txt);
+        u.lang = "bn-BD";
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", enhanceStudioUI);
+  } else {
+    enhanceStudioUI();
+  }
+})();
+</script>
+<!-- BANGLA_STUDIO_UI_POLISH_END -->
 </body>
 </html>

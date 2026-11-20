@@ -2506,125 +2506,6 @@ function getBanglaLabel(raw) {
   }
 </style>
 <!-- BANGLA_ANDROID_RESPONSIVE_END -->
-<!-- BANGLA_STUDIO_FOOTER_BADGE_START -->
-<style>
-  @keyframes studioBadgeFadeIn {
-    0% { opacity: 0; transform: translate3d(0, 6px, 0); }
-    100% { opacity: 0.92; transform: translate3d(0, 0, 0); }
-  }
-  @keyframes studioDotBreathe {
-    0%, 100% { opacity: 0.45; transform: scale(0.92); }
-    50% { opacity: 1; transform: scale(1.12); }
-  }
-
-  #studioTelemetryBadge {
-    position: fixed;
-    right: 12px;
-    bottom: 10px;
-    z-index: 950;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 11px;
-    border-radius: 999px;
-    font-family: 'Noto Serif', Georgia, serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.02em;
-    color: #cbd5e1;
-    background: rgba(15, 23, 42, 0.78);
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
-    pointer-events: auto;
-    user-select: none;
-    will-change: transform, opacity;
-    animation: studioBadgeFadeIn 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-  #studioTelemetryBadge:hover {
-    opacity: 1;
-    transform: translate3d(0, -1px, 0);
-  }
-  body.light-mode #studioTelemetryBadge,
-  body.white-mode #studioTelemetryBadge {
-    color: #475569;
-    background: rgba(250, 247, 240, 0.90);
-    border: 1px solid rgba(185, 28, 28, 0.24);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.09);
-  }
-
-  .studio-live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #b91c1c;
-    flex-shrink: 0;
-    will-change: transform, opacity;
-    animation: studioDotBreathe 3.2s ease-in-out infinite;
-  }
-  body:not(.light-mode):not(.white-mode) .studio-live-dot {
-    background: #38bdf8;
-  }
-
-  .studio-badge-sep {
-    opacity: 0.38;
-  }
-
-  @media (max-width: 768px) {
-    #studioTelemetryBadge {
-      right: 8px;
-      bottom: 6px;
-      padding: 4px 9px;
-      font-size: 0.66rem;
-      gap: 6px;
-    }
-  }
-</style>
-
-<div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
-  <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 05:00 PM</strong></span>
-  <span class="studio-badge-sep">•</span>
-  <span>Visitors: <strong id="studioVisitorCount">...</strong></span>
-</div>
-
-<script>
-(function () {
-  window.addEventListener("DOMContentLoaded", function () {
-    var countEl = document.getElementById("studioVisitorCount");
-    if (!countEl) return;
-
-    // Session-deduplicated global visitor counter with graceful local fallback
-    var sessionKey = "bangla_ocr_visited_session";
-    var localCacheKey = "bangla_ocr_visitor_cache";
-    var isNewSession = !sessionStorage.getItem(sessionKey);
-    var endpoint = isNewSession
-      ? "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits/up"
-      : "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits";
-
-    fetch(endpoint)
-      .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
-      .then(function (data) {
-        if (data && typeof data.count === "number") {
-          sessionStorage.setItem(sessionKey, "1");
-          localStorage.setItem(localCacheKey, String(data.count));
-          countEl.textContent = data.count.toLocaleString();
-        } else {
-          throw new Error("Invalid counter payload");
-        }
-      })
-      .catch(function () {
-        var cached = parseInt(localStorage.getItem(localCacheKey) || "1", 10);
-        if (isNewSession) {
-          cached += 1;
-          sessionStorage.setItem(sessionKey, "1");
-          localStorage.setItem(localCacheKey, String(cached));
-        }
-        countEl.textContent = cached.toLocaleString();
-      });
-  });
-})();
-</script>
-<!-- BANGLA_STUDIO_FOOTER_BADGE_END -->
 <!-- BANGLA_CROP_DETECT_MODAL_START -->
 <style>
   .crop-modal-backdrop {
@@ -2662,6 +2543,29 @@ function getBanglaLabel(raw) {
     from { opacity: 0; transform: translate3d(0, 12px, 0); }
     to { opacity: 1; transform: translate3d(0, 0, 0); }
   }
+  .crop-mode-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 3px;
+    border-radius: 9px;
+    background: rgba(148, 163, 184, 0.16);
+  }
+  .crop-mode-btn {
+    padding: 4px 10px;
+    border-radius: 7px;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: transparent;
+    color: inherit;
+    opacity: 0.75;
+  }
+  .crop-mode-btn.active {
+    background: #0284c7;
+    color: #ffffff;
+    opacity: 1;
+  }
   .crop-stage {
     position: relative;
     width: 100%;
@@ -2678,7 +2582,7 @@ function getBanglaLabel(raw) {
   #cropPreviewCanvas {
     display: block;
     max-width: 100%;
-    max-height: 52vh;
+    max-height: 50vh;
     touch-action: none;
     cursor: crosshair;
   }
@@ -2688,7 +2592,7 @@ function getBanglaLabel(raw) {
     justify-content: space-between;
     gap: 8px;
     margin: 8px 0 12px;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
   }
   .crop-controls-row input[type="range"] {
     flex: 1;
@@ -2736,49 +2640,67 @@ function getBanglaLabel(raw) {
   var pCtx = null;
   var sizeSlider = null;
   var loadedImg = null;
-  var cropBox = { x: 0, y: 0, size: 120 };
-  var dragging = false;
-  var dragOffset = { x: 0, y: 0 };
+  var cropMode = "square"; // "square" | "free"
+  var cropBox = { x: 20, y: 20, w: 140, h: 140 };
+  var dragAction = null; // "move" | "nw" | "ne" | "sw" | "se"
+  var dragStart = { x: 0, y: 0, bx: 0, by: 0, bw: 0, bh: 0 };
   var isProcessingCrop = false;
+  var cameraActive = false;
 
   function renderCropStage() {
     if (!loadedImg || !previewCanvas || !pCtx) return;
-    var w = previewCanvas.width;
-    var h = previewCanvas.height;
-    pCtx.clearRect(0, 0, w, h);
-    pCtx.drawImage(loadedImg, 0, 0, w, h);
+    var cw = previewCanvas.width;
+    var ch = previewCanvas.height;
+    pCtx.clearRect(0, 0, cw, ch);
+    pCtx.drawImage(loadedImg, 0, 0, cw, ch);
 
+    // Dim outside crop rectangle
     pCtx.fillStyle = "rgba(2, 6, 23, 0.58)";
-    pCtx.fillRect(0, 0, w, cropBox.y);
-    pCtx.fillRect(0, cropBox.y + cropBox.size, w, h - (cropBox.y + cropBox.size));
-    pCtx.fillRect(0, cropBox.y, cropBox.x, cropBox.size);
-    pCtx.fillRect(cropBox.x + cropBox.size, cropBox.y, w - (cropBox.x + cropBox.size), cropBox.size);
+    pCtx.fillRect(0, 0, cw, cropBox.y);
+    pCtx.fillRect(0, cropBox.y + cropBox.h, cw, ch - (cropBox.y + cropBox.h));
+    pCtx.fillRect(0, cropBox.y, cropBox.x, cropBox.h);
+    pCtx.fillRect(cropBox.x + cropBox.w, cropBox.y, cw - (cropBox.x + cropBox.w), cropBox.h);
 
-    pCtx.strokeStyle = "#38bdf8";
+    // Crop border
+    pCtx.strokeStyle = cropMode === "square" ? "#38bdf8" : "#f59e0b";
     pCtx.lineWidth = 2.5;
-    pCtx.strokeRect(cropBox.x, cropBox.y, cropBox.size, cropBox.size);
+    pCtx.strokeRect(cropBox.x, cropBox.y, cropBox.w, cropBox.h);
 
-    pCtx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+    // Rule-of-thirds guides
+    pCtx.strokeStyle = "rgba(255, 255, 255, 0.28)";
     pCtx.lineWidth = 1;
-    var third = cropBox.size / 3;
     pCtx.beginPath();
-    pCtx.moveTo(cropBox.x + third, cropBox.y);
-    pCtx.lineTo(cropBox.x + third, cropBox.y + cropBox.size);
-    pCtx.moveTo(cropBox.x + third * 2, cropBox.y);
-    pCtx.lineTo(cropBox.x + third * 2, cropBox.y + cropBox.size);
-    pCtx.moveTo(cropBox.x, cropBox.y + third);
-    pCtx.lineTo(cropBox.x + cropBox.size, cropBox.y + third);
-    pCtx.moveTo(cropBox.x, cropBox.y + third * 2);
-    pCtx.lineTo(cropBox.x + cropBox.size, cropBox.y + third * 2);
+    pCtx.moveTo(cropBox.x + cropBox.w / 3, cropBox.y);
+    pCtx.lineTo(cropBox.x + cropBox.w / 3, cropBox.y + cropBox.h);
+    pCtx.moveTo(cropBox.x + (cropBox.w * 2) / 3, cropBox.y);
+    pCtx.lineTo(cropBox.x + (cropBox.w * 2) / 3, cropBox.y + cropBox.h);
+    pCtx.moveTo(cropBox.x, cropBox.y + cropBox.h / 3);
+    pCtx.lineTo(cropBox.x + cropBox.w, cropBox.y + cropBox.h / 3);
+    pCtx.moveTo(cropBox.x, cropBox.y + (cropBox.h * 2) / 3);
+    pCtx.lineTo(cropBox.x + cropBox.w, cropBox.y + (cropBox.h * 2) / 3);
     pCtx.stroke();
+
+    // Draw 4 corner drag handles (especially useful for Free resize)
+    var hs = 10;
+    pCtx.fillStyle = cropMode === "square" ? "#38bdf8" : "#f59e0b";
+    var corners = [
+      [cropBox.x, cropBox.y],
+      [cropBox.x + cropBox.w, cropBox.y],
+      [cropBox.x, cropBox.y + cropBox.h],
+      [cropBox.x + cropBox.w, cropBox.y + cropBox.h]
+    ];
+    for (var i = 0; i < corners.length; i++) {
+      pCtx.fillRect(corners[i][0] - hs / 2, corners[i][1] - hs / 2, hs, hs);
+    }
   }
 
   function openCropModalWithSrc(src) {
     if (!src || isProcessingCrop) return;
+    if (modal && modal.classList.contains("active")) return;
     var img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = function () {
-      if (!img.width || !img.height) return;
+      if (!img.width || !img.height || !modal) return;
       loadedImg = img;
       var maxDim = 340;
       var scale = Math.min(maxDim / img.width, maxDim / img.height, 1.5);
@@ -2787,9 +2709,11 @@ function getBanglaLabel(raw) {
 
       var minSide = Math.min(previewCanvas.width, previewCanvas.height);
       if (sizeSlider) sizeSlider.value = "72";
-      cropBox.size = Math.round(minSide * 0.72);
-      cropBox.x = Math.round((previewCanvas.width - cropBox.size) / 2);
-      cropBox.y = Math.round((previewCanvas.height - cropBox.size) / 2);
+      var initSize = Math.round(minSide * 0.72);
+      cropBox.w = initSize;
+      cropBox.h = initSize;
+      cropBox.x = Math.round((previewCanvas.width - cropBox.w) / 2);
+      cropBox.y = Math.round((previewCanvas.height - cropBox.h) / 2);
 
       modal.classList.add("active");
       renderCropStage();
@@ -2808,7 +2732,7 @@ function getBanglaLabel(raw) {
     reader.readAsDataURL(file);
   }
 
-  // Hook FileReader & URL.createObjectURL early so even detached/dynamic <input type="file"> calls trigger the Crop modal
+  // Hook FileReader, URL.createObjectURL, and Camera Canvas snapshots
   var OrigFileReader = window.FileReader;
   var origReadAsDataURL = OrigFileReader.prototype.readAsDataURL;
   OrigFileReader.prototype.readAsDataURL = function (blob) {
@@ -2832,7 +2756,26 @@ function getBanglaLabel(raw) {
     return url;
   };
 
-  // Hook HTMLInputElement.prototype.click to attach change listener even on detached inputs
+  // Hook live <video> camera frame draws onto temporary canvases so Camera Capture triggers Crop modal
+  var origDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage = function (source) {
+    var res = origDrawImage.apply(this, arguments);
+    try {
+      if (!isProcessingCrop && source && source.tagName === "VIDEO" && source.videoWidth > 0) {
+        var cv = this.canvas;
+        if (cv && cv.id !== "cropPreviewCanvas" && !cv.closest("main")) {
+          setTimeout(function () {
+            if (!isProcessingCrop && cv.width > 0 && cv.height > 0) {
+              openCropModalWithSrc(cv.toDataURL("image/png"));
+            }
+          }, 40);
+        }
+      }
+    } catch (e) {}
+    return res;
+  };
+
+  // Hook HTMLInputElement.prototype.click (including camera capture inputs)
   var origInputClick = HTMLInputElement.prototype.click;
   HTMLInputElement.prototype.click = function () {
     if (this.type === "file" && !this.__cropHooked) {
@@ -2852,16 +2795,19 @@ function getBanglaLabel(raw) {
     modal.className = "crop-modal-backdrop";
     modal.innerHTML =
       '<div class="crop-modal-card" role="dialog" aria-modal="true">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
-          '<div style="font-weight:700;font-size:1rem;">✂️ Crop &amp; Detect Character</div>' +
-          '<span style="font-size:0.78rem;opacity:0.78;">Drag box over 1 letter</span>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">' +
+          '<div style="font-weight:700;font-size:0.98rem;">✂️ Crop &amp; Detect</div>' +
+          '<div class="crop-mode-tabs">' +
+            '<button type="button" id="cropModeSquareBtn" class="crop-mode-btn active">Square (1:1)</button>' +
+            '<button type="button" id="cropModeFreeBtn" class="crop-mode-btn">Free</button>' +
+          '</div>' +
         '</div>' +
         '<div class="crop-stage">' +
           '<canvas id="cropPreviewCanvas"></canvas>' +
         '</div>' +
         '<div class="crop-controls-row">' +
-          '<span>Box Size:</span>' +
-          '<input type="range" id="cropSizeSlider" min="25" max="100" value="72">' +
+          '<span id="cropHintLabel">Drag corners or box:</span>' +
+          '<input type="range" id="cropSizeSlider" min="20" max="100" value="72">' +
           '<button type="button" id="cropFullResetBtn" style="padding:4px 8px;border-radius:7px;border:1px solid rgba(148,163,184,0.4);background:transparent;color:inherit;font-size:0.78rem;cursor:pointer;">Full</button>' +
         '</div>' +
         '<div class="crop-btn-row">' +
@@ -2875,7 +2821,28 @@ function getBanglaLabel(raw) {
     pCtx = previewCanvas.getContext("2d");
     sizeSlider = document.getElementById("cropSizeSlider");
 
-    // Also add a dedicated "✂️ Crop" button next to Photo/Camera in the action bar
+    var sqBtn = document.getElementById("cropModeSquareBtn");
+    var freeBtn = document.getElementById("cropModeFreeBtn");
+
+    sqBtn.addEventListener("click", function () {
+      cropMode = "square";
+      sqBtn.classList.add("active");
+      freeBtn.classList.remove("active");
+      var side = Math.min(cropBox.w, cropBox.h);
+      cropBox.w = side;
+      cropBox.h = side;
+      clampCropBox();
+      renderCropStage();
+    });
+
+    freeBtn.addEventListener("click", function () {
+      cropMode = "free";
+      freeBtn.classList.add("active");
+      sqBtn.classList.remove("active");
+      renderCropStage();
+    });
+
+    // Dedicated "✂️ Crop" button next to Photo/Camera
     var hiddenCropInput = document.createElement("input");
     hiddenCropInput.type = "file";
     hiddenCropInput.accept = "image/*";
@@ -2890,26 +2857,47 @@ function getBanglaLabel(raw) {
 
     var allBtns = document.querySelectorAll("button");
     for (var b = 0; b < allBtns.length; b++) {
-      if (/photo/i.test(allBtns[b].textContent || "")) {
+      var bText = allBtns[b].textContent || "";
+      if (/photo/i.test(bText)) {
         var cropBtn = document.createElement("button");
         cropBtn.type = "button";
         cropBtn.id = "manualCropTriggerBtn";
         cropBtn.className = allBtns[b].className;
         cropBtn.innerHTML = "✂️ Crop";
-        cropBtn.title = "Upload & Crop a character from an image";
         cropBtn.addEventListener("click", function () {
-          var mainCanvas = document.querySelector("canvas#drawCanvas, canvas#canvas, main canvas");
-          // If canvas already has content or user wants to pick a new photo to crop
           hiddenCropInput.click();
         });
         allBtns[b].parentNode.insertBefore(cropBtn, allBtns[b].nextSibling);
-        break;
+      }
+      // Also attach capture-phase listener on Camera button to watch newly spawned video/canvas capture
+      if (/camera/i.test(bText)) {
+        allBtns[b].addEventListener("click", function () {
+          setTimeout(function () {
+            document.querySelectorAll("video").forEach(function (vid) {
+              if (!vid.__cropWatched) {
+                vid.__cropWatched = true;
+                vid.addEventListener("pause", function () {
+                  if (vid.videoWidth > 0 && !isProcessingCrop) {
+                    var snap = document.createElement("canvas");
+                    snap.width = vid.videoWidth;
+                    snap.height = vid.videoHeight;
+                    snap.getContext("2d").drawImage(vid, 0, 0);
+                    openCropModalWithSrc(snap.toDataURL("image/png"));
+                  }
+                });
+              }
+            });
+          }, 450);
+        }, true);
       }
     }
 
     function clampCropBox() {
-      cropBox.x = Math.max(0, Math.min(previewCanvas.width - cropBox.size, cropBox.x));
-      cropBox.y = Math.max(0, Math.min(previewCanvas.height - cropBox.size, cropBox.y));
+      var minSize = 28;
+      cropBox.w = Math.max(minSize, Math.min(previewCanvas.width, cropBox.w));
+      cropBox.h = Math.max(minSize, Math.min(previewCanvas.height, cropBox.h));
+      cropBox.x = Math.max(0, Math.min(previewCanvas.width - cropBox.w, cropBox.x));
+      cropBox.y = Math.max(0, Math.min(previewCanvas.height - cropBox.h, cropBox.y));
     }
 
     function getCanvasPoint(e) {
@@ -2922,35 +2910,73 @@ function getBanglaLabel(raw) {
       };
     }
 
+    function hitCorner(pt) {
+      var r = 18;
+      if (Math.abs(pt.x - cropBox.x) <= r && Math.abs(pt.y - cropBox.y) <= r) return "nw";
+      if (Math.abs(pt.x - (cropBox.x + cropBox.w)) <= r && Math.abs(pt.y - cropBox.y) <= r) return "ne";
+      if (Math.abs(pt.x - cropBox.x) <= r && Math.abs(pt.y - (cropBox.y + cropBox.h)) <= r) return "sw";
+      if (Math.abs(pt.x - (cropBox.x + cropBox.w)) <= r && Math.abs(pt.y - (cropBox.y + cropBox.h)) <= r) return "se";
+      return null;
+    }
+
     function onStartDrag(e) {
       var pt = getCanvasPoint(e);
-      dragging = true;
-      if (pt.x >= cropBox.x && pt.x <= cropBox.x + cropBox.size &&
-          pt.y >= cropBox.y && pt.y <= cropBox.y + cropBox.size) {
-        dragOffset.x = pt.x - cropBox.x;
-        dragOffset.y = pt.y - cropBox.y;
+      var corner = hitCorner(pt);
+      dragStart = { x: pt.x, y: pt.y, bx: cropBox.x, by: cropBox.y, bw: cropBox.w, bh: cropBox.h };
+      if (corner) {
+        dragAction = corner;
+      } else if (pt.x >= cropBox.x && pt.x <= cropBox.x + cropBox.w &&
+                 pt.y >= cropBox.y && pt.y <= cropBox.y + cropBox.h) {
+        dragAction = "move";
       } else {
-        cropBox.x = pt.x - cropBox.size / 2;
-        cropBox.y = pt.y - cropBox.size / 2;
+        dragAction = "move";
+        cropBox.x = pt.x - cropBox.w / 2;
+        cropBox.y = pt.y - cropBox.h / 2;
         clampCropBox();
-        dragOffset.x = pt.x - cropBox.x;
-        dragOffset.y = pt.y - cropBox.y;
+        dragStart.bx = cropBox.x;
+        dragStart.by = cropBox.y;
         renderCropStage();
       }
     }
 
     function onMoveDrag(e) {
-      if (!dragging) return;
+      if (!dragAction) return;
       if (e.cancelable) e.preventDefault();
       var pt = getCanvasPoint(e);
-      cropBox.x = pt.x - dragOffset.x;
-      cropBox.y = pt.y - dragOffset.y;
-      clampCropBox();
+      var dx = pt.x - dragStart.x;
+      var dy = pt.y - dragStart.y;
+
+      if (dragAction === "move") {
+        cropBox.x = dragStart.bx + dx;
+        cropBox.y = dragStart.by + dy;
+        clampCropBox();
+      } else {
+        var nx = dragStart.bx, ny = dragStart.by, nw = dragStart.bw, nh = dragStart.bh;
+        if (dragAction.indexOf("e") !== -1) nw = dragStart.bw + dx;
+        if (dragAction.indexOf("s") !== -1) nh = dragStart.bh + dy;
+        if (dragAction.indexOf("w") !== -1) { nx = dragStart.bx + dx; nw = dragStart.bw - dx; }
+        if (dragAction.indexOf("n") !== -1) { ny = dragStart.by + dy; nh = dragStart.bh - dy; }
+
+        if (cropMode === "square") {
+          var side = Math.max(28, Math.max(nw, nh));
+          if (dragAction.indexOf("w") !== -1) nx = dragStart.bx + (dragStart.bw - side);
+          if (dragAction.indexOf("n") !== -1) ny = dragStart.by + (dragStart.bh - side);
+          nw = side;
+          nh = side;
+        }
+        if (nw >= 28 && nh >= 28) {
+          cropBox.x = nx;
+          cropBox.y = ny;
+          cropBox.w = nw;
+          cropBox.h = nh;
+          clampCropBox();
+        }
+      }
       renderCropStage();
     }
 
     function onEndDrag() {
-      dragging = false;
+      dragAction = null;
     }
 
     previewCanvas.addEventListener("pointerdown", onStartDrag);
@@ -2963,12 +2989,19 @@ function getBanglaLabel(raw) {
     sizeSlider.addEventListener("input", function () {
       if (!loadedImg) return;
       var pct = parseInt(sizeSlider.value, 10) / 100;
-      var minSide = Math.min(previewCanvas.width, previewCanvas.height);
-      var cx = cropBox.x + cropBox.size / 2;
-      var cy = cropBox.y + cropBox.size / 2;
-      cropBox.size = Math.max(36, Math.round(minSide * pct));
-      cropBox.x = Math.round(cx - cropBox.size / 2);
-      cropBox.y = Math.round(cy - cropBox.size / 2);
+      var cx = cropBox.x + cropBox.w / 2;
+      var cy = cropBox.y + cropBox.h / 2;
+      if (cropMode === "square") {
+        var minSide = Math.min(previewCanvas.width, previewCanvas.height);
+        var side = Math.max(28, Math.round(minSide * pct));
+        cropBox.w = side;
+        cropBox.h = side;
+      } else {
+        cropBox.w = Math.max(28, Math.round(previewCanvas.width * pct));
+        cropBox.h = Math.max(28, Math.round(previewCanvas.height * pct));
+      }
+      cropBox.x = Math.round(cx - cropBox.w / 2);
+      cropBox.y = Math.round(cy - cropBox.h / 2);
       clampCropBox();
       renderCropStage();
     });
@@ -2976,10 +3009,18 @@ function getBanglaLabel(raw) {
     document.getElementById("cropFullResetBtn").addEventListener("click", function () {
       if (!loadedImg) return;
       sizeSlider.value = "100";
-      var minSide = Math.min(previewCanvas.width, previewCanvas.height);
-      cropBox.size = minSide;
-      cropBox.x = Math.round((previewCanvas.width - minSide) / 2);
-      cropBox.y = Math.round((previewCanvas.height - minSide) / 2);
+      if (cropMode === "square") {
+        var minSide = Math.min(previewCanvas.width, previewCanvas.height);
+        cropBox.w = minSide;
+        cropBox.h = minSide;
+        cropBox.x = Math.round((previewCanvas.width - minSide) / 2);
+        cropBox.y = Math.round((previewCanvas.height - minSide) / 2);
+      } else {
+        cropBox.x = 0;
+        cropBox.y = 0;
+        cropBox.w = previewCanvas.width;
+        cropBox.h = previewCanvas.height;
+      }
       renderCropStage();
     });
 
@@ -3000,8 +3041,8 @@ function getBanglaLabel(raw) {
       var scaleY = loadedImg.height / previewCanvas.height;
       var sx = Math.max(0, cropBox.x * scaleX);
       var sy = Math.max(0, cropBox.y * scaleY);
-      var sw = Math.min(loadedImg.width - sx, cropBox.size * scaleX);
-      var sh = Math.min(loadedImg.height - sy, cropBox.size * scaleY);
+      var sw = Math.min(loadedImg.width - sx, cropBox.w * scaleX);
+      var sh = Math.min(loadedImg.height - sy, cropBox.h * scaleY);
 
       var tempCanvas = document.createElement("canvas");
       tempCanvas.width = mainCanvas.width;
@@ -3009,7 +3050,18 @@ function getBanglaLabel(raw) {
       var tCtx = tempCanvas.getContext("2d");
       tCtx.fillStyle = "#ffffff";
       tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-      tCtx.drawImage(loadedImg, sx, sy, sw, sh, 0, 0, tempCanvas.width, tempCanvas.height);
+
+      // Fit aspect ratio cleanly inside padded square so Free crops never distort characters
+      var pad = Math.round(tempCanvas.width * 0.08);
+      var availW = tempCanvas.width - pad * 2;
+      var availH = tempCanvas.height - pad * 2;
+      var fitScale = Math.min(availW / sw, availH / sh);
+      var dw = Math.round(sw * fitScale);
+      var dh = Math.round(sh * fitScale);
+      var dx = Math.round((tempCanvas.width - dw) / 2);
+      var dy = Math.round((tempCanvas.height - dh) / 2);
+
+      tCtx.drawImage(loadedImg, sx, sy, sw, sh, dx, dy, dw, dh);
 
       var imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
       var d = imgData.data;
@@ -3037,7 +3089,7 @@ function getBanglaLabel(raw) {
       mCtx.drawImage(tempCanvas, 0, 0);
 
       modal.classList.remove("active");
-      setTimeout(function () { isProcessingCrop = false; }, 300);
+      setTimeout(function () { isProcessingCrop = false; }, 350);
 
       var buttons = document.querySelectorAll("button");
       for (var k = 0; k < buttons.length; k++) {
@@ -3051,5 +3103,126 @@ function getBanglaLabel(raw) {
 })();
 </script>
 <!-- BANGLA_CROP_DETECT_MODAL_END -->
+<!-- BANGLA_STUDIO_FOOTER_BADGE_START -->
+<style>
+  @keyframes studioDotBreathe {
+    0%, 100% { opacity: 0.48; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1.12); }
+  }
+
+  #studioTelemetryBadge {
+    position: fixed !important;
+    right: 12px !important;
+    bottom: 10px !important;
+    z-index: 9990 !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 0.94 !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 5px 11px !important;
+    border-radius: 999px !important;
+    font-family: 'Noto Serif', Georgia, serif !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.02em !important;
+    color: #cbd5e1 !important;
+    background: rgba(15, 23, 42, 0.84) !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.26) !important;
+    pointer-events: auto !important;
+    user-select: none !important;
+  }
+  body.light-mode #studioTelemetryBadge,
+  body.white-mode #studioTelemetryBadge {
+    color: #475569 !important;
+    background: rgba(250, 247, 240, 0.94) !important;
+    border: 1px solid rgba(185, 28, 28, 0.26) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10) !important;
+  }
+  .studio-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #38bdf8;
+    flex-shrink: 0;
+    will-change: transform, opacity;
+    animation: studioDotBreathe 3.2s ease-in-out infinite;
+  }
+  body.light-mode .studio-live-dot,
+  body.white-mode .studio-live-dot {
+    background: #b91c1c;
+  }
+  .studio-badge-sep {
+    opacity: 0.38;
+  }
+  @media (max-width: 768px) {
+    #studioTelemetryBadge {
+      right: 8px !important;
+      bottom: 6px !important;
+      padding: 4px 9px !important;
+      font-size: 0.66rem !important;
+      gap: 6px !important;
+    }
+  }
+</style>
+
+<div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
+  <span class="studio-live-dot" aria-hidden="true"></span>
+  <span>Updated: <strong>20 Nov 2026, 05:06 PM</strong></span>
+  <span class="studio-badge-sep">•</span>
+  <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
+</div>
+
+<script>
+(function () {
+  function initStudioBadge() {
+    var badge = document.getElementById("studioTelemetryBadge");
+    if (!badge) return;
+    if (badge.parentNode !== document.body) {
+      document.body.appendChild(badge);
+    }
+    var countEl = document.getElementById("studioVisitorCount");
+    if (!countEl) return;
+
+    var localCacheKey = "bangla_ocr_visitor_cache";
+    var sessionKey = "bangla_ocr_visited_session";
+    var cached = parseInt(localStorage.getItem(localCacheKey) || "1", 10);
+    if (isNaN(cached) || cached < 1) cached = 1;
+
+    var isNewSession = !sessionStorage.getItem(sessionKey);
+    if (isNewSession) {
+      cached += 1;
+      sessionStorage.setItem(sessionKey, "1");
+      localStorage.setItem(localCacheKey, String(cached));
+    }
+    // Render immediately on every reload before network sync completes
+    countEl.textContent = cached.toLocaleString();
+
+    var endpoint = isNewSession
+      ? "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits/up"
+      : "https://api.counterapi.dev/v1/skepticsakib-bangla-ocr/visits";
+
+    fetch(endpoint)
+      .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+      .then(function (data) {
+        if (data && typeof data.count === "number" && data.count >= 1) {
+          var finalVal = Math.max(cached, data.count);
+          localStorage.setItem(localCacheKey, String(finalVal));
+          countEl.textContent = finalVal.toLocaleString();
+        }
+      })
+      .catch(function () {
+        countEl.textContent = cached.toLocaleString();
+      });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initStudioBadge);
+  } else {
+    initStudioBadge();
+  }
+})();
+</script>
+<!-- BANGLA_STUDIO_FOOTER_BADGE_END -->
 </body>
 </html>

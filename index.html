@@ -2577,7 +2577,7 @@ function getBanglaLabel(raw) {
 
 <div id="studioTelemetryBadge" title="Calligraphy Studio Live Stats">
   <span class="studio-live-dot" aria-hidden="true"></span>
-  <span>Updated: <strong>20 Nov 2026, 08:37 PM</strong></span>
+  <span>Updated: <strong>20 Nov 2026, 08:42 PM</strong></span>
   <span class="studio-badge-sep">•</span>
   <span>Visitors: <strong id="studioVisitorCount">1</strong></span>
 </div>
@@ -4278,7 +4278,7 @@ window.__forceOtaRefresh = async function () {
 
     var unifiedInner =
       '<span class="telemetry-dot"></span>' +
-      '<span>Updated: <strong>20 Nov 2026, 08:37 PM</strong></span>' +
+      '<span>Updated: <strong>20 Nov 2026, 08:42 PM</strong></span>' +
       '<span style="opacity:0.45;">•</span>' +
       '<span>Total Visits: <strong id="combinedVisitorCount">...</strong></span>';
 
@@ -4646,5 +4646,110 @@ window.__forceOtaRefresh = async function () {
 })();
 </script>
 <!-- BANGLA_NEXTGEN_UI_END -->
+<!-- BANGLA_PREDICT_REANIM_START -->
+<style>
+  @keyframes banglaResultPop {
+    0% {
+      opacity: 0.25;
+      transform: translateY(8px) scale(0.96);
+    }
+    65% {
+      opacity: 1;
+      transform: translateY(-2px) scale(1.015);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes banglaBarFillPulse {
+    0% {
+      opacity: 0.35;
+      transform: scaleX(0.15);
+      transform-origin: left center;
+    }
+    100% {
+      opacity: 1;
+      transform: scaleX(1);
+      transform-origin: left center;
+    }
+  }
+
+  .bangla-reanim-card {
+    animation: banglaResultPop 0.34s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  }
+
+  .bangla-reanim-bar {
+    animation: banglaBarFillPulse 0.42s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  }
+</style>
+
+<script>
+(function () {
+  var lastAnimTime = 0;
+
+  function replayPredictionAnimation() {
+    var now = Date.now();
+    if (now - lastAnimTime < 120) return;
+    lastAnimTime = now;
+
+    // Locate prediction result containers, top-1 hero badge, and confidence bar rows
+    var targets = Array.from(document.querySelectorAll(
+      '#resultBox, #predictionResult, #topPrediction, .prediction-card, .result-card, .top-predictions, [id*="pred" i], [id*="result" i]'
+    )).filter(function (el) {
+      return el && el.offsetParent !== null && !el.closest('#banglaSpeedDialWrap') && !el.closest('#banglaTraceModal');
+    });
+
+    targets.forEach(function (el) {
+      el.classList.remove("bangla-reanim-card");
+      void el.offsetWidth; // Force browser reflow so consecutive predictions restart animation
+      el.classList.add("bangla-reanim-card");
+    });
+
+    // Also restart inner confidence/progress bars
+    var bars = Array.from(document.querySelectorAll(
+      '.prob-bar, .conf-bar, .confidence-fill, .bar-fill, [class*="bar" i] > div, progress'
+    )).filter(function (b) {
+      return b && b.offsetParent !== null && !b.closest('#banglaSpeedDialWrap');
+    });
+
+    bars.forEach(function (bar, idx) {
+      bar.classList.remove("bangla-reanim-bar");
+      bar.style.animationDelay = (idx * 35) + "ms";
+      void bar.offsetWidth;
+      bar.classList.add("bangla-reanim-bar");
+    });
+  }
+
+  function initPredictionObserver() {
+    // 1. Trigger immediately whenever user clicks Predict / Recognize
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest("button");
+      if (!btn) return;
+      if (/predict|recognize|scan|analyze/i.test(btn.textContent || btn.id || "")) {
+        requestAnimationFrame(replayPredictionAnimation);
+        setTimeout(replayPredictionAnimation, 90);
+      }
+    }, true);
+
+    // 2. Also observe DOM updates on the prediction output area so async TTA finishes trigger cleanly
+    var watchRoot = document.querySelector('#resultBox, #predictionResult, [id*="result" i], [id*="pred" i]');
+    if (watchRoot && typeof MutationObserver !== "undefined") {
+      var obs = new MutationObserver(function () {
+        replayPredictionAnimation();
+      });
+      obs.observe(watchRoot, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPredictionObserver);
+  } else {
+    initPredictionObserver();
+  }
+})();
+</script>
+<!-- BANGLA_PREDICT_REANIM_END -->
 </body>
 </html>
